@@ -1,0 +1,2050 @@
+{
+  "count": 292,
+  "pages": [
+    {
+      "base_path": "/access-to-work",
+      "content_hash": "a9ccf7c4e9eb1a23",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Access to Work: get support if you have a disability or health condition",
+      "url": "https://www.gov.uk/access-to-work"
+    },
+    {
+      "base_path": "/apply-tax-free-interest-on-savings",
+      "content_hash": "c8e72d717fc01f29",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tax on savings interest",
+      "url": "https://www.gov.uk/apply-tax-free-interest-on-savings"
+    },
+    {
+      "base_path": "/appoint-tax-agent",
+      "content_hash": "2ba5527c5ca698c9",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Appoint someone to deal with HMRC on your behalf",
+      "url": "https://www.gov.uk/appoint-tax-agent"
+    },
+    {
+      "base_path": "/become-sole-trader",
+      "content_hash": "eceec07e7fb5207b",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Become a sole trader",
+      "url": "https://www.gov.uk/become-sole-trader"
+    },
+    {
+      "base_path": "/business-asset-disposal-relief",
+      "content_hash": "1103b610b3d60a47",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Business Asset Disposal Relief",
+      "url": "https://www.gov.uk/business-asset-disposal-relief"
+    },
+    {
+      "base_path": "/capital-allowances",
+      "content_hash": "7a8977ac152f9c4c",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Claim capital allowances",
+      "url": "https://www.gov.uk/capital-allowances"
+    },
+    {
+      "base_path": "/capital-gains-tax",
+      "content_hash": "9b47fbbe1a4c8989",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Capital Gains Tax: what you pay it on, rates and allowances",
+      "url": "https://www.gov.uk/capital-gains-tax"
+    },
+    {
+      "base_path": "/carers-allowance",
+      "content_hash": "01d722895f345aa1",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Carer's Allowance",
+      "url": "https://www.gov.uk/carers-allowance"
+    },
+    {
+      "base_path": "/check-additional-income-tax",
+      "content_hash": "0ac1935b453d041c",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check if you need to tell HMRC about additional income",
+      "url": "https://www.gov.uk/check-additional-income-tax"
+    },
+    {
+      "base_path": "/check-income-tax-current-year",
+      "content_hash": "ed62be8687e9c7f6",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check your Income Tax for the current year",
+      "url": "https://www.gov.uk/check-income-tax-current-year"
+    },
+    {
+      "base_path": "/child-benefit-tax-charge",
+      "content_hash": "d6b6432267deb4ad",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "High Income Child Benefit Charge",
+      "url": "https://www.gov.uk/child-benefit-tax-charge"
+    },
+    {
+      "base_path": "/company-tax-returns",
+      "content_hash": "9439b2ae3293a888",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Company Tax Returns",
+      "url": "https://www.gov.uk/company-tax-returns"
+    },
+    {
+      "base_path": "/contact-hmrc",
+      "content_hash": "6d517c47cb468555",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Contact HMRC",
+      "url": "https://www.gov.uk/contact-hmrc"
+    },
+    {
+      "base_path": "/contract-types-and-employer-responsibilities",
+      "content_hash": "2f9f7ff447a76529",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Contract types and employer responsibilities",
+      "url": "https://www.gov.uk/contract-types-and-employer-responsibilities"
+    },
+    {
+      "base_path": "/death-spouse-benefits-tax-pension",
+      "content_hash": "c7ee51cf37cfd18d",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Your benefits, tax and pension after the death of a partner",
+      "url": "https://www.gov.uk/death-spouse-benefits-tax-pension"
+    },
+    {
+      "base_path": "/donating-to-charity",
+      "content_hash": "00c4ef2a24925a05",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tax relief when you donate to a charity",
+      "url": "https://www.gov.uk/donating-to-charity"
+    },
+    {
+      "base_path": "/employment-support-allowance",
+      "content_hash": "f0127f353af68c3f",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Employment and Support Allowance (ESA)",
+      "url": "https://www.gov.uk/employment-support-allowance"
+    },
+    {
+      "base_path": "/eta",
+      "content_hash": "1c86b9239efd2a67",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Get an electronic travel authorisation (ETA) to visit the UK",
+      "url": "https://www.gov.uk/eta"
+    },
+    {
+      "base_path": "/expenses-if-youre-self-employed",
+      "content_hash": "b8070688ac73927e",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Expenses if you're self-employed",
+      "url": "https://www.gov.uk/expenses-if-youre-self-employed"
+    },
+    {
+      "base_path": "/financial-help-disabled",
+      "content_hash": "c45370bd8a7daac1",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Financial help if you're disabled",
+      "url": "https://www.gov.uk/financial-help-disabled"
+    },
+    {
+      "base_path": "/find-hmrc-contacts/income-tax-enquiries",
+      "content_hash": "ef352724b4b28fff",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Income Tax: enquiries",
+      "url": "https://www.gov.uk/find-hmrc-contacts/income-tax-enquiries"
+    },
+    {
+      "base_path": "/find-hmrc-contacts/technical-support-with-hmrc-online-services",
+      "content_hash": "b90dcb4065aaf5d6",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Technical support with HMRC online services",
+      "url": "https://www.gov.uk/find-hmrc-contacts/technical-support-with-hmrc-online-services"
+    },
+    {
+      "base_path": "/find-utr-number",
+      "content_hash": "fe6a0bfb8d4ac9b9",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Find your UTR number",
+      "url": "https://www.gov.uk/find-utr-number"
+    },
+    {
+      "base_path": "/gift-holdover-relief",
+      "content_hash": "3c2ad2d4ea4e9518",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Gift Hold-Over Relief",
+      "url": "https://www.gov.uk/gift-holdover-relief"
+    },
+    {
+      "base_path": "/government/calls-for-evidence/call-for-evidence-income-tax-self-assessment-registration-for-the-self-employed-and-landlords",
+      "content_hash": "062780098ba6fec1",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Call for evidence: Income Tax Self Assessment registration for the self-employed and landlords",
+      "url": "https://www.gov.uk/government/calls-for-evidence/call-for-evidence-income-tax-self-assessment-registration-for-the-self-employed-and-landlords"
+    },
+    {
+      "base_path": "/government/collections/cyber-resilience",
+      "content_hash": "139b1efeef13dd30",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Cyber resilience",
+      "url": "https://www.gov.uk/government/collections/cyber-resilience"
+    },
+    {
+      "base_path": "/government/collections/guidance-on-class-1-medical-devices",
+      "content_hash": "7b395c56e65572fc",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Guidance on Class I medical devices",
+      "url": "https://www.gov.uk/government/collections/guidance-on-class-1-medical-devices"
+    },
+    {
+      "base_path": "/government/collections/hmrc-coronavirus-covid-19-statistics",
+      "content_hash": "1ee07627a6f1f141",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "HMRC coronavirus (COVID-19) statistics",
+      "url": "https://www.gov.uk/government/collections/hmrc-coronavirus-covid-19-statistics"
+    },
+    {
+      "base_path": "/government/collections/hmrc-forms",
+      "content_hash": "2211c6676c378b56",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "HMRC forms",
+      "url": "https://www.gov.uk/government/collections/hmrc-forms"
+    },
+    {
+      "base_path": "/government/collections/hmrc-manuals",
+      "content_hash": "cdce1a89f38a4906",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "HMRC manuals",
+      "url": "https://www.gov.uk/government/collections/hmrc-manuals"
+    },
+    {
+      "base_path": "/government/collections/making-tax-digital-for-income-tax",
+      "content_hash": "cfc09beb334dfb90",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Making Tax Digital for Income Tax",
+      "url": "https://www.gov.uk/government/collections/making-tax-digital-for-income-tax"
+    },
+    {
+      "base_path": "/government/collections/making-tax-digital-for-income-tax-as-an-agent-step-by-step",
+      "content_hash": "c4d1d1cc2fa1dfe0",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Making Tax Digital for Income Tax as an agent: step by step",
+      "url": "https://www.gov.uk/government/collections/making-tax-digital-for-income-tax-as-an-agent-step-by-step"
+    },
+    {
+      "base_path": "/government/collections/making-tax-digital-for-income-tax-for-sole-traders-and-landlords-step-by-step",
+      "content_hash": "20241edc80d4c838",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Making Tax Digital for Income Tax for sole traders and landlords: step by step",
+      "url": "https://www.gov.uk/government/collections/making-tax-digital-for-income-tax-for-sole-traders-and-landlords-step-by-step"
+    },
+    {
+      "base_path": "/government/collections/migration-research-and-analysis",
+      "content_hash": "57a11b00c53174ac",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Migration research and analysis",
+      "url": "https://www.gov.uk/government/collections/migration-research-and-analysis"
+    },
+    {
+      "base_path": "/government/collections/self-assessment-helpsheets-employment",
+      "content_hash": "6e1b61a634d7047f",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Self Assessment forms and helpsheets: employment",
+      "url": "https://www.gov.uk/government/collections/self-assessment-helpsheets-employment"
+    },
+    {
+      "base_path": "/government/collections/self-assessment-helpsheets-self-employment-and-partnerships",
+      "content_hash": "11cc90c1d94bd353",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Self Assessment forms and helpsheets for self-employment and partnerships",
+      "url": "https://www.gov.uk/government/collections/self-assessment-helpsheets-self-employment-and-partnerships"
+    },
+    {
+      "base_path": "/government/collections/uk-tax-residence-guidance",
+      "content_hash": "cd363491cb7fc13f",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "UK tax residence guidance",
+      "url": "https://www.gov.uk/government/collections/uk-tax-residence-guidance"
+    },
+    {
+      "base_path": "/government/collections/workplace-employment-relations-study-wers",
+      "content_hash": "1be623bac3d1cfa6",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Workplace Employment Relations Study (WERS)",
+      "url": "https://www.gov.uk/government/collections/workplace-employment-relations-study-wers"
+    },
+    {
+      "base_path": "/government/news/government-announces-phased-mandation-of-making-tax-digital-for-itsa",
+      "content_hash": "7912eb7b960e034b",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Government announces phased mandation of Making Tax Digital for ITSA",
+      "url": "https://www.gov.uk/government/news/government-announces-phased-mandation-of-making-tax-digital-for-itsa"
+    },
+    {
+      "base_path": "/government/publications/acs-self-assessment-workbook",
+      "content_hash": "54981c3b6ba3a28d",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "ACS self-assessment workbook",
+      "url": "https://www.gov.uk/government/publications/acs-self-assessment-workbook"
+    },
+    {
+      "base_path": "/government/publications/apply-for-help-with-court-of-protection-fees-form-cop44a",
+      "content_hash": "23373476c4b52b44",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Apply for help with Court of Protection fees: Form COP44A",
+      "url": "https://www.gov.uk/government/publications/apply-for-help-with-court-of-protection-fees-form-cop44a"
+    },
+    {
+      "base_path": "/government/publications/civ-means-2a-passported-self-employed-or-in-business-partnership",
+      "content_hash": "fd3ed805f8f1c5ff",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "CIV MEANS 2A: passported, self employed or in business partnership",
+      "url": "https://www.gov.uk/government/publications/civ-means-2a-passported-self-employed-or-in-business-partnership"
+    },
+    {
+      "base_path": "/government/publications/complete-your-self-assessment-tax-return-for-5-april-2025-or-earlier",
+      "content_hash": "d3695a3e281b5405",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Complete your Self Assessment tax return for 5 April 2025 or earlier",
+      "url": "https://www.gov.uk/government/publications/complete-your-self-assessment-tax-return-for-5-april-2025-or-earlier"
+    },
+    {
+      "base_path": "/government/publications/employee-shares-and-securities-further-guidance-hs305-self-assessment-helpsheet",
+      "content_hash": "065adbb82038864d",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Employment-related shares and securities (Self Assessment helpsheet HS305)",
+      "url": "https://www.gov.uk/government/publications/employee-shares-and-securities-further-guidance-hs305-self-assessment-helpsheet"
+    },
+    {
+      "base_path": "/government/publications/employment-residence-and-domicile-issues-hs211-self-assessment-helpsheet",
+      "content_hash": "77c97cf7349a1850",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Employment, residence and domicile issues (Self Assessment helpsheet HS211)",
+      "url": "https://www.gov.uk/government/publications/employment-residence-and-domicile-issues-hs211-self-assessment-helpsheet"
+    },
+    {
+      "base_path": "/government/publications/extension-of-making-tax-digital-for-income-tax-self-assessment-to-sole-traders-and-landlords",
+      "content_hash": "f93108b2d082c137",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Extension of Making Tax Digital for Income Tax Self Assessment to sole traders and landlords",
+      "url": "https://www.gov.uk/government/publications/extension-of-making-tax-digital-for-income-tax-self-assessment-to-sole-traders-and-landlords"
+    },
+    {
+      "base_path": "/government/publications/impact-assessment-opinion-exemption-from-health-and-safety-law-those-self-employed-whose-work-activities-pose-no-potential-risk-of-harm-to-others",
+      "content_hash": "3e56bc48e08904e2",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Impact assessment opinion: exemption from health and safety law those self-employed whose work activities pose no potential risk of harm to others",
+      "url": "https://www.gov.uk/government/publications/impact-assessment-opinion-exemption-from-health-and-safety-law-those-self-employed-whose-work-activities-pose-no-potential-risk-of-harm-to-others"
+    },
+    {
+      "base_path": "/government/publications/income-tax-request-for-seafarers-nt-code-r44",
+      "content_hash": "b5c24077cb8a51bd",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Request for Seafarers' NT Code for Income Tax",
+      "url": "https://www.gov.uk/government/publications/income-tax-request-for-seafarers-nt-code-r44"
+    },
+    {
+      "base_path": "/government/publications/national-insurance-class-2-contributions-and-the-self-assessment-form-qualitative-research-with-self-employed-people",
+      "content_hash": "17b90f74478f8dab",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "National Insurance Class 2 Contributions and the Self Assessment Form: Qualitative research with self-employed people",
+      "url": "https://www.gov.uk/government/publications/national-insurance-class-2-contributions-and-the-self-assessment-form-qualitative-research-with-self-employed-people"
+    },
+    {
+      "base_path": "/government/publications/non-taxable-payments-or-benefits-for-employees-hs207-self-assessment-helpsheet",
+      "content_hash": "da14f403bdf06262",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Non taxable payments or benefits for employees (Self Assessment helpsheet HS207)",
+      "url": "https://www.gov.uk/government/publications/non-taxable-payments-or-benefits-for-employees-hs207-self-assessment-helpsheet"
+    },
+    {
+      "base_path": "/government/publications/payments-in-kind-assets-transferred-hs213-self-assessment-helpsheet",
+      "content_hash": "3de3de07f7cfcb66",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Payments in kind and asset transfers (Self Assessment helpsheet HS213)",
+      "url": "https://www.gov.uk/government/publications/payments-in-kind-assets-transferred-hs213-self-assessment-helpsheet"
+    },
+    {
+      "base_path": "/government/publications/self-assessment-employment-sa102",
+      "content_hash": "f6aa08acffddf111",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Self Assessment: Employment (SA102)",
+      "url": "https://www.gov.uk/government/publications/self-assessment-employment-sa102"
+    },
+    {
+      "base_path": "/government/publications/self-assessment-parliament-sa102mp",
+      "content_hash": "dca1498d2b662c21",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Self Assessment: Parliament (SA102MP)",
+      "url": "https://www.gov.uk/government/publications/self-assessment-parliament-sa102mp"
+    },
+    {
+      "base_path": "/government/publications/self-assessment-partnership-full-sa104f",
+      "content_hash": "02b32edee31609bc",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Self Assessment: Partnership (full) (SA104F)",
+      "url": "https://www.gov.uk/government/publications/self-assessment-partnership-full-sa104f"
+    },
+    {
+      "base_path": "/government/publications/self-assessment-self-employment-full-sa103f",
+      "content_hash": "334be465f132b31a",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Self Assessment: Self-employment (full) (SA103F)",
+      "url": "https://www.gov.uk/government/publications/self-assessment-self-employment-full-sa103f"
+    },
+    {
+      "base_path": "/government/publications/self-assessment-self-employment-short-sa103s",
+      "content_hash": "1a50deb12c427331",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Self Assessment: self-employment (short) (SA103S)",
+      "url": "https://www.gov.uk/government/publications/self-assessment-self-employment-short-sa103s"
+    },
+    {
+      "base_path": "/government/publications/self-employment-income-support-scheme-screening-equality-impact-assessment",
+      "content_hash": "760885575b4537e2",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Self-Employment Income Support Scheme - screening equality impact assessment",
+      "url": "https://www.gov.uk/government/publications/self-employment-income-support-scheme-screening-equality-impact-assessment"
+    },
+    {
+      "base_path": "/government/publications/self-employment-income-support-scheme-survey-of-customer-experience",
+      "content_hash": "2590d3091ace4d46",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Self-Employment Income Support Scheme: survey of customer experience",
+      "url": "https://www.gov.uk/government/publications/self-employment-income-support-scheme-survey-of-customer-experience"
+    },
+    {
+      "base_path": "/government/publications/statutory-pay-apply-for-advance-of-statutory-parental-paternal-adoption-and-maternity-pay",
+      "content_hash": "72a30b76309ac979",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Apply for an advance of statutory maternity, paternity, adoption or shared parental pay",
+      "url": "https://www.gov.uk/government/publications/statutory-pay-apply-for-advance-of-statutory-parental-paternal-adoption-and-maternity-pay"
+    },
+    {
+      "base_path": "/government/publications/understanding-self-employed-customer-experiences-of-bringing-payment-of-class-2-national-insurance-contributions-into-self-assessment",
+      "content_hash": "bebf62066b8474ba",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Understanding self-employed customer experiences of bringing payment of Class 2 National Insurance contributions into Self Assessment",
+      "url": "https://www.gov.uk/government/publications/understanding-self-employed-customer-experiences-of-bringing-payment-of-class-2-national-insurance-contributions-into-self-assessment"
+    },
+    {
+      "base_path": "/government/statistics/self-employment-income-assessable-to-tax-2010-to-2011",
+      "content_hash": "f2e315fad7411a4a",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Table 3.9 Self-employment income assessable to tax",
+      "url": "https://www.gov.uk/government/statistics/self-employment-income-assessable-to-tax-2010-to-2011"
+    },
+    {
+      "base_path": "/guidance/a-guide-to-instructing-transport-consultants",
+      "content_hash": "1f0e0a74988f6253",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "A guide to instructing transport consultants",
+      "url": "https://www.gov.uk/guidance/a-guide-to-instructing-transport-consultants"
+    },
+    {
+      "base_path": "/guidance/agents-self-assessment-and-paye-letter-headings",
+      "content_hash": "82d1c03be1e80f8c",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Agents: Self Assessment and PAYE letter headings",
+      "url": "https://www.gov.uk/guidance/agents-self-assessment-and-paye-letter-headings"
+    },
+    {
+      "base_path": "/guidance/alcohol-wholesaler-registration-scheme-awrs-apply-to-register",
+      "content_hash": "59059ea234af0083",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Alcohol Wholesaler Registration Scheme: register as an alcohol wholesaler or producer",
+      "url": "https://www.gov.uk/guidance/alcohol-wholesaler-registration-scheme-awrs-apply-to-register"
+    },
+    {
+      "base_path": "/guidance/apply-for-a-certificate-of-residence-or-letter-of-confirmation",
+      "content_hash": "5816bb2de6d35c17",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Apply for a certificate of residence or letter of confirmation",
+      "url": "https://www.gov.uk/guidance/apply-for-a-certificate-of-residence-or-letter-of-confirmation"
+    },
+    {
+      "base_path": "/guidance/apply-to-become-a-technical-excellence-college",
+      "content_hash": "424f5fa93887de3c",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Apply to become a Technical Excellence College",
+      "url": "https://www.gov.uk/guidance/apply-to-become-a-technical-excellence-college"
+    },
+    {
+      "base_path": "/guidance/applying-for-client-authorisation-using-hmrc-paper-forms",
+      "content_hash": "83a09f20aa9212af",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Agent authorisation: apply using HMRC paper forms",
+      "url": "https://www.gov.uk/guidance/applying-for-client-authorisation-using-hmrc-paper-forms"
+    },
+    {
+      "base_path": "/guidance/applying-to-register-as-a-companies-house-authorised-agent",
+      "content_hash": "d472058d340f19b6",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Applying to register as a Companies House authorised agent",
+      "url": "https://www.gov.uk/guidance/applying-to-register-as-a-companies-house-authorised-agent"
+    },
+    {
+      "base_path": "/guidance/authorise-an-agent-for-certain-taxes-through-your-business-tax-account",
+      "content_hash": "8c33e5601478eb00",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Authorise an agent for certain taxes through your business tax account",
+      "url": "https://www.gov.uk/guidance/authorise-an-agent-for-certain-taxes-through-your-business-tax-account"
+    },
+    {
+      "base_path": "/guidance/authorising-an-agent-to-deal-with-your-tax-affairs",
+      "content_hash": "a20838165f0a77da",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Authorising an agent to deal with your tax affairs",
+      "url": "https://www.gov.uk/guidance/authorising-an-agent-to-deal-with-your-tax-affairs"
+    },
+    {
+      "base_path": "/guidance/biological-principles-for-control-of-mpox-in-the-uk-4-nations-consensus-statement",
+      "content_hash": "6a2abefe943fc527",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Biological principles for control of mpox in the UK: 4 nations consensus statement",
+      "url": "https://www.gov.uk/guidance/biological-principles-for-control-of-mpox-in-the-uk-4-nations-consensus-statement"
+    },
+    {
+      "base_path": "/guidance/change-or-remove-your-authorisations-as-a-tax-agent",
+      "content_hash": "01ddb880215386bf",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Change or remove your authorisations as a tax agent",
+      "url": "https://www.gov.uk/guidance/change-or-remove-your-authorisations-as-a-tax-agent"
+    },
+    {
+      "base_path": "/guidance/change-or-remove-your-tax-agents-authorisation",
+      "content_hash": "450551fac11a6a69",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Change or remove your tax agent's authorisation",
+      "url": "https://www.gov.uk/guidance/change-or-remove-your-tax-agents-authorisation"
+    },
+    {
+      "base_path": "/guidance/changes-to-reporting-income-from-self-employment-and-partnerships",
+      "content_hash": "a0fe8bf6aa741b3f",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Changes to reporting income from self employment and partnerships",
+      "url": "https://www.gov.uk/guidance/changes-to-reporting-income-from-self-employment-and-partnerships"
+    },
+    {
+      "base_path": "/guidance/check-employment-status-if-you-work-in-hair-and-beauty",
+      "content_hash": "7fa41719c562d0d7",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check employment status if you work in hair and beauty",
+      "url": "https://www.gov.uk/guidance/check-employment-status-if-you-work-in-hair-and-beauty"
+    },
+    {
+      "base_path": "/guidance/check-genuine-hmrc-contact-that-uses-more-than-one-communication-method",
+      "content_hash": "cdc016636a00aa0e",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check genuine HMRC contact that uses more than one communication method",
+      "url": "https://www.gov.uk/guidance/check-genuine-hmrc-contact-that-uses-more-than-one-communication-method"
+    },
+    {
+      "base_path": "/guidance/check-how-much-tax-you-pay-on-dividends-and-interest-from-savings",
+      "content_hash": "821eb55521fbe050",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check how much tax you pay on dividends and interest from savings",
+      "url": "https://www.gov.uk/guidance/check-how-much-tax-you-pay-on-dividends-and-interest-from-savings"
+    },
+    {
+      "base_path": "/guidance/check-if-a-letter-youve-received-from-hmrc-is-genuine",
+      "content_hash": "10e149d43716e72f",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check if a letter you\u2019ve received from HMRC is genuine",
+      "url": "https://www.gov.uk/guidance/check-if-a-letter-youve-received-from-hmrc-is-genuine"
+    },
+    {
+      "base_path": "/guidance/check-if-a-qr-code-on-a-letter-youve-received-from-hmrc-is-genuine",
+      "content_hash": "e27a6f55eb69ff0e",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check if a QR code on a letter you've received from HMRC is genuine",
+      "url": "https://www.gov.uk/guidance/check-if-a-qr-code-on-a-letter-youve-received-from-hmrc-is-genuine"
+    },
+    {
+      "base_path": "/guidance/check-if-a-text-message-youve-received-from-hmrc-is-genuine",
+      "content_hash": "ce018bc9c24c56a3",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check if a text message you've received from HMRC is genuine",
+      "url": "https://www.gov.uk/guidance/check-if-a-text-message-youve-received-from-hmrc-is-genuine"
+    },
+    {
+      "base_path": "/guidance/check-if-and-when-you-need-to-register-as-a-tax-adviser-with-hmrc",
+      "content_hash": "aeafaede73249115",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check if and when you need to register as a tax adviser with HMRC",
+      "url": "https://www.gov.uk/guidance/check-if-and-when-you-need-to-register-as-a-tax-adviser-with-hmrc"
+    },
+    {
+      "base_path": "/guidance/check-if-you-can-claim-the-4-year-foreign-income-and-gains-regime",
+      "content_hash": "0583734432547007",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check if you can claim the 4-year foreign income and gains regime",
+      "url": "https://www.gov.uk/guidance/check-if-you-can-claim-the-4-year-foreign-income-and-gains-regime"
+    },
+    {
+      "base_path": "/guidance/check-if-you-need-to-change-your-self-assessment-return-for-seiss",
+      "content_hash": "d46a27582f439035",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check if you need to change your Self Assessment return for SEISS",
+      "url": "https://www.gov.uk/guidance/check-if-you-need-to-change-your-self-assessment-return-for-seiss"
+    },
+    {
+      "base_path": "/guidance/check-if-you-need-to-pay-tax-when-you-receive-cryptoassets",
+      "content_hash": "a290e9b66d5cd77c",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check if you need to pay tax when you receive cryptoassets",
+      "url": "https://www.gov.uk/guidance/check-if-you-need-to-pay-tax-when-you-receive-cryptoassets"
+    },
+    {
+      "base_path": "/guidance/check-if-you-need-to-pay-tax-when-you-sell-cryptoassets",
+      "content_hash": "b086c6fd03d8aec5",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check if you need to pay tax when you sell cryptoassets",
+      "url": "https://www.gov.uk/guidance/check-if-you-need-to-pay-tax-when-you-sell-cryptoassets"
+    },
+    {
+      "base_path": "/guidance/check-what-to-do-if-hmrc-has-signed-you-up-for-making-tax-digital-for-income-tax",
+      "content_hash": "b143de2c95c2e780",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check what to do if HMRC has signed you up for Making Tax Digital for Income Tax",
+      "url": "https://www.gov.uk/guidance/check-what-to-do-if-hmrc-has-signed-you-up-for-making-tax-digital-for-income-tax"
+    },
+    {
+      "base_path": "/guidance/check-when-you-can-expect-a-reply-from-hmrc",
+      "content_hash": "00829c9e287b98c2",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check when you can expect a reply from HMRC",
+      "url": "https://www.gov.uk/guidance/check-when-you-can-expect-a-reply-from-hmrc"
+    },
+    {
+      "base_path": "/guidance/check-your-tax-filing-and-payment-deadlines",
+      "content_hash": "6663f998ada8fe6d",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check your tax filing and payment deadlines",
+      "url": "https://www.gov.uk/guidance/check-your-tax-filing-and-payment-deadlines"
+    },
+    {
+      "base_path": "/guidance/checking-how-to-claim-a-tax-refund-for-negative-earnings",
+      "content_hash": "1d6816c0dc1378e4",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Checking how to claim a tax refund for negative earnings",
+      "url": "https://www.gov.uk/guidance/checking-how-to-claim-a-tax-refund-for-negative-earnings"
+    },
+    {
+      "base_path": "/guidance/chief-officers-post-service-employment",
+      "content_hash": "61520fe773df630a",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Chief Officers' post-service employment",
+      "url": "https://www.gov.uk/guidance/chief-officers-post-service-employment"
+    },
+    {
+      "base_path": "/guidance/child-and-family-asye-programme-resources",
+      "content_hash": "362f33dc5ee5defd",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Child and family ASYE: programme resources",
+      "url": "https://www.gov.uk/guidance/child-and-family-asye-programme-resources"
+    },
+    {
+      "base_path": "/guidance/choose-agents-for-making-tax-digital-for-income-tax",
+      "content_hash": "3545931e51eb9f9d",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Choose agents for Making Tax Digital for Income Tax",
+      "url": "https://www.gov.uk/guidance/choose-agents-for-making-tax-digital-for-income-tax"
+    },
+    {
+      "base_path": "/guidance/claim-a-refund-of-income-tax-deducted-from-savings-and-investments",
+      "content_hash": "b3db2d657ae75d7c",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Claim a refund if you've paid tax on your savings and investments",
+      "url": "https://www.gov.uk/guidance/claim-a-refund-of-income-tax-deducted-from-savings-and-investments"
+    },
+    {
+      "base_path": "/guidance/claim-a-tax-refund-if-youve-stopped-work-and-flexibly-accessed-all-of-your-pension-p50z",
+      "content_hash": "335a2fbf890f143d",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Claim a tax refund if you've stopped work and flexibly accessed all of your pension (P50Z)",
+      "url": "https://www.gov.uk/guidance/claim-a-tax-refund-if-youve-stopped-work-and-flexibly-accessed-all-of-your-pension-p50z"
+    },
+    {
+      "base_path": "/guidance/claim-an-income-tax-refund-by-post",
+      "content_hash": "51cf051bf99c9690",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Claim an Income Tax refund by post",
+      "url": "https://www.gov.uk/guidance/claim-an-income-tax-refund-by-post"
+    },
+    {
+      "base_path": "/guidance/claim-back-income-tax-on-a-flexibly-accessed-pension-death-benefit-payment-p55db",
+      "content_hash": "4fa0d95d7188e746",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Claim back Income Tax on a flexibly accessed pension death benefit payment P55(DB)",
+      "url": "https://www.gov.uk/guidance/claim-back-income-tax-on-a-flexibly-accessed-pension-death-benefit-payment-p55db"
+    },
+    {
+      "base_path": "/guidance/claim-back-income-tax-on-a-pension-death-benefit-lump-sum-p53zdb",
+      "content_hash": "328f446101a16a8d",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Claim back Income Tax on a pension death benefit lump sum P53Z(DB)",
+      "url": "https://www.gov.uk/guidance/claim-back-income-tax-on-a-pension-death-benefit-lump-sum-p53zdb"
+    },
+    {
+      "base_path": "/guidance/claim-back-income-tax-on-a-pension-death-benefit-lump-sum-payment-if-youve-stopped-working-p50zdb",
+      "content_hash": "bd5a6d5ae3345232",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Claim back Income Tax on a pension death benefit lump sum payment if you've stopped working P50Z(DB)",
+      "url": "https://www.gov.uk/guidance/claim-back-income-tax-on-a-pension-death-benefit-lump-sum-payment-if-youve-stopped-working-p50zdb"
+    },
+    {
+      "base_path": "/guidance/claim-back-income-tax-when-youve-stopped-working",
+      "content_hash": "441a808add4fd9f3",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Claim back Income Tax when you've stopped working (P50)",
+      "url": "https://www.gov.uk/guidance/claim-back-income-tax-when-youve-stopped-working"
+    },
+    {
+      "base_path": "/guidance/claim-back-tax-on-a-flexibly-accessed-pension-overpayment-p55",
+      "content_hash": "4389bc5bb73cf886",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Claim back tax on a flexibly accessed pension overpayment (P55)",
+      "url": "https://www.gov.uk/guidance/claim-back-tax-on-a-flexibly-accessed-pension-overpayment-p55"
+    },
+    {
+      "base_path": "/guidance/claim-industrial-injuries-disablement-benefit-for-dupuytrens-contracture",
+      "content_hash": "9eca59d2b0011300",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Claim Industrial Injuries Disablement Benefit for Dupuytren's contracture",
+      "url": "https://www.gov.uk/guidance/claim-industrial-injuries-disablement-benefit-for-dupuytrens-contracture"
+    },
+    {
+      "base_path": "/guidance/claim-tax-relief-on-your-private-pension-payments",
+      "content_hash": "70a53c21c5b4bb1b",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Claim tax relief on your private pension payments",
+      "url": "https://www.gov.uk/guidance/claim-tax-relief-on-your-private-pension-payments"
+    },
+    {
+      "base_path": "/guidance/claim-to-reduce-payments-on-account",
+      "content_hash": "400d18a526b54dbb",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Claim to reduce payments on account",
+      "url": "https://www.gov.uk/guidance/claim-to-reduce-payments-on-account"
+    },
+    {
+      "base_path": "/guidance/community-infrastructure-levy",
+      "content_hash": "50756c1f0126dccc",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Community Infrastructure Levy",
+      "url": "https://www.gov.uk/guidance/community-infrastructure-levy"
+    },
+    {
+      "base_path": "/guidance/confirm-your-tax-responsibilities-when-applying-for-a-taxi-private-hire-or-scrap-metal-licence",
+      "content_hash": "5c97662edebd6db0",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Confirm your tax responsibilities when applying for a taxi, private hire or scrap metal licence",
+      "url": "https://www.gov.uk/guidance/confirm-your-tax-responsibilities-when-applying-for-a-taxi-private-hire-or-scrap-metal-licence"
+    },
+    {
+      "base_path": "/guidance/construction-industry-scheme-businesses-based-outside-uk",
+      "content_hash": "f21f795bb7a3150a",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Construction Industry Scheme for businesses based outside the UK",
+      "url": "https://www.gov.uk/guidance/construction-industry-scheme-businesses-based-outside-uk"
+    },
+    {
+      "base_path": "/guidance/coronavirus-covid-19-working-with-clients",
+      "content_hash": "24ecf0af8956a87f",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Coronavirus (COVID-19): working with clients",
+      "url": "https://www.gov.uk/guidance/coronavirus-covid-19-working-with-clients"
+    },
+    {
+      "base_path": "/guidance/coronavirus-guidance-for-the-sellafield-ltd-supply-chain",
+      "content_hash": "ce1f09d4a17e27e8",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Coronavirus \u2013 guidance for the Sellafield Ltd Supply Chain",
+      "url": "https://www.gov.uk/guidance/coronavirus-guidance-for-the-sellafield-ltd-supply-chain"
+    },
+    {
+      "base_path": "/guidance/criminal-legal-aid-means-testing",
+      "content_hash": "891c1ef1a537f4a3",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Criminal legal aid: means testing",
+      "url": "https://www.gov.uk/guidance/criminal-legal-aid-means-testing"
+    },
+    {
+      "base_path": "/guidance/current-dwp-research-in-the-field-undertaken-by-external-organisations",
+      "content_hash": "2d9ce2763478e426",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Current DWP research being undertaken by external organisations",
+      "url": "https://www.gov.uk/guidance/current-dwp-research-in-the-field-undertaken-by-external-organisations"
+    },
+    {
+      "base_path": "/guidance/current-year-income-guidance-on-finalisation-assessments",
+      "content_hash": "fb9d861906a083c2",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Current year income \u2013 Guidance on finalisation assessments",
+      "url": "https://www.gov.uk/guidance/current-year-income-guidance-on-finalisation-assessments"
+    },
+    {
+      "base_path": "/guidance/data-ethics-and-ai-guidance-landscape",
+      "content_hash": "6ab7b4f25cf54247",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Data ethics and AI guidance landscape",
+      "url": "https://www.gov.uk/guidance/data-ethics-and-ai-guidance-landscape"
+    },
+    {
+      "base_path": "/guidance/de-isolation-and-discharge-of-monkeypox-infected-patients-interim-guidance",
+      "content_hash": "d95bb0b68e732814",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "De-isolation and discharge of mpox-infected patients",
+      "url": "https://www.gov.uk/guidance/de-isolation-and-discharge-of-monkeypox-infected-patients-interim-guidance"
+    },
+    {
+      "base_path": "/guidance/disability-confident-how-to-sign-up-to-the-employer-scheme",
+      "content_hash": "7eedbbeb6a58d1b9",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "How to sign up to the Disability Confident employer scheme",
+      "url": "https://www.gov.uk/guidance/disability-confident-how-to-sign-up-to-the-employer-scheme"
+    },
+    {
+      "base_path": "/guidance/disguised-remuneration-settling-your-tax-affairs",
+      "content_hash": "36e41d81f5787fcb",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Disguised remuneration: settling your tax affairs",
+      "url": "https://www.gov.uk/guidance/disguised-remuneration-settling-your-tax-affairs"
+    },
+    {
+      "base_path": "/guidance/download-the-hmrc-app",
+      "content_hash": "561bc7676fd59f78",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Download the HMRC app",
+      "url": "https://www.gov.uk/guidance/download-the-hmrc-app"
+    },
+    {
+      "base_path": "/guidance/driving-a-van",
+      "content_hash": "ae95bf888f88aeed",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Driving a van",
+      "url": "https://www.gov.uk/guidance/driving-a-van"
+    },
+    {
+      "base_path": "/guidance/early-years-initial-teacher-training-2020-to-2021-funding-guidance",
+      "content_hash": "e46fb0a25b2c9b70",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Early years initial teacher training: 2020 to 2021 funding guidance",
+      "url": "https://www.gov.uk/guidance/early-years-initial-teacher-training-2020-to-2021-funding-guidance"
+    },
+    {
+      "base_path": "/guidance/early-years-initial-teacher-training-2026-to-2027-funding-guidance",
+      "content_hash": "a8b994b2dbae5e04",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Early years initial teacher training: 2026 to 2027 funding guidance",
+      "url": "https://www.gov.uk/guidance/early-years-initial-teacher-training-2026-to-2027-funding-guidance"
+    },
+    {
+      "base_path": "/guidance/early-years-initial-teacher-training-a-guide-for-providers",
+      "content_hash": "d4c6c915311c7782",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Early years initial teacher training (ITT): a guide for providers",
+      "url": "https://www.gov.uk/guidance/early-years-initial-teacher-training-a-guide-for-providers"
+    },
+    {
+      "base_path": "/guidance/employment-related-securities-and-arrangements-480-chapter-23",
+      "content_hash": "dcd35f1dce835727",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Employment related securities and arrangements (480: Chapter 23)",
+      "url": "https://www.gov.uk/guidance/employment-related-securities-and-arrangements-480-chapter-23"
+    },
+    {
+      "base_path": "/guidance/employment-related-securities-bulletin-56-july-2024",
+      "content_hash": "68051993df56a67b",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Employment Related Securities Bulletin 56 (July 2024)",
+      "url": "https://www.gov.uk/guidance/employment-related-securities-bulletin-56-july-2024"
+    },
+    {
+      "base_path": "/guidance/employment-related-securities-bulletin-58-november-2024",
+      "content_hash": "7f8308940647012c",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Employment Related Securities Bulletin 58 (November 2024)",
+      "url": "https://www.gov.uk/guidance/employment-related-securities-bulletin-58-november-2024"
+    },
+    {
+      "base_path": "/guidance/employment-related-securities-bulletin-61-november-2025",
+      "content_hash": "4726289f84a3f7fa",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Employment related securities bulletin 61 (November 2025)",
+      "url": "https://www.gov.uk/guidance/employment-related-securities-bulletin-61-november-2025"
+    },
+    {
+      "base_path": "/guidance/end-of-year-procedures-to-be-followed-by-employer-and-employee-480-chapter-24",
+      "content_hash": "eabfd402e6358d30",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "End of year procedures to be followed by employer and employee (480: Chapter 24)",
+      "url": "https://www.gov.uk/guidance/end-of-year-procedures-to-be-followed-by-employer-and-employee-480-chapter-24"
+    },
+    {
+      "base_path": "/guidance/eu-settlement-scheme-uk-tax-and-benefits-records-automated-check",
+      "content_hash": "7e6c09ea33b58a9c",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "EU Settlement Scheme: UK tax and benefits records automated check",
+      "url": "https://www.gov.uk/guidance/eu-settlement-scheme-uk-tax-and-benefits-records-automated-check"
+    },
+    {
+      "base_path": "/guidance/find-out-how-the-changes-to-the-loan-charge-affect-you",
+      "content_hash": "0fb0a1be033439dd",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Find out how the changes to the loan charge affect you",
+      "url": "https://www.gov.uk/guidance/find-out-how-the-changes-to-the-loan-charge-affect-you"
+    },
+    {
+      "base_path": "/guidance/find-out-how-to-register-as-a-professional-tax-agent-with-hmrc",
+      "content_hash": "cdd867e8f461063c",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Find out how to register as a professional tax agent with HMRC",
+      "url": "https://www.gov.uk/guidance/find-out-how-to-register-as-a-professional-tax-agent-with-hmrc"
+    },
+    {
+      "base_path": "/guidance/find-out-if-and-when-you-need-to-use-making-tax-digital-for-income-tax",
+      "content_hash": "5a3cf3976f6b7f37",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Find out if and when you need to use Making Tax Digital for Income Tax",
+      "url": "https://www.gov.uk/guidance/find-out-if-and-when-you-need-to-use-making-tax-digital-for-income-tax"
+    },
+    {
+      "base_path": "/guidance/find-out-if-you-can-get-an-exemption-from-making-tax-digital-for-income-tax",
+      "content_hash": "4373583cc54534e4",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Find out if you can get an exemption from Making Tax Digital for Income Tax",
+      "url": "https://www.gov.uk/guidance/find-out-if-you-can-get-an-exemption-from-making-tax-digital-for-income-tax"
+    },
+    {
+      "base_path": "/guidance/finding-a-job-as-a-veteran",
+      "content_hash": "59141eebe6adc887",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Finding an ex-military job after leaving the armed forces",
+      "url": "https://www.gov.uk/guidance/finding-a-job-as-a-veteran"
+    },
+    {
+      "base_path": "/guidance/get-help-to-correct-an-employer-paye-bill",
+      "content_hash": "b0f2ff184e1be21f",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Get help to correct an employer PAYE bill",
+      "url": "https://www.gov.uk/guidance/get-help-to-correct-an-employer-paye-bill"
+    },
+    {
+      "base_path": "/guidance/get-help-with-basis-period-reform",
+      "content_hash": "a50631573823ae7b",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Get help with Basis Period Reform",
+      "url": "https://www.gov.uk/guidance/get-help-with-basis-period-reform"
+    },
+    {
+      "base_path": "/guidance/get-your-income-tax-right-if-youre-leaving-the-uk-p85",
+      "content_hash": "6fc4b4648faa3166",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Get your Income Tax right if you're leaving the UK (P85)",
+      "url": "https://www.gov.uk/guidance/get-your-income-tax-right-if-youre-leaving-the-uk-p85"
+    },
+    {
+      "base_path": "/guidance/get-your-overlap-relief-figure",
+      "content_hash": "8f277a859037714a",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Get your overlap relief figure",
+      "url": "https://www.gov.uk/guidance/get-your-overlap-relief-figure"
+    },
+    {
+      "base_path": "/guidance/government-legal-service-gls-legal-trainee-scheme-how-to-apply--2",
+      "content_hash": "fb978c4694ac133d",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Legal trainee scheme: how to apply",
+      "url": "https://www.gov.uk/guidance/government-legal-service-gls-legal-trainee-scheme-how-to-apply--2"
+    },
+    {
+      "base_path": "/guidance/group-of-persons-trailblazer-groups",
+      "content_hash": "42ae6c9961a18db4",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Group of Persons (Trailblazer groups)",
+      "url": "https://www.gov.uk/guidance/group-of-persons-trailblazer-groups"
+    },
+    {
+      "base_path": "/guidance/help-and-support-for-company-directors",
+      "content_hash": "105e7c5a565f75b2",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "HMRC email updates, videos and webinars for company directors",
+      "url": "https://www.gov.uk/guidance/help-and-support-for-company-directors"
+    },
+    {
+      "base_path": "/guidance/help-and-support-for-self-assessment",
+      "content_hash": "f9b7a086f0c7fa97",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "HMRC email updates, videos and webinars for Self Assessment",
+      "url": "https://www.gov.uk/guidance/help-and-support-for-self-assessment"
+    },
+    {
+      "base_path": "/guidance/help-and-support-for-the-construction-industry-scheme",
+      "content_hash": "44d50141fe4e9837",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "HMRC email updates, videos and webinars for the Construction Industry Scheme",
+      "url": "https://www.gov.uk/guidance/help-and-support-for-the-construction-industry-scheme"
+    },
+    {
+      "base_path": "/guidance/help-and-support-if-youre-self-employed",
+      "content_hash": "b1642026e39a055e",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "HMRC email updates, videos and webinars if you\u2019re self-employed",
+      "url": "https://www.gov.uk/guidance/help-and-support-if-youre-self-employed"
+    },
+    {
+      "base_path": "/guidance/help-online-for-self-assessment",
+      "content_hash": "52c561ddef9aaaa8",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Help online with Self Assessment",
+      "url": "https://www.gov.uk/guidance/help-online-for-self-assessment"
+    },
+    {
+      "base_path": "/guidance/help-with-employment-on-your-self-assessment-tax-return",
+      "content_hash": "6d267f04ea6af46c",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Help with employment on your Self Assessment tax return",
+      "url": "https://www.gov.uk/guidance/help-with-employment-on-your-self-assessment-tax-return"
+    },
+    {
+      "base_path": "/guidance/help-with-other-tax-reliefs-on-your-self-assessment-tax-return",
+      "content_hash": "951894761f3e81d7",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Help with other tax reliefs on your Self Assessment tax return",
+      "url": "https://www.gov.uk/guidance/help-with-other-tax-reliefs-on-your-self-assessment-tax-return"
+    },
+    {
+      "base_path": "/guidance/help-with-other-uk-income-on-your-self-assessment-tax-return",
+      "content_hash": "823dddb0e9792a2b",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Help with other UK income on your Self Assessment tax return",
+      "url": "https://www.gov.uk/guidance/help-with-other-uk-income-on-your-self-assessment-tax-return"
+    },
+    {
+      "base_path": "/guidance/help-with-self-employment-on-your-self-assessment-tax-return",
+      "content_hash": "a70dd7e489ea9b06",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Help with self-employment on your Self Assessment tax return",
+      "url": "https://www.gov.uk/guidance/help-with-self-employment-on-your-self-assessment-tax-return"
+    },
+    {
+      "base_path": "/guidance/hmcts-intermediary-services",
+      "content_hash": "e31c8d832ba98c61",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "HMCTS intermediary services",
+      "url": "https://www.gov.uk/guidance/hmcts-intermediary-services"
+    },
+    {
+      "base_path": "/guidance/hmrc-email-updates-videos-and-webinars-for-landlords",
+      "content_hash": "6607d1ceefe56a63",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "HMRC email updates, videos and webinars for landlords",
+      "url": "https://www.gov.uk/guidance/hmrc-email-updates-videos-and-webinars-for-landlords"
+    },
+    {
+      "base_path": "/guidance/hmrc-tools-and-calculators",
+      "content_hash": "b20ce466986a3c29",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "HMRC tools and calculators",
+      "url": "https://www.gov.uk/guidance/hmrc-tools-and-calculators"
+    },
+    {
+      "base_path": "/guidance/housing-needs-of-different-groups",
+      "content_hash": "f565a90774bbf1ed",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Housing needs of different groups",
+      "url": "https://www.gov.uk/guidance/housing-needs-of-different-groups"
+    },
+    {
+      "base_path": "/guidance/how-interest-is-calculated-plan-2",
+      "content_hash": "27e1d0d8fa5caa93",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "How interest is calculated - Plan 2",
+      "url": "https://www.gov.uk/guidance/how-interest-is-calculated-plan-2"
+    },
+    {
+      "base_path": "/guidance/how-tax-works-if-you-have-more-than-one-job",
+      "content_hash": "ad95af59019ef8a2",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "How tax works if you have more than one job",
+      "url": "https://www.gov.uk/guidance/how-tax-works-if-you-have-more-than-one-job"
+    },
+    {
+      "base_path": "/guidance/how-to-avoid-payslip-fraud",
+      "content_hash": "2264619aa9dbcc7c",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "How to avoid payslip fraud",
+      "url": "https://www.gov.uk/guidance/how-to-avoid-payslip-fraud"
+    },
+    {
+      "base_path": "/guidance/how-to-complete-your-self-assessment-tax-return-for-last-tax-year",
+      "content_hash": "81a287f883cdff75",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Complete your Self Assessment tax return for the last tax year",
+      "url": "https://www.gov.uk/guidance/how-to-complete-your-self-assessment-tax-return-for-last-tax-year"
+    },
+    {
+      "base_path": "/guidance/how-to-get-authorised-to-act-as-a-tax-agent-on-behalf-of-your-clients",
+      "content_hash": "1064137e742bf5e6",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "How to get authorised to act as a tax agent on behalf of your clients",
+      "url": "https://www.gov.uk/guidance/how-to-get-authorised-to-act-as-a-tax-agent-on-behalf-of-your-clients"
+    },
+    {
+      "base_path": "/guidance/how-to-register-your-client-for-a-tax-service-as-an-agent",
+      "content_hash": "b40ad1f3e95e4fca",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "How to register your client for a tax service as an agent",
+      "url": "https://www.gov.uk/guidance/how-to-register-your-client-for-a-tax-service-as-an-agent"
+    },
+    {
+      "base_path": "/guidance/how-to-reportself-isolation-support-payments",
+      "content_hash": "0a78c4f13b60a18b",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "How to report\u202fself-isolation support payments",
+      "url": "https://www.gov.uk/guidance/how-to-reportself-isolation-support-payments"
+    },
+    {
+      "base_path": "/guidance/how-your-state-pension-is-taxed",
+      "content_hash": "13543ba4376151ce",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "How your State Pension is taxed",
+      "url": "https://www.gov.uk/guidance/how-your-state-pension-is-taxed"
+    },
+    {
+      "base_path": "/guidance/income-tax-when-you-rent-out-a-property-working-out-your-rental-income",
+      "content_hash": "5d4fcd70debf69cf",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Work out your rental income when you let property",
+      "url": "https://www.gov.uk/guidance/income-tax-when-you-rent-out-a-property-working-out-your-rental-income"
+    },
+    {
+      "base_path": "/guidance/initial-teacher-education-inspection-data-summary-report-idsr-guide",
+      "content_hash": "e60aecf87e27c318",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Initial teacher education inspection data summary report (IDSR) guide",
+      "url": "https://www.gov.uk/guidance/initial-teacher-education-inspection-data-summary-report-idsr-guide"
+    },
+    {
+      "base_path": "/guidance/job-expenses-for-uniforms-work-clothing-and-tools",
+      "content_hash": "0d68dfb9633874d3",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check how much tax relief you can claim for uniforms, work clothing and tools",
+      "url": "https://www.gov.uk/guidance/job-expenses-for-uniforms-work-clothing-and-tools"
+    },
+    {
+      "base_path": "/guidance/laundry-allowance-claims-from-ratings-and-other-ranks-in-the-ministry-of-defense",
+      "content_hash": "4286c2d7cc776b5f",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Laundry allowance claims from Ratings and Other Ranks in the Ministry of Defence",
+      "url": "https://www.gov.uk/guidance/laundry-allowance-claims-from-ratings-and-other-ranks-in-the-ministry-of-defense"
+    },
+    {
+      "base_path": "/guidance/learn-how-hmrc-rules-apply-to-the-security-operatives-you-deploy",
+      "content_hash": "deb8c91996b83a98",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Learn how HMRC rules apply to the security operatives you deploy",
+      "url": "https://www.gov.uk/guidance/learn-how-hmrc-rules-apply-to-the-security-operatives-you-deploy"
+    },
+    {
+      "base_path": "/guidance/legal-aid-agency-cyber-security-incident-frequently-asked-questions",
+      "content_hash": "a9e673cd77336b95",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Legal Aid Agency cyber security incident: frequently asked questions",
+      "url": "https://www.gov.uk/guidance/legal-aid-agency-cyber-security-incident-frequently-asked-questions"
+    },
+    {
+      "base_path": "/guidance/limited-liability-partnerships-arrangements-used-to-disguise-employment-income-spotlight-66",
+      "content_hash": "c794942f6c680e41",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Limited Liability Partnerships arrangements used to disguise employment income (Spotlight 66)",
+      "url": "https://www.gov.uk/guidance/limited-liability-partnerships-arrangements-used-to-disguise-employment-income-spotlight-66"
+    },
+    {
+      "base_path": "/guidance/managing-candidates-through-pre-employment-checks-vx",
+      "content_hash": "f559f196efdd5099",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Managing candidates through pre-employment checks (vX)",
+      "url": "https://www.gov.uk/guidance/managing-candidates-through-pre-employment-checks-vx"
+    },
+    {
+      "base_path": "/guidance/migrant-worker-evidence-for-student-finance-england",
+      "content_hash": "fec68547ce197299",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Migrant worker evidence for Student Finance England",
+      "url": "https://www.gov.uk/guidance/migrant-worker-evidence-for-student-finance-england"
+    },
+    {
+      "base_path": "/guidance/ministry-of-justice-witness-intermediary-scheme",
+      "content_hash": "460ec61fe44bad3e",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Ministry of Justice Witness Intermediary Scheme",
+      "url": "https://www.gov.uk/guidance/ministry-of-justice-witness-intermediary-scheme"
+    },
+    {
+      "base_path": "/guidance/monitoring-discharges-to-water-guidance-on-selecting-a-monitoring-approach",
+      "content_hash": "caea05101689da3c",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Monitoring discharges to water: guidance on selecting a monitoring approach",
+      "url": "https://www.gov.uk/guidance/monitoring-discharges-to-water-guidance-on-selecting-a-monitoring-approach"
+    },
+    {
+      "base_path": "/guidance/move-to-universal-credit-if-you-get-a-migration-notice-letter",
+      "content_hash": "f8218f8c2671bfec",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Move to Universal Credit if you get a Migration Notice letter",
+      "url": "https://www.gov.uk/guidance/move-to-universal-credit-if-you-get-a-migration-notice-letter"
+    },
+    {
+      "base_path": "/guidance/music-and-dance-scheme-apply-for-funding",
+      "content_hash": "7e70e59e47b138e3",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Music and Dance Scheme: apply for funding",
+      "url": "https://www.gov.uk/guidance/music-and-dance-scheme-apply-for-funding"
+    },
+    {
+      "base_path": "/guidance/new-style-employment-and-support-allowance",
+      "content_hash": "113d689e9a2622eb",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "New Style Employment and Support Allowance",
+      "url": "https://www.gov.uk/guidance/new-style-employment-and-support-allowance"
+    },
+    {
+      "base_path": "/guidance/new-style-employment-and-support-allowance-detailed-guide",
+      "content_hash": "862d06e2653d8f21",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "New Style Employment and Support Allowance: detailed guide",
+      "url": "https://www.gov.uk/guidance/new-style-employment-and-support-allowance-detailed-guide"
+    },
+    {
+      "base_path": "/guidance/new-style-jobseekers-allowance",
+      "content_hash": "4a6b95dc8393cd30",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "New Style Jobseeker's Allowance",
+      "url": "https://www.gov.uk/guidance/new-style-jobseekers-allowance"
+    },
+    {
+      "base_path": "/guidance/off-payroll-working-for-intermediaries-and-contractors-providing-services-to-small-clients-in-the-private-sector",
+      "content_hash": "d3e81b5e286099bc",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Off-payroll working for intermediaries and contractors providing services to small clients in the private sector",
+      "url": "https://www.gov.uk/guidance/off-payroll-working-for-intermediaries-and-contractors-providing-services-to-small-clients-in-the-private-sector"
+    },
+    {
+      "base_path": "/guidance/pay-coronavirus-job-retention-scheme-grants-back",
+      "content_hash": "3a4cf81ba1061a75",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Pay Coronavirus Job Retention Scheme grants back",
+      "url": "https://www.gov.uk/guidance/pay-coronavirus-job-retention-scheme-grants-back"
+    },
+    {
+      "base_path": "/guidance/pay-tax-in-the-uk-as-a-foreign-performer",
+      "content_hash": "8067f4c627b0e3c5",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Pay tax in the UK as a foreign entertainer or sportsperson",
+      "url": "https://www.gov.uk/guidance/pay-tax-in-the-uk-as-a-foreign-performer"
+    },
+    {
+      "base_path": "/guidance/pay-taxes-penalties-or-enquiry-settlements",
+      "content_hash": "7571b2e7563f5331",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Pay taxes, penalties or enquiry settlements",
+      "url": "https://www.gov.uk/guidance/pay-taxes-penalties-or-enquiry-settlements"
+    },
+    {
+      "base_path": "/guidance/paying-tax-homes-for-ukraine",
+      "content_hash": "b4e5063ebf21a71a",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Paying tax: Homes for Ukraine",
+      "url": "https://www.gov.uk/guidance/paying-tax-homes-for-ukraine"
+    },
+    {
+      "base_path": "/guidance/paying-taxes-in-the-uk-if-you-work-for-an-employer-based-in-ukraine",
+      "content_hash": "260c7f935b39b2fe",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Paying taxes in the UK if you work for an employer based in Ukraine",
+      "url": "https://www.gov.uk/guidance/paying-taxes-in-the-uk-if-you-work-for-an-employer-based-in-ukraine"
+    },
+    {
+      "base_path": "/guidance/pension-schemes-and-unauthorised-payments",
+      "content_hash": "6ef96b4c37c5d4c6",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Pension schemes and unauthorised payments",
+      "url": "https://www.gov.uk/guidance/pension-schemes-and-unauthorised-payments"
+    },
+    {
+      "base_path": "/guidance/pension-schemes-work-out-your-tapered-annual-allowance",
+      "content_hash": "5563a9cb8f949f34",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Work out your reduced (tapered) annual allowance",
+      "url": "https://www.gov.uk/guidance/pension-schemes-work-out-your-tapered-annual-allowance"
+    },
+    {
+      "base_path": "/guidance/pensions-and-compensation-for-veterans",
+      "content_hash": "a0e8cdffbd363066",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Armed forces pensions",
+      "url": "https://www.gov.uk/guidance/pensions-and-compensation-for-veterans"
+    },
+    {
+      "base_path": "/guidance/pregnancy-advice-on-contact-with-animals-that-are-giving-birth",
+      "content_hash": "87141cde55925720",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Pregnancy: advice on contact with animals that are giving birth",
+      "url": "https://www.gov.uk/guidance/pregnancy-advice-on-contact-with-animals-that-are-giving-birth"
+    },
+    {
+      "base_path": "/guidance/preparing-a-local-plan-vision",
+      "content_hash": "4bd4bedf7ce02d34",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Preparing a local plan vision",
+      "url": "https://www.gov.uk/guidance/preparing-a-local-plan-vision"
+    },
+    {
+      "base_path": "/guidance/register-a-partner-for-self-assessment-and-class-2-national-insurance",
+      "content_hash": "11c30ffa1d5767a5",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Register a partner for Self Assessment and Class 2 National Insurance",
+      "url": "https://www.gov.uk/guidance/register-a-partner-for-self-assessment-and-class-2-national-insurance"
+    },
+    {
+      "base_path": "/guidance/register-a-trust",
+      "content_hash": "bf48887a2b8c15b9",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Register a trust",
+      "url": "https://www.gov.uk/guidance/register-a-trust"
+    },
+    {
+      "base_path": "/guidance/register-for-self-assessment-if-you-are-not-self-employed",
+      "content_hash": "0df150037b23f02b",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Register for Self Assessment if you are not self-employed",
+      "url": "https://www.gov.uk/guidance/register-for-self-assessment-if-you-are-not-self-employed"
+    },
+    {
+      "base_path": "/guidance/register-for-the-economic-crime-levy",
+      "content_hash": "cfcc6402401876f0",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Register for the Economic Crime Levy",
+      "url": "https://www.gov.uk/guidance/register-for-the-economic-crime-levy"
+    },
+    {
+      "base_path": "/guidance/registered-building-inspectors",
+      "content_hash": "4eda0c8811451431",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Registered building inspectors",
+      "url": "https://www.gov.uk/guidance/registered-building-inspectors"
+    },
+    {
+      "base_path": "/guidance/renew-your-disability-confident-status",
+      "content_hash": "bf5b7ebcc107db31",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Renew your Disability Confident status",
+      "url": "https://www.gov.uk/guidance/renew-your-disability-confident-status"
+    },
+    {
+      "base_path": "/guidance/report-and-account-for-your-disguised-remuneration-loan-charge",
+      "content_hash": "27f08e1384acce88",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Report and account for your disguised remuneration loan charge",
+      "url": "https://www.gov.uk/guidance/report-and-account-for-your-disguised-remuneration-loan-charge"
+    },
+    {
+      "base_path": "/guidance/reporting-coronavirus-covid-19-grants-and-support-payments",
+      "content_hash": "21b86f6126c58538",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Reporting COVID-19 grants and support payments",
+      "url": "https://www.gov.uk/guidance/reporting-coronavirus-covid-19-grants-and-support-payments"
+    },
+    {
+      "base_path": "/guidance/seafarers-earnings-deduction-tax-relief-if-you-work-on-a-ship",
+      "content_hash": "9be2f0dfd9dea845",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Seafarers Earnings Deduction: tax relief if you work on a ship",
+      "url": "https://www.gov.uk/guidance/seafarers-earnings-deduction-tax-relief-if-you-work-on-a-ship"
+    },
+    {
+      "base_path": "/guidance/self-assessment-datasets",
+      "content_hash": "3b77fe0c22d8710f",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "HMRC Datalab datasets: Self Assessment",
+      "url": "https://www.gov.uk/guidance/self-assessment-datasets"
+    },
+    {
+      "base_path": "/guidance/self-assessment-expenses-and-benefits-480-appendix-10",
+      "content_hash": "4885dd42d18a0ede",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Self Assessment \u2013 expenses and benefits (480: Appendix 10)",
+      "url": "https://www.gov.uk/guidance/self-assessment-expenses-and-benefits-480-appendix-10"
+    },
+    {
+      "base_path": "/guidance/self-build-and-custom-housebuilding",
+      "content_hash": "da3ef6dcba34d366",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Self-build and custom housebuilding",
+      "url": "https://www.gov.uk/guidance/self-build-and-custom-housebuilding"
+    },
+    {
+      "base_path": "/guidance/send-an-income-tax-relief-claim-for-job-expenses-by-post-or-phone",
+      "content_hash": "b919a17d760a65fc",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Claim tax relief for your job expenses by post",
+      "url": "https://www.gov.uk/guidance/send-an-income-tax-relief-claim-for-job-expenses-by-post-or-phone"
+    },
+    {
+      "base_path": "/guidance/share-fisherman-income-tax-and-national-insurance-contributions",
+      "content_hash": "0f1c056f98683cd9",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Share fisher: Income Tax and National Insurance contributions",
+      "url": "https://www.gov.uk/guidance/share-fisherman-income-tax-and-national-insurance-contributions"
+    },
+    {
+      "base_path": "/guidance/sign-in-to-your-hmrc-business-tax-account",
+      "content_hash": "aff2310955cb6158",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Sign in to your HMRC business tax account",
+      "url": "https://www.gov.uk/guidance/sign-in-to-your-hmrc-business-tax-account"
+    },
+    {
+      "base_path": "/guidance/sign-up-for-making-tax-digital-for-income-tax",
+      "content_hash": "7340f5091133b12e",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Sign up for Making Tax Digital for Income Tax",
+      "url": "https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-income-tax"
+    },
+    {
+      "base_path": "/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax",
+      "content_hash": "b54303b90ece27df",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Sign up your client for Making Tax Digital for Income Tax",
+      "url": "https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax"
+    },
+    {
+      "base_path": "/guidance/stamp-taxes-online-how-to-register",
+      "content_hash": "012b0d4ff64a6cd1",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "How to register for the Stamp Taxes for Agents online service",
+      "url": "https://www.gov.uk/guidance/stamp-taxes-online-how-to-register"
+    },
+    {
+      "base_path": "/guidance/starting-a-food-business",
+      "content_hash": "cd79aae9e6768c5b",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Starting a food business",
+      "url": "https://www.gov.uk/guidance/starting-a-food-business"
+    },
+    {
+      "base_path": "/guidance/tax-credits-working-out-income",
+      "content_hash": "fd845aa3e34ed06d",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Working out your income for tax credits",
+      "url": "https://www.gov.uk/guidance/tax-credits-working-out-income"
+    },
+    {
+      "base_path": "/guidance/tax-free-allowances-on-property-and-trading-income",
+      "content_hash": "0313c749a2bdbcbc",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tax-free allowances on property and trading income",
+      "url": "https://www.gov.uk/guidance/tax-free-allowances-on-property-and-trading-income"
+    },
+    {
+      "base_path": "/guidance/tax-on-payments-for-use-of-image-rights",
+      "content_hash": "c2d692c48ff1ddef",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tax on payments for use of image rights",
+      "url": "https://www.gov.uk/guidance/tax-on-payments-for-use-of-image-rights"
+    },
+    {
+      "base_path": "/guidance/tell-hmrc-about-a-student-loan-in-your-tax-return",
+      "content_hash": "276b72fcf88bc930",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tell HMRC about a student or postgraduate loan in your tax return",
+      "url": "https://www.gov.uk/guidance/tell-hmrc-about-a-student-loan-in-your-tax-return"
+    },
+    {
+      "base_path": "/guidance/tell-hmrc-that-youll-operate-paye-on-a-proportion-of-an-employees-income",
+      "content_hash": "82903592479e3a44",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tell HMRC that you'll operate PAYE on a proportion of an employee's income",
+      "url": "https://www.gov.uk/guidance/tell-hmrc-that-youll-operate-paye-on-a-proportion-of-an-employees-income"
+    },
+    {
+      "base_path": "/guidance/the-alcohol-wholesaler-registration-scheme-awrs",
+      "content_hash": "45cf2d91e4f4582a",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check if you need approval to sell alcoholic products to another business",
+      "url": "https://www.gov.uk/guidance/the-alcohol-wholesaler-registration-scheme-awrs"
+    },
+    {
+      "base_path": "/guidance/the-beef-carcase-classification-scheme-work-as-a-classifier",
+      "content_hash": "ab651cc6daf89b37",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "The Beef Carcase Classification scheme: work as a classifier",
+      "url": "https://www.gov.uk/guidance/the-beef-carcase-classification-scheme-work-as-a-classifier"
+    },
+    {
+      "base_path": "/guidance/the-hardship-fund-a-guide",
+      "content_hash": "96c5100455cf6b8d",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "The Hardship Fund \u2014 a guide",
+      "url": "https://www.gov.uk/guidance/the-hardship-fund-a-guide"
+    },
+    {
+      "base_path": "/guidance/travel-to-the-netherlands-for-work",
+      "content_hash": "e36b4e9cd4b31af7",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Travel to the Netherlands for work",
+      "url": "https://www.gov.uk/guidance/travel-to-the-netherlands-for-work"
+    },
+    {
+      "base_path": "/guidance/understanding-acs-assessments",
+      "content_hash": "0519b96bee6229b5",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Understanding ACS assessments",
+      "url": "https://www.gov.uk/guidance/understanding-acs-assessments"
+    },
+    {
+      "base_path": "/guidance/understanding-off-payroll-working-ir35",
+      "content_hash": "cab8fe75758698e4",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Understanding off-payroll working (IR35)",
+      "url": "https://www.gov.uk/guidance/understanding-off-payroll-working-ir35"
+    },
+    {
+      "base_path": "/guidance/understanding-tax-and-your-pension",
+      "content_hash": "c63eaee9f8144a90",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Understanding tax and your pension",
+      "url": "https://www.gov.uk/guidance/understanding-tax-and-your-pension"
+    },
+    {
+      "base_path": "/guidance/united-kingdom-security-vetting-applicant",
+      "content_hash": "c310fdd5538b5b30",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "United Kingdom Security Vetting: Applicant",
+      "url": "https://www.gov.uk/guidance/united-kingdom-security-vetting-applicant"
+    },
+    {
+      "base_path": "/guidance/universal-credit-and-earnings",
+      "content_hash": "eb433344a2e255c0",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Universal Credit and earnings",
+      "url": "https://www.gov.uk/guidance/universal-credit-and-earnings"
+    },
+    {
+      "base_path": "/guidance/universal-credit-if-youre-state-pension-age-and-get-a-migration-notice-letter",
+      "content_hash": "9463725d2d6912a4",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Universal Credit if you're State Pension age and get a Migration Notice letter",
+      "url": "https://www.gov.uk/guidance/universal-credit-if-youre-state-pension-age-and-get-a-migration-notice-letter"
+    },
+    {
+      "base_path": "/guidance/universal-credit-money-savings-and-investments",
+      "content_hash": "4b0d3c864d55d285",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Universal Credit: money, savings and investments",
+      "url": "https://www.gov.uk/guidance/universal-credit-money-savings-and-investments"
+    },
+    {
+      "base_path": "/guidance/updating-your-tax-agent-contact-details-with-hmrc",
+      "content_hash": "7162ed1e4f79eded",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Updating your tax agent contact details with HMRC",
+      "url": "https://www.gov.uk/guidance/updating-your-tax-agent-contact-details-with-hmrc"
+    },
+    {
+      "base_path": "/guidance/use-making-tax-digital-for-income-tax",
+      "content_hash": "c7669c7eafa1d31d",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Use Making Tax Digital for Income Tax",
+      "url": "https://www.gov.uk/guidance/use-making-tax-digital-for-income-tax"
+    },
+    {
+      "base_path": "/guidance/use-software-to-help-complete-your-clients-self-assessment-tax-return",
+      "content_hash": "1ae1b0030bff0d3f",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Use software to help complete your client\u2019s Self Assessment tax return",
+      "url": "https://www.gov.uk/guidance/use-software-to-help-complete-your-clients-self-assessment-tax-return"
+    },
+    {
+      "base_path": "/guidance/use-software-to-help-complete-your-self-assessment-tax-return",
+      "content_hash": "e4198607ff553886",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Use software to help complete your Self Assessment tax return",
+      "url": "https://www.gov.uk/guidance/use-software-to-help-complete-your-self-assessment-tax-return"
+    },
+    {
+      "base_path": "/guidance/work-and-benefits-homes-for-ukraine",
+      "content_hash": "a7c0be559b166599",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Work and benefits: Homes for Ukraine",
+      "url": "https://www.gov.uk/guidance/work-and-benefits-homes-for-ukraine"
+    },
+    {
+      "base_path": "/guidance/work-out-your-overlap-relief-figure",
+      "content_hash": "0a7cac8baf52b724",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Work out your overlap relief figure",
+      "url": "https://www.gov.uk/guidance/work-out-your-overlap-relief-figure"
+    },
+    {
+      "base_path": "/guidance/work-out-your-qualifying-income-for-making-tax-digital-for-income-tax",
+      "content_hash": "83ecd0db670bd275",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Work out your qualifying income for Making Tax Digital for Income Tax",
+      "url": "https://www.gov.uk/guidance/work-out-your-qualifying-income-for-making-tax-digital-for-income-tax"
+    },
+    {
+      "base_path": "/guidance/work-out-your-transition-profit",
+      "content_hash": "0ae111e4ae880c91",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Work out your Basis Period Reform transition profit",
+      "url": "https://www.gov.uk/guidance/work-out-your-transition-profit"
+    },
+    {
+      "base_path": "/housing-and-universal-credit",
+      "content_hash": "93b299517ffc89a3",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Housing costs and Universal Credit",
+      "url": "https://www.gov.uk/housing-and-universal-credit"
+    },
+    {
+      "base_path": "/income-tax",
+      "content_hash": "da5bb5dee03774d0",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Income Tax: introduction",
+      "url": "https://www.gov.uk/income-tax"
+    },
+    {
+      "base_path": "/industrial-injuries-disablement-benefit",
+      "content_hash": "3a6c7ffc33093b1a",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Industrial Injuries Disablement Benefit",
+      "url": "https://www.gov.uk/industrial-injuries-disablement-benefit"
+    },
+    {
+      "base_path": "/keeping-your-pay-tax-records",
+      "content_hash": "04499ae663706608",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Keeping your pay and tax records",
+      "url": "https://www.gov.uk/keeping-your-pay-tax-records"
+    },
+    {
+      "base_path": "/log-in-file-self-assessment-tax-return",
+      "content_hash": "c50776d4f5ebfa33",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "File your Self Assessment tax return online",
+      "url": "https://www.gov.uk/log-in-file-self-assessment-tax-return"
+    },
+    {
+      "base_path": "/log-in-register-hmrc-online-services",
+      "content_hash": "90caa3ba7b7f89fd",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "HMRC online services: sign in or set up an account",
+      "url": "https://www.gov.uk/log-in-register-hmrc-online-services"
+    },
+    {
+      "base_path": "/marriage-allowance",
+      "content_hash": "44312311ca81a840",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Marriage Allowance",
+      "url": "https://www.gov.uk/marriage-allowance"
+    },
+    {
+      "base_path": "/national-insurance",
+      "content_hash": "db22b8eb0f6f2917",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "National Insurance: introduction",
+      "url": "https://www.gov.uk/national-insurance"
+    },
+    {
+      "base_path": "/pay-class-2-national-insurance",
+      "content_hash": "8973a53e1efd273b",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Pay voluntary Class 2 National Insurance contributions if you do not pay through Self Assessment",
+      "url": "https://www.gov.uk/pay-class-2-national-insurance"
+    },
+    {
+      "base_path": "/pay-self-assessment-tax-bill",
+      "content_hash": "ad79934daa17be03",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Pay your Self Assessment tax bill",
+      "url": "https://www.gov.uk/pay-self-assessment-tax-bill"
+    },
+    {
+      "base_path": "/pension-credit",
+      "content_hash": "63158b0f7f5e91d1",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Pension Credit",
+      "url": "https://www.gov.uk/pension-credit"
+    },
+    {
+      "base_path": "/personal-tax-account",
+      "content_hash": "c42cd53adc4209a8",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Personal tax account: sign in or set up",
+      "url": "https://www.gov.uk/personal-tax-account"
+    },
+    {
+      "base_path": "/probate-estate",
+      "content_hash": "e069a503d24b5283",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Dealing with the estate of someone who's died",
+      "url": "https://www.gov.uk/probate-estate"
+    },
+    {
+      "base_path": "/prove-right-to-work",
+      "content_hash": "790284ffbeded34b",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Prove your right to work to an employer",
+      "url": "https://www.gov.uk/prove-right-to-work"
+    },
+    {
+      "base_path": "/register-for-self-assessment",
+      "content_hash": "fdb81c939b8749c3",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Check how to register for Self Assessment",
+      "url": "https://www.gov.uk/register-for-self-assessment"
+    },
+    {
+      "base_path": "/register-for-vat",
+      "content_hash": "0b9ad60e484128ce",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Register for VAT",
+      "url": "https://www.gov.uk/register-for-vat"
+    },
+    {
+      "base_path": "/renting-out-a-property",
+      "content_hash": "920d8b74184c8741",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Renting out your property",
+      "url": "https://www.gov.uk/renting-out-a-property"
+    },
+    {
+      "base_path": "/repaying-your-student-loan",
+      "content_hash": "be700ea113055bf8",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Repaying your student loan",
+      "url": "https://www.gov.uk/repaying-your-student-loan"
+    },
+    {
+      "base_path": "/run-business-from-home",
+      "content_hash": "ddfe51283e8d5f19",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Running a business from home",
+      "url": "https://www.gov.uk/run-business-from-home"
+    },
+    {
+      "base_path": "/sa302-tax-calculation",
+      "content_hash": "33e614a6ca55ad8d",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Get your SA302 tax calculation",
+      "url": "https://www.gov.uk/sa302-tax-calculation"
+    },
+    {
+      "base_path": "/scottish-income-tax",
+      "content_hash": "c9dd6aef1f6eadf9",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Income Tax in Scotland",
+      "url": "https://www.gov.uk/scottish-income-tax"
+    },
+    {
+      "base_path": "/self-assessment-tax-return-forms",
+      "content_hash": "61f521f294ee1862",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Self Assessment tax return forms",
+      "url": "https://www.gov.uk/self-assessment-tax-return-forms"
+    },
+    {
+      "base_path": "/self-assessment-tax-returns",
+      "content_hash": "7eda3dc4072523d7",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Self Assessment tax returns",
+      "url": "https://www.gov.uk/self-assessment-tax-returns"
+    },
+    {
+      "base_path": "/self-employed-national-insurance-rates",
+      "content_hash": "7d9716d4a0871376",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Self-employed National Insurance rates",
+      "url": "https://www.gov.uk/self-employed-national-insurance-rates"
+    },
+    {
+      "base_path": "/self-employed-records",
+      "content_hash": "fa12538e55c5759e",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Business records if you're self-employed",
+      "url": "https://www.gov.uk/self-employed-records"
+    },
+    {
+      "base_path": "/self-employment-and-universal-credit",
+      "content_hash": "4d7e4a86dfc306a5",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Self-employment and Universal Credit",
+      "url": "https://www.gov.uk/self-employment-and-universal-credit"
+    },
+    {
+      "base_path": "/selling-your-business-your-responsibilities",
+      "content_hash": "e27ea10b7dde9b44",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Selling your business: your responsibilities",
+      "url": "https://www.gov.uk/selling-your-business-your-responsibilities"
+    },
+    {
+      "base_path": "/set-up-business",
+      "content_hash": "765238b2651219ad",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Set up a business",
+      "url": "https://www.gov.uk/set-up-business"
+    },
+    {
+      "base_path": "/simpler-income-tax-cash-basis",
+      "content_hash": "49c299ee9e5ef358",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Cash basis",
+      "url": "https://www.gov.uk/simpler-income-tax-cash-basis"
+    },
+    {
+      "base_path": "/simpler-income-tax-simplified-expenses",
+      "content_hash": "3176e5d222e46094",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Simplified expenses if you're self-employed",
+      "url": "https://www.gov.uk/simpler-income-tax-simplified-expenses"
+    },
+    {
+      "base_path": "/standard-visitor",
+      "content_hash": "6be14a5e42e31bfe",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Visit the UK as a Standard Visitor",
+      "url": "https://www.gov.uk/standard-visitor"
+    },
+    {
+      "base_path": "/stop-being-self-employed",
+      "content_hash": "95b7416d358612ff",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Stop being self-employed",
+      "url": "https://www.gov.uk/stop-being-self-employed"
+    },
+    {
+      "base_path": "/strike-off-your-company-from-companies-register",
+      "content_hash": "f1f3a88931ed3b2b",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Strike off your limited company from the Companies Register",
+      "url": "https://www.gov.uk/strike-off-your-company-from-companies-register"
+    },
+    {
+      "base_path": "/student-jobs-paying-tax",
+      "content_hash": "831d1e05ace0183f",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Student jobs: paying tax",
+      "url": "https://www.gov.uk/student-jobs-paying-tax"
+    },
+    {
+      "base_path": "/student-visa",
+      "content_hash": "d1cb1d5c0c558b58",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Student visa ",
+      "url": "https://www.gov.uk/student-visa"
+    },
+    {
+      "base_path": "/support-child-or-partners-student-finance-application",
+      "content_hash": "b953fb8ae5026390",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Support your child or partner's student finance application",
+      "url": "https://www.gov.uk/support-child-or-partners-student-finance-application"
+    },
+    {
+      "base_path": "/taking-sick-leave",
+      "content_hash": "83e76e35fb9b833a",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Taking sick leave",
+      "url": "https://www.gov.uk/taking-sick-leave"
+    },
+    {
+      "base_path": "/tax-appeals",
+      "content_hash": "f10c698cb9474cf1",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Disagree with a tax decision or penalty",
+      "url": "https://www.gov.uk/tax-appeals"
+    },
+    {
+      "base_path": "/tax-come-to-uk",
+      "content_hash": "abfd368bb943a19a",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tax if you come to the UK",
+      "url": "https://www.gov.uk/tax-come-to-uk"
+    },
+    {
+      "base_path": "/tax-company-benefits",
+      "content_hash": "1189a8a78a7c54c1",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tax on company benefits",
+      "url": "https://www.gov.uk/tax-company-benefits"
+    },
+    {
+      "base_path": "/tax-compliance-checks",
+      "content_hash": "6681aa8502bfa9c6",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tax compliance checks ",
+      "url": "https://www.gov.uk/tax-compliance-checks"
+    },
+    {
+      "base_path": "/tax-employee-share-schemes",
+      "content_hash": "376b204ba43d0762",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tax and Employee Share Schemes",
+      "url": "https://www.gov.uk/tax-employee-share-schemes"
+    },
+    {
+      "base_path": "/tax-foreign-income",
+      "content_hash": "6adb25053eed9c00",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tax on foreign income",
+      "url": "https://www.gov.uk/tax-foreign-income"
+    },
+    {
+      "base_path": "/tax-free-childcare",
+      "content_hash": "8ff7166270595e07",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tax-Free Childcare",
+      "url": "https://www.gov.uk/tax-free-childcare"
+    },
+    {
+      "base_path": "/tax-national-insurance-after-state-pension-age",
+      "content_hash": "71de530b2206a915",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "National Insurance and tax after State Pension age",
+      "url": "https://www.gov.uk/tax-national-insurance-after-state-pension-age"
+    },
+    {
+      "base_path": "/tax-on-pension",
+      "content_hash": "f25fb46ab43035bb",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tax when you get a pension",
+      "url": "https://www.gov.uk/tax-on-pension"
+    },
+    {
+      "base_path": "/tax-on-your-private-pension",
+      "content_hash": "c975f135c5072f4f",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tax on your private pension contributions",
+      "url": "https://www.gov.uk/tax-on-your-private-pension"
+    },
+    {
+      "base_path": "/tax-overpayments-and-underpayments",
+      "content_hash": "48be46bffd956eca",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tax overpayments and underpayments",
+      "url": "https://www.gov.uk/tax-overpayments-and-underpayments"
+    },
+    {
+      "base_path": "/tax-relief-for-employees",
+      "content_hash": "ba28b01358f40380",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Claim tax relief for your job expenses",
+      "url": "https://www.gov.uk/tax-relief-for-employees"
+    },
+    {
+      "base_path": "/tax-return-uk",
+      "content_hash": "97541fd923aec7d8",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tax if you return to the UK",
+      "url": "https://www.gov.uk/tax-return-uk"
+    },
+    {
+      "base_path": "/tax-right-retire-abroad-return-to-uk",
+      "content_hash": "725fc60024fe54c6",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tax if you leave the UK to live abroad",
+      "url": "https://www.gov.uk/tax-right-retire-abroad-return-to-uk"
+    },
+    {
+      "base_path": "/tax-uk-income-live-abroad",
+      "content_hash": "6ab7ac0a2e634d2a",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tax on your UK income if you live abroad",
+      "url": "https://www.gov.uk/tax-uk-income-live-abroad"
+    },
+    {
+      "base_path": "/tell-hmrc-change-of-details",
+      "content_hash": "6a6b36e498c68233",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tell HMRC about a change to your personal details",
+      "url": "https://www.gov.uk/tell-hmrc-change-of-details"
+    },
+    {
+      "base_path": "/tell-hmrc-changed-business-details",
+      "content_hash": "077cce5964d76017",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tell HMRC about a change to your business",
+      "url": "https://www.gov.uk/tell-hmrc-changed-business-details"
+    },
+    {
+      "base_path": "/tips-at-work",
+      "content_hash": "1c757eaceb637cc2",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Tips at work",
+      "url": "https://www.gov.uk/tips-at-work"
+    },
+    {
+      "base_path": "/uk-family-visa",
+      "content_hash": "216fb78b6b54f0a3",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Family visas: apply, extend or switch",
+      "url": "https://www.gov.uk/uk-family-visa"
+    },
+    {
+      "base_path": "/undeclared-income",
+      "content_hash": "1622cdbca932dee6",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "If you have not told HMRC about income ",
+      "url": "https://www.gov.uk/undeclared-income"
+    },
+    {
+      "base_path": "/understand-self-assessment-bill",
+      "content_hash": "7810dfff42eec8d3",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Understand your Self Assessment tax bill",
+      "url": "https://www.gov.uk/understand-self-assessment-bill"
+    },
+    {
+      "base_path": "/understand-simple-assessment",
+      "content_hash": "ebc850cc50308ed5",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Understand your Simple Assessment tax bill",
+      "url": "https://www.gov.uk/understand-simple-assessment"
+    },
+    {
+      "base_path": "/universal-credit",
+      "content_hash": "7ddf13e1e6c7b747",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Universal Credit",
+      "url": "https://www.gov.uk/universal-credit"
+    },
+    {
+      "base_path": "/welsh-income-tax",
+      "content_hash": "49f06905f71f19cd",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Income Tax in Wales",
+      "url": "https://www.gov.uk/welsh-income-tax"
+    },
+    {
+      "base_path": "/what-you-must-do-as-a-cis-subcontractor",
+      "content_hash": "352a8687ebb009b2",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "What you must do as a Construction Industry Scheme (CIS) subcontractor",
+      "url": "https://www.gov.uk/what-you-must-do-as-a-cis-subcontractor"
+    },
+    {
+      "base_path": "/winter-fuel-payment",
+      "content_hash": "b33f6eafa280206f",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Winter Fuel Payment",
+      "url": "https://www.gov.uk/winter-fuel-payment"
+    },
+    {
+      "base_path": "/workplace-fire-safety-your-responsibilities",
+      "content_hash": "292f976991348618",
+      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "title": "Fire safety in the workplace",
+      "url": "https://www.gov.uk/workplace-fire-safety-your-responsibilities"
+    }
+  ],
+  "search_query": "self assessment self employment"
+}
