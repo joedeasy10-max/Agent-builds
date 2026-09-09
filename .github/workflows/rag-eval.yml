@@ -17,6 +17,7 @@ on:
       - "govuk-rag-eval/src/**"
       - "govuk-rag-eval/configs/**"
       - "govuk-rag-eval/data/golden/**"
+      - "govuk-rag-eval/requirements*.lock"
       - ".github/workflows/rag-eval.yml"
   schedule:
     # Nightly full run, including the expensive LLM-judge metrics
