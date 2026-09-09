@@ -38,6 +38,11 @@ class FlatStore:
         self._chunks: list[Chunk] = []
         self._vectors: np.ndarray | None = None
 
+    @property
+    def chunks(self) -> list[Chunk]:
+        """The indexed chunks, in insertion order."""
+        return self._chunks
+
     def add(self, chunks: list[Chunk], vectors: np.ndarray) -> None:
         if vectors.shape != (len(chunks), self.dimensions):
             raise ValueError(
