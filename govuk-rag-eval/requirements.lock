@@ -24,12 +24,11 @@ openai==3.3.0             # provider: openai  (text-embedding-3-small)
 # so adding the CPU index makes pip prefer the CPU build.
 --extra-index-url https://download.pytorch.org/whl/cpu
 sentence-transformers==6.0.1
-# TODO(pin): torch is intentionally unpinned for ONE run — download.pytorch.org
-# is unreachable from the dev sandbox, so the exact CPU version could not be
-# resolved locally. Read the resolved version from the first successful CI run
-# and pin it here (`torch==X.Y.Z+cpu`). Do not leave this unpinned: an eval
-# harness whose numbers move because a dep bumped is not an eval harness.
-torch
+# Pinned from the first green CI run (Agent-builds run 34412424071): pip
+# resolved torch-2.14.0+cpu-cp312-cp312-manylinux_2_28_x86_64.whl (196 MB, no
+# nvidia-* payload) from the CPU index above. download.pytorch.org is
+# unreachable from the dev sandbox, so CI is the source of truth for this pin.
+torch==2.14.0+cpu
 
 # --- vector store option (BUILD.md stack; `flat` numpy store is the default) ---
 # lancedb==0.13.0
