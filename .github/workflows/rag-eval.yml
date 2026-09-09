@@ -128,7 +128,10 @@ jobs:
             --markdown results/report.md
 
       - name: Comment on PR
-        if: env.HAS_KEY == 'true' && github.event_name == 'pull_request' && always()
+        # always() so a failing gate still posts its table — but only when the
+        # report actually exists, else this masks the real error with an ENOENT.
+        if: always() && env.HAS_KEY == 'true' && github.event_name == 'pull_request'
+          && hashFiles('govuk-rag-eval/results/report.md') != ''
         uses: actions/github-script@v7
         with:
           script: |

@@ -13,7 +13,9 @@ langchain-text-splitters==1.1.2
 
 # --- embedding providers (imported lazily; only the configured one is used) ---
 # Required by the active config (embedding.provider: openai). Needs OPENAI_API_KEY.
-openai==1.51.0            # provider: openai  (text-embedding-3-small)
+# Must stay compatible with the httpx that langchain-core pulls in (0.28.x):
+# openai 1.51 passed `proxies=` to httpx.Client, which httpx>=0.28 removed.
+openai==3.11.0            # provider: openai  (text-embedding-3-small)
 # sentence-transformers==3.1.1   # provider: bge  (BAAI/bge-small-en-v1.5)
 
 # --- vector store option (BUILD.md stack; `flat` numpy store is the default) ---

@@ -9,10 +9,13 @@
 # Pin the RAGAS *minor* deliberately: its API has broken between minors.
 # Verify/refresh these against a cold runner when the judge step is first wired
 # into CI (build step 5).
+# NOTE: this ragas pin is still UNVERIFIED — it has not been resolved against
+# the versions below and may conflict (ragas 0.1.x expects old langchain-core).
+# Resolve it on the first real judge run before trusting judge numbers.
 ragas==0.1.21
 datasets==2.20.0
 # Judge/generation LLM providers — interchangeable (install what you use).
-openai==1.51.0
-langchain-openai==0.1.25
-anthropic==0.39.0
-langchain-anthropic==0.2.4
+openai==3.11.0
+langchain-openai==1.6.1
+anthropic==1.4.0
+langchain-anthropic==1.7.1
