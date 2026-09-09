@@ -25,9 +25,13 @@ chunking:
   separators: ["\n\n", "\n", ". ", " ", ""]
 
 embedding:
-  provider: openai           # openai | bge | hashing
-  model: text-embedding-3-small   # <-- regression demo target: swap to a weaker model
-  dimensions: 1536
+  provider: bge              # openai | bge | hashing
+  # Local sentence-transformers model: no API key, no per-call cost, and fully
+  # deterministic. Switching back to OpenAI is one line here (provider: openai,
+  # model: text-embedding-3-small, dimensions: 1536) PLUS regenerating
+  # results/baseline.json — a baseline is only valid for the embedder that made it.
+  model: BAAI/bge-small-en-v1.5   # <-- regression demo target: swap to a weaker model
+  dimensions: 384            # informational: BgeEmbedder reads it from the model
   batch_size: 64
 
 store:
@@ -40,7 +44,7 @@ retrieval:
   normalize: true            # cosine similarity via normalised vectors
 
 generation:                  # answer synthesis for the judge suite (step 4)
-  provider: openai           # openai | anthropic | echo — interchangeable
+  provider: anthropic        # openai | anthropic | echo — interchangeable
   model: ""                  # blank = provider default (gpt-4o-mini / claude-sonnet-5)
   temperature: 0.0           # honoured by openai; ignored by anthropic (newer models)
   max_tokens: 512

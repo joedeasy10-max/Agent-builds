@@ -1,18 +1,33 @@
-# Extra pinned deps for the judge suite (build step 4) — RAGAS + a generation
-# provider. Kept OUT of requirements.lock so the deterministic retrieval gate
+# Extra pinned deps for the judge suite (build step 4) — RAGAS + the generation
+# providers. Kept OUT of requirements.lock so the deterministic retrieval gate
 # (run on every PR) stays a fast, light install; these are installed only for
-# the nightly / full-eval judge run.
+# the nightly / full-eval judge run, on top of requirements.lock.
 #
 # The offline path (generation.provider: echo + --judge-backend heuristic) needs
 # NONE of these — that is what the tests use.
 #
-# Pin the RAGAS *minor* deliberately: its API has broken between minors.
-# Verify/refresh these against a cold runner when the judge step is first wired
-# into CI (build step 5).
-ragas==0.1.21
-datasets==2.20.0
+# BUILD.md warns the RAGAS API has broken between minors, so every pin here was
+# resolved and import-verified together against requirements.lock, not guessed:
+#   - ragas imports `langchain_community.chat_models.vertexai`, which
+#     langchain-community REMOVED in 0.4.x. ragas declares no upper bound, so
+#     pip picks 0.4.x and ragas fails at import. 0.3.31 still ships that module
+#     and allows langchain-core>=0.3.78,<2 — compatible with the langchain-core
+#     1.6.2 that langchain-text-splitters pulls in. Hence the explicit pin.
+#   - openai must stay >=2.45 (langchain-openai) and >=2.0 (instructor), and
+#     must not be 1.x (1.51 passes `proxies=` to httpx, removed in httpx>=0.28).
+#   - langchain-anthropic requires anthropic>=0.120.
+# Verified: ragas.evaluate + LangchainLLMWrapper + the four metrics import, and
+# evaluate() accepts metrics= and llm=.
+#
+# NOTE: ragas 0.4.x deprecates `from ragas.metrics import ...` in favour of
+# `ragas.metrics.collections` at v1.0. Pinned here, so it keeps working; revisit
+# src/metrics/judge.py before bumping ragas to 1.x.
+ragas==0.4.3
+langchain-community==0.3.31
+datasets==5.0.1
+
 # Judge/generation LLM providers — interchangeable (install what you use).
-openai==1.51.0
-langchain-openai==0.1.25
-anthropic==0.39.0
-langchain-anthropic==0.2.4
+openai==3.3.0
+langchain-openai==1.6.1
+anthropic==1.4.0
+langchain-anthropic==1.7.1
