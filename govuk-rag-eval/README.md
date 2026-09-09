@@ -17,9 +17,9 @@ Steps are defined in `BUILD.md` → "Build order". There are **8**.
 |---|------|-------|
 | 1 | **Ingest + retrieve** — crawl, chunk, index, `retrieve(question)` | ✅ done |
 | 2 | **Retrieval metrics** (hit@5, MRR, recall@10) + `src/evaluate.py` | ✅ done |
-| 3 | Golden set to full size (150–300, hand-reviewed) | ⬜ blocked: needs GOV.UK crawl (sandbox egress denies gov.uk) |
+| 3 | Golden set to full size (150–300, hand-reviewed) | 🟡 tooling ready (`scripts/build_golden_set.py`); needs a corpus + your review |
 | 4 | **Generation + RAGAS judge metrics** (median-of-N, measure variance) | 🟡 scaffolded — pipeline + median-of-N done; real RAGAS grader lazy-wired |
-| 5 | **CI gate** — wire `rag-eval.yml` + `compare.py`, commit a baseline | 🟡 wired + proven end-to-end; activates with `OPENAI_API_KEY` + a real baseline |
+| 5 | **CI gate** — wire `rag-eval.yml` + `compare.py`, commit a baseline | 🟡 wired + proven end-to-end; activates with an `OPENAI_API_KEY`/`ANTHROPIC_API_KEY` + a real baseline |
 | 6 | Regression demos — 3 blocked PRs | 🟡 chunk-size demo proven offline (gate blocks); top_k/embedding demos need real data |
 | 7 | Experiment benchmark — `run_experiments.py` + table | 🟡 runner done + demoed; real table needs embeddings |
 | 8 | **Corpus-drift workflow** (`refresh-corpus.yml`) | 🟡 scaffolded — workflow + `refresh_corpus.py` + drift logic tested; runs once egress exists |
@@ -190,3 +190,46 @@ python scripts/refresh_corpus.py --config configs/retrieval.yaml --summary-out c
 The crawl needs outbound `www.gov.uk` (fine on CI runners; no LLM key needed).
 The drift diff/merge/summary logic is pure and unit-tested offline
 (`tests/test_refresh_corpus.py`).
+
+### Building the golden set (step 3)
+
+`scripts/build_golden_set.py` drafts candidates with an LLM and queues them for
+**human review** — it deliberately never writes LLM output straight into
+`data/golden/questions.jsonl`, because that hand review is what makes the numbers
+mean anything (BUILD.md).
+
+```bash
+# 1. draft over the indexed chunks (+ negatives) into a review queue
+python scripts/build_golden_set.py draft \
+    --config configs/retrieval.yaml --index .index/ \
+    --per-chunk 2 --limit 60 --negatives 25
+
+# 2. review data/golden/review_queue.jsonl BY HAND: set each "status" to
+#    "approved" or "rejected", fixing wording/ground_truth as you go.
+python scripts/build_golden_set.py status          # progress + negative count
+
+# 3. append only the approved ones to the golden set
+python scripts/build_golden_set.py promote --version v2 --dry-run
+python scripts/build_golden_set.py promote --version v2
+```
+
+Each candidate carries the source chunk's text (`source_excerpt`), so reviewing
+is reading one screen rather than hunting through the corpus. `promote` continues
+ids from the highest existing `q_NNNN` (never renumbering what the golden set
+already references), skips duplicate questions, and validates the result with the
+real loader. Drafting is provider-interchangeable (`--provider openai|anthropic`,
+defaulting to `generation.provider`), capped by `--limit` and `--max-usd`.
+
+After promoting: bump `dataset.version` in `configs/eval_config.yaml` to match,
+then regenerate `results/baseline.json` (see `results/README.md`).
+
+### API keys
+
+Set **`ANTHROPIC_API_KEY`** or **`OPENAI_API_KEY`** — the providers are
+interchangeable:
+
+* **locally** — export it in your shell, or put it in a `.env` (gitignored);
+* **in CI** — add it as a GitHub Actions repository secret under the exact same
+  name. `rag-eval.yml` activates on either key and green-skips without them.
+
+Never commit a key.

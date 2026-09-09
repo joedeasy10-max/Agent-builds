@@ -13,6 +13,9 @@ results/experiments/table.md
 .experiments/
 corpus-drift.md
 
+# Secrets — never commit. Put ANTHROPIC_API_KEY / OPENAI_API_KEY here locally.
+.env
+
 # Python
 __pycache__/
 *.py[cod]
