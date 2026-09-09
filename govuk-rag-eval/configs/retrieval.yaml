@@ -1,0 +1,48 @@
+# The active retrieval config. THIS is the file a PR edits to change retrieval
+# behaviour — every knob that affects retrieval quality lives here, never as a
+# hardcoded constant in the code. Changing any value here forces the CI index
+# cache to rebuild (the cache key hashes this file).
+#
+# The named experiments under configs/experiments/ are copies of this file with
+# one thing changed; run_experiments.py benchmarks them against each other.
+
+seed: 42                     # fixed everywhere for determinism
+
+corpus:
+  source: govuk
+  # A bounded, deep slice: self-employment + Self Assessment guidance.
+  search_query: "self assessment self employment"
+  max_pages: 300
+  request_delay_seconds: 1.0 # polite crawl (OGL v3 content)
+  raw_dir: data/corpus/raw
+  manifest_path: data/corpus/manifest.json
+
+chunking:
+  splitter: recursive        # recursive (langchain-text-splitters) | simple
+  chunk_size: 512            # <-- regression demo target: 512 -> 2000
+  chunk_overlap: 64
+  # Only used by the recursive splitter. Ordered coarse -> fine.
+  separators: ["\n\n", "\n", ". ", " ", ""]
+
+embedding:
+  provider: openai           # openai | bge | hashing
+  model: text-embedding-3-small   # <-- regression demo target: swap to a weaker model
+  dimensions: 1536
+  batch_size: 64
+
+store:
+  type: flat                 # flat (numpy, file-backed) | lancedb
+  path: .index
+
+retrieval:
+  retriever: dense           # dense | bm25 | hybrid  (dense implemented in step 1)
+  top_k: 5                   # <-- regression demo target: 5 -> 2
+  normalize: true            # cosine similarity via normalised vectors
+
+generation:                  # answer synthesis for the judge suite (step 4)
+  provider: openai           # openai | anthropic | echo — interchangeable
+  model: ""                  # blank = provider default (gpt-4o-mini / claude-sonnet-5)
+  temperature: 0.0           # honoured by openai; ignored by anthropic (newer models)
+  max_tokens: 512
+  # Anthropic has no embeddings API — for an Anthropic-only setup, also set
+  # embedding.provider: bge (local) above, and generation.provider: anthropic here.

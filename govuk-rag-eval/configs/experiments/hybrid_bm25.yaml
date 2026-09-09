@@ -1,0 +1,29 @@
+# Experiment: dense + BM25 hybrid retrieval. One change from baseline.
+# NOTE: requires the `hybrid` retriever, which is not implemented in build
+# step 1 (dense only). This config is scaffolding for build step 7; running it
+# now raises NotImplementedError by design until the retriever lands.
+seed: 42
+corpus:
+  source: govuk
+  search_query: "self assessment self employment"
+  max_pages: 300
+  request_delay_seconds: 1.0
+  raw_dir: data/corpus/raw
+  manifest_path: data/corpus/manifest.json
+chunking:
+  splitter: recursive
+  chunk_size: 512
+  chunk_overlap: 64
+  separators: ["\n\n", "\n", ". ", " ", ""]
+embedding:
+  provider: openai
+  model: text-embedding-3-small
+  dimensions: 1536
+  batch_size: 64
+store:
+  type: flat
+  path: .index
+retrieval:
+  retriever: hybrid      # <-- the one change (needs later-step support)
+  top_k: 5
+  normalize: true

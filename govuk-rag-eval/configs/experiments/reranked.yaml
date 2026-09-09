@@ -1,0 +1,32 @@
+# Experiment: dense retrieval + cross-encoder reranker. One change from baseline.
+# NOTE: the reranker stage is not implemented in build step 1. This config is
+# scaffolding for build step 7; a `reranker` section and retriever support land
+# in a later step. Kept here so the experiment set matches BUILD.md.
+seed: 42
+corpus:
+  source: govuk
+  search_query: "self assessment self employment"
+  max_pages: 300
+  request_delay_seconds: 1.0
+  raw_dir: data/corpus/raw
+  manifest_path: data/corpus/manifest.json
+chunking:
+  splitter: recursive
+  chunk_size: 512
+  chunk_overlap: 64
+  separators: ["\n\n", "\n", ". ", " ", ""]
+embedding:
+  provider: openai
+  model: text-embedding-3-small
+  dimensions: 1536
+  batch_size: 64
+store:
+  type: flat
+  path: .index
+retrieval:
+  retriever: dense
+  top_k: 5
+  normalize: true
+# reranker:              # <-- lands in a later build step
+#   model: BAAI/bge-reranker-base
+#   top_n: 5

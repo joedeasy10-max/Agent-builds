@@ -1,0 +1,12 @@
+[project]
+name = "govuk-rag-eval"
+version = "0.1.0"
+description = "A RAG system over GOV.UK guidance with a CI-gated evaluation harness."
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100

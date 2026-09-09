@@ -1,0 +1,27 @@
+# Experiment: smaller chunks (256 vs 512). One change from baseline.
+# Runs on the step-1 dense retriever as-is (build step 7 benchmarks it).
+seed: 42
+corpus:
+  source: govuk
+  search_query: "self assessment self employment"
+  max_pages: 300
+  request_delay_seconds: 1.0
+  raw_dir: data/corpus/raw
+  manifest_path: data/corpus/manifest.json
+chunking:
+  splitter: recursive
+  chunk_size: 256        # <-- the one change
+  chunk_overlap: 64
+  separators: ["\n\n", "\n", ". ", " ", ""]
+embedding:
+  provider: openai
+  model: text-embedding-3-small
+  dimensions: 1536
+  batch_size: 64
+store:
+  type: flat
+  path: .index
+retrieval:
+  retriever: dense
+  top_k: 5
+  normalize: true

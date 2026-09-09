@@ -1,0 +1,58 @@
+# Which metrics gate a PR, and how much movement is tolerated.
+#
+# Two ideas do the work here:
+#   absolute_floor  - the metric may never drop below this, full stop.
+#   max_relative_drop - how far it may fall vs. the baseline on main before
+#                       the build fails. Judge metrics get a wider band
+#                       because LLM graders are noisy run-to-run.
+
+dataset:
+  path: data/golden/questions.jsonl
+  version: v1           # bump on every change to the golden set
+  # Aligned to the shipped starter golden set (v1). Bumps to v3 when the full
+  # 150-300 record set lands (build step 3), which also invalidates the baseline
+  # until it is regenerated on the new version.
+  # A baseline is only comparable within the same dataset version.
+  # compare.py refuses to gate across versions and warns instead.
+
+suites:
+  retrieval:
+    gating: true        # deterministic, zero variance — safe to gate hard
+    metrics:
+      hit_at_5:
+        absolute_floor: 0.82
+        max_relative_drop: 0.02
+      mrr:
+        absolute_floor: 0.65
+        max_relative_drop: 0.03
+      context_recall_at_10:
+        absolute_floor: 0.88
+        max_relative_drop: 0.02
+
+  judge:
+    gating: true
+    runs: 3             # median of N runs, to damp judge variance
+    metrics:
+      faithfulness:
+        absolute_floor: 0.85
+        max_relative_drop: 0.05
+      answer_relevancy:
+        absolute_floor: 0.80
+        max_relative_drop: 0.05
+      context_precision:
+        absolute_floor: 0.70
+        max_relative_drop: 0.06
+      # Reported but never gated — too noisy to be a build signal yet.
+      answer_correctness:
+        gating: false
+
+reporting:
+  # Flag any single question that regressed sharply, even if the aggregate
+  # held. Aggregate metrics hide narrow but real failures.
+  per_question_alert_threshold: 0.30
+  worst_examples_in_comment: 5
+
+cost:
+  # Guardrails so a runaway loop can't drain the key.
+  max_judge_questions_per_run: 120
+  max_usd_per_run: 4.00

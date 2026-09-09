@@ -1,0 +1,22 @@
+# Rebuildable / generated — never commit
+.index/
+data/corpus/raw/*
+!data/corpus/raw/.gitkeep
+results/*.json
+results/*.md
+results/experiments/*.json
+results/experiments/table.md
+!results/baseline.json
+!results/README.md
+!results/experiments/README.md
+!results/.gitkeep
+.experiments/
+corpus-drift.md
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/

@@ -1,0 +1,18 @@
+# Extra pinned deps for the judge suite (build step 4) — RAGAS + a generation
+# provider. Kept OUT of requirements.lock so the deterministic retrieval gate
+# (run on every PR) stays a fast, light install; these are installed only for
+# the nightly / full-eval judge run.
+#
+# The offline path (generation.provider: echo + --judge-backend heuristic) needs
+# NONE of these — that is what the tests use.
+#
+# Pin the RAGAS *minor* deliberately: its API has broken between minors.
+# Verify/refresh these against a cold runner when the judge step is first wired
+# into CI (build step 5).
+ragas==0.1.21
+datasets==2.20.0
+# Judge/generation LLM providers — interchangeable (install what you use).
+openai==1.51.0
+langchain-openai==0.1.25
+anthropic==0.39.0
+langchain-anthropic==0.2.4

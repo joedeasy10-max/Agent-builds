@@ -1,0 +1,57 @@
+name: Refresh GOV.UK corpus
+
+# Weekly re-crawl of the corpus slice. If any page's content hash drifted,
+# rewrite data/corpus/manifest.json and open a PR — the RAG-eval gate then runs
+# against the refreshed corpus automatically, catching quality drops caused by
+# the source content moving underneath us (not just by our own code).
+#
+# Needs outbound access to www.gov.uk (fine on GitHub-hosted runners). No LLM
+# key is required — this only refreshes the manifest, not the index.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+defaults:
+  run:
+    working-directory: govuk-rag-eval
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.lock
+
+      - name: Re-crawl and detect drift
+        id: drift
+        run: |
+          python scripts/refresh_corpus.py \
+            --config configs/retrieval.yaml \
+            --summary-out corpus-drift.md
+
+      - name: Open PR on drift
+        if: steps.drift.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          # Relative to the repo root, not the working-directory.
+          add-paths: govuk-rag-eval/data/corpus/manifest.json
+          branch: corpus/refresh
+          delete-branch: true
+          commit-message: "chore(corpus): refresh GOV.UK corpus (content drift)"
+          title: "Corpus refresh: GOV.UK content drift"
+          body-path: govuk-rag-eval/corpus-drift.md
+          labels: corpus-drift

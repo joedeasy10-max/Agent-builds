@@ -1,0 +1,16 @@
+{
+  "base_path": "/self-assessment-tax-returns",
+  "title": "Self Assessment tax returns",
+  "details": {
+    "parts": [
+      {
+        "slug": "overview",
+        "body": "<p>Self Assessment is a system HMRC uses to collect Income Tax. Tax is usually deducted automatically from wages and pensions. People and businesses with other income must report it in a tax return.</p>"
+      },
+      {
+        "slug": "deadlines",
+        "body": "<p>The deadline for online tax returns is 31 January following the end of the tax year. Paper returns are due earlier, by 31 October. You must pay the tax you owe by 31 January.</p><p>If you miss the deadline you may have to pay a penalty. A late return means an automatic 100 pound penalty even if there is no tax to pay.</p>"
+      }
+    ]
+  }
+}

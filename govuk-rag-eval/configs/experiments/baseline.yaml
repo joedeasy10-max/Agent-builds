@@ -1,0 +1,27 @@
+# Experiment: baseline. Identical to the active configs/retrieval.yaml.
+# The reference point the other experiments are measured against (build step 7).
+seed: 42
+corpus:
+  source: govuk
+  search_query: "self assessment self employment"
+  max_pages: 300
+  request_delay_seconds: 1.0
+  raw_dir: data/corpus/raw
+  manifest_path: data/corpus/manifest.json
+chunking:
+  splitter: recursive
+  chunk_size: 512
+  chunk_overlap: 64
+  separators: ["\n\n", "\n", ". ", " ", ""]
+embedding:
+  provider: openai
+  model: text-embedding-3-small
+  dimensions: 1536
+  batch_size: 64
+store:
+  type: flat
+  path: .index
+retrieval:
+  retriever: dense
+  top_k: 5
+  normalize: true
