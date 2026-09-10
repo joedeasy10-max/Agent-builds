@@ -104,3 +104,62 @@ def test_limit_caps_questions(tmp_path, fixture_pages, test_config):
     golden = load_golden(_golden_for(tmp_path, top1))
     suite = run_retrieval_suite(golden, test_config, idx, limit=1)
     assert suite["n_answerable"] == 1
+
+
+# ---- evaluation depth is set by the metrics, not by the serving top_k -------
+
+def test_suite_retrieves_deep_enough_for_the_deepest_metric(tmp_path, fixture_pages, test_config):
+    """context_recall_at_10 must be able to see rank 10.
+
+    The suite used to retrieve `retrieval.top_k` and score recall@10 over that
+    list. At top_k=5 the metric could not see past rank 5 and — with one gold
+    chunk per question — was arithmetically identical to hit_at_5. Both reported
+    exactly 0.860 on the v2 golden set, and the 0.88 floor was unreachable by
+    construction.
+    """
+    from dataclasses import replace
+
+    from src.evaluate import _EVAL_DEPTH, run_retrieval_suite
+    from src.golden import GoldenRecord
+    from src.ingest import build_index
+
+    cfg = replace(test_config, retrieval=replace(test_config.retrieval, top_k=5))
+    idx = tmp_path / "idx"
+    build_index(fixture_pages, cfg, idx)
+
+    seen: list[int] = []
+    from src import evaluate as E
+
+    real = E.Retriever
+
+    class _Spy(real):
+        def retrieve(self, question, top_k=None):
+            seen.append(top_k)
+            return super().retrieve(question, top_k=top_k)
+
+    E.Retriever = _Spy
+    try:
+        run_retrieval_suite(
+            [GoldenRecord(id="q1", question="register", ground_truth="x",
+                          source_ids=("gov-uk/register-for-self-assessment#chunk-0",),
+                          difficulty="single_hop", added_in="v1")],
+            cfg, idx,
+        )
+    finally:
+        E.Retriever = real
+
+    assert seen, "the suite never retrieved"
+    assert all(k >= _EVAL_DEPTH for k in seen), (
+        f"retrieved to {seen}, shallower than the deepest metric ({_EVAL_DEPTH})"
+    )
+
+
+def test_a_larger_serving_top_k_is_respected(tmp_path, fixture_pages, test_config):
+    """A config that serves more context is measured as it actually behaves."""
+    from dataclasses import replace
+
+    from src.evaluate import _EVAL_DEPTH
+
+    assert max(25, _EVAL_DEPTH) == 25       # depth never truncates a deeper config
+    cfg = replace(test_config, retrieval=replace(test_config.retrieval, top_k=25))
+    assert max(cfg.retrieval.top_k, _EVAL_DEPTH) == 25

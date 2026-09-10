@@ -1,8 +1,9 @@
 {
   "_provenance": {
     "head_sha": "b718c8ff4e42dfdd1883a036fe656ffb02461fda",
-    "note": "Retrieval only. The judge suite in that run failed on Anthropic credit exhaustion, so no judge numbers exist to record and none are invented here. compare.py treats a missing suite as 'no prior' \u2014 absolute floors still apply, deltas are simply not computed until a judge run lands.",
+    "note": "STALE \u2014 measured before the evaluation-depth fix. The suite retrieved only retrieval.top_k (5) and scored context_recall_at_10 over that list, so the metric could not see past rank 5 and equalled hit_at_5 (both 0.860). mrr was likewise zero for any gold chunk below rank 5. Regenerate from a run on main after this change; until then compare.py gates against numbers that understate mrr and misname recall.",
     "source_run": "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34486989558",
+    "stale_since": "evaluation-depth fix (_EVAL_DEPTH)",
     "values": "as reported by the run, to 3 decimal places"
   },
   "dataset_version": "v2",

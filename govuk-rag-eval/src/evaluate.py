@@ -39,6 +39,19 @@ _RETRIEVAL_METRICS: list[tuple[str, int | None]] = [
     ("context_recall_at_10", 10),
 ]
 
+#: How deep the suite retrieves, regardless of what the serving config uses.
+#:
+#: Evaluation depth is a property of the metrics, not of production. The suite
+#: used to retrieve `retrieval.top_k` (5) and then score context_recall_at_10
+#: over that list — so the metric could never see past rank 5 and was, with one
+#: gold chunk per question, arithmetically identical to hit_at_5. Both came back
+#: as exactly 0.860 on the v2 set, and its 0.88 floor was unreachable by
+#: construction rather than by any property of the retriever.
+#:
+#: hit_at_5 still inspects only the first 5, so it is unaffected; mrr can now
+#: credit a gold chunk found below rank 5 instead of scoring it zero.
+_EVAL_DEPTH = max((k for _, k in _RETRIEVAL_METRICS if k is not None), default=10)
+
 
 def _score_question(ranked_ids: list[str], record: GoldenRecord) -> dict:
     relevant = record.source_ids
@@ -67,9 +80,13 @@ def run_retrieval_suite(
     if limit is not None:
         answerable = answerable[:limit]
 
+    # Deep enough for the deepest metric; a serving top_k above that still wins,
+    # so a config that returns more context is measured as it actually behaves.
+    depth = max(config.retrieval.top_k, _EVAL_DEPTH)
+
     per_question: list[dict] = []
     for record in answerable:
-        results = retriever.retrieve(record.question)
+        results = retriever.retrieve(record.question, top_k=depth)
         ranked_ids = [sc.chunk.chunk_id for sc in results]
         per_question.append(_score_question(ranked_ids, record))
 
