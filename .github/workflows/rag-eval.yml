@@ -159,6 +159,11 @@ jobs:
               rank = r.get("first_relevant_rank")
               where = f"found at rank {rank}" if rank else "NOT in the retrieved list at all"
               print(f"  {r['id']}  [{r.get('difficulty','?')}]  {where}")
+              for e in r.get("expected", []):
+                  print(f"      expected : {e}")
+              for i, got in enumerate(r.get("retrieved", [])[:5], start=1):
+                  print(f"      rank {i}   : {got}")
+              print()
           deep = [r for r in misses if r.get("first_relevant_rank")]
           print(f"\nnear-misses recoverable by depth: {len(deep)}")
           print(f"hard misses (absent from the whole list): {len(misses)-len(deep)}")
