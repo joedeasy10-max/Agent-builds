@@ -37,6 +37,15 @@ _RETRIEVAL_METRICS: list[tuple[str, int | None]] = [
     ("hit_at_5", 5),
     ("mrr", None),
     ("context_recall_at_10", 10),
+    # Measured at the depth the SYSTEM serves (retrieval.top_k), not a fixed
+    # cutoff. Everything above is deliberately depth-independent, which means
+    # none of it can see a top_k change: the suite retrieves max(top_k,
+    # _EVAL_DEPTH), so for any top_k <= 10 the same ten results are scored and
+    # the metrics are literally identical. A PR cutting top_k to 2 would sail
+    # through the gate while halving the context the generator receives. This
+    # is the metric that notices. `None` here because the cutoff is the config's,
+    # resolved per run — it must not raise _EVAL_DEPTH.
+    ("served_context_recall", None),
 ]
 
 #: How deep the suite retrieves, regardless of what the serving config uses.
@@ -54,7 +63,10 @@ _EVAL_DEPTH = max((k for _, k in _RETRIEVAL_METRICS if k is not None), default=1
 
 
 def _score_question(
-    ranked_ids: list[str], record: GoldenRecord, known_ids: frozenset[str] | None = None
+    ranked_ids: list[str],
+    record: GoldenRecord,
+    known_ids: frozenset[str] | None = None,
+    served_k: int = 5,
 ) -> dict:
     relevant = record.source_ids
     first_rank = next(
@@ -67,6 +79,7 @@ def _score_question(
         "hit_at_5": R.hit_at_k(ranked_ids, relevant, 5),
         "mrr": R.reciprocal_rank(ranked_ids, relevant),
         "context_recall_at_10": R.recall_at_k(ranked_ids, relevant, 10),
+        "served_context_recall": R.recall_at_k(ranked_ids, relevant, served_k),
         "first_relevant_rank": first_rank,
         # What was actually returned. "hit@5 = 0.86" says six questions fail;
         # only the ranking says WHY — whether the gold chunk lost narrowly, or
@@ -107,7 +120,9 @@ def run_retrieval_suite(
     for record in answerable:
         results = retriever.retrieve(record.question, top_k=depth)
         ranked_ids = [sc.chunk.chunk_id for sc in results]
-        per_question.append(_score_question(ranked_ids, record, known_ids))
+        per_question.append(
+            _score_question(ranked_ids, record, known_ids, config.retrieval.top_k)
+        )
 
     aggregate = {
         name: R.mean([q[name] for q in per_question]) for name, _ in _RETRIEVAL_METRICS

@@ -30,6 +30,14 @@ suites:
       context_recall_at_10:
         absolute_floor: 0.88
         max_relative_drop: 0.02
+      # Recall within the context actually served (retrieval.top_k). The metrics
+      # above are measured at fixed cutoffs and so cannot see a top_k change;
+      # this one can. Floor mirrors hit_at_5 because, with one gold chunk per
+      # question, the two coincide at the current top_k of 5 — they diverge the
+      # moment top_k moves, which is the point.
+      served_context_recall:
+        absolute_floor: 0.82
+        max_relative_drop: 0.02
 
   judge:
     gating: true
