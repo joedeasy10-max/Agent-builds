@@ -78,26 +78,34 @@ def run_experiments(
 
 
 def render_table(result: dict, version: str) -> str:
+    """Render the comparison table, one column per suite metric.
+
+    The columns are derived from `_METRICS` rather than written out. The
+    hand-written header had already drifted once: it listed three metrics after
+    a fourth (`served_context_recall`) was added, so the benchmark's own table
+    silently omitted the only metric that can see a `top_k` regression.
+    """
+    header = "| Config | " + " | ".join(f"`{m}`" for m in _METRICS) + " | chunks | status |"
+    rule = "| --- | " + " | ".join("---:" for _ in _METRICS) + " | ---: | --- |"
     lines = [
         f"## Experiment benchmark (dataset `{version}`)",
         "",
         f"Primary metric: `{result['primary_metric']}`. "
         f"Winner: **{result['winner'] or '—'}**.",
         "",
-        "| Config | hit@5 | MRR | recall@10 | chunks | status |",
-        "| --- | ---: | ---: | ---: | ---: | --- |",
+        header,
+        rule,
     ]
     for row in result["rows"]:
         name = row["name"]
         mark = " 🏆" if name == result["winner"] else ""
         if row["status"] == "ok":
             m = row["metrics"]
-            lines.append(
-                f"| `{name}`{mark} | {m['hit_at_5']:.3f} | {m['mrr']:.3f} | "
-                f"{m['context_recall_at_10']:.3f} | {row['n_chunks']} | ok |"
-            )
+            cells = " | ".join(f"{m[metric]:.3f}" for metric in _METRICS)
+            lines.append(f"| `{name}`{mark} | {cells} | {row['n_chunks']} | ok |")
         else:
-            lines.append(f"| `{name}` | — | — | — | — | {row['status']} |")
+            blanks = " | ".join("—" for _ in _METRICS)
+            lines.append(f"| `{name}` | {blanks} | — | {row['status']} |")
     lines.append("")
     return "\n".join(lines)
 
@@ -111,13 +119,34 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--workdir", type=Path, default=Path(".experiments"))
     args = parser.parse_args(argv)
 
-    named_configs = {p.stem: load_config(p) for p in args.configs}
+    # A config that cannot even be parsed must be reported, not fatal. The
+    # module contract is that an experiment which can't run in this environment
+    # is skipped with a reason — but loading happened outside that guard, so a
+    # config declaring a not-yet-implemented section (`reranker:`) took the
+    # whole benchmark down instead of skipping one row.
+    named_configs: dict[str, Config] = {}
+    unloadable: dict[str, str] = {}
+    for path in args.configs:
+        try:
+            named_configs[path.stem] = load_config(path)
+        except (ValueError, OSError, KeyError, TypeError) as exc:
+            unloadable[path.stem] = f"skipped: {type(exc).__name__}: {exc}"
+
+    if not named_configs:
+        for name, reason in sorted(unloadable.items()):
+            print(f"{name}: {reason}", file=sys.stderr)
+        print("no runnable experiment configs", file=sys.stderr)
+        return 1
+
     records = load_golden(args.dataset)
     version = dataset_version(records)
     # Corpus is shared across experiments — load it once from the first config.
     pages = gather_pages(next(iter(named_configs.values())))
 
     result = run_experiments(named_configs, pages, records, args.primary_metric, args.workdir)
+    for name, reason in unloadable.items():
+        result["rows"].append({"name": name, "status": reason})
+    result["rows"].sort(key=lambda r: r["name"])
 
     args.out.mkdir(parents=True, exist_ok=True)
     for row in result["rows"]:

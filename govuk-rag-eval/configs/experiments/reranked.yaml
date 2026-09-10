@@ -1,7 +1,15 @@
 # Experiment: dense retrieval + cross-encoder reranker. One change from baseline.
-# NOTE: the reranker stage is not implemented in build step 1. This config is
-# scaffolding for build step 7; a `reranker` section and retriever support land
-# in a later step. Kept here so the experiment set matches BUILD.md.
+#
+# The reranker stage is not implemented yet. The `reranker:` block below is
+# therefore DECLARED, not commented out: Config rejects unknown keys, so this
+# config fails to load and the benchmark reports the row as skipped with the
+# reason. That is the honest outcome.
+#
+# It used to carry the reranker commented out, which made this file identical
+# to baseline.yaml in every respect that affects retrieval. The benchmark ran
+# it and published a row of numbers that were, necessarily, baseline's numbers
+# under a different name — an experiment that had not been performed. Deleting
+# the comment markers is what turns it back into a real, pending experiment.
 seed: 42
 corpus:
   source: govuk
@@ -30,6 +38,6 @@ retrieval:
   retriever: dense
   top_k: 5
   normalize: true
-# reranker:              # <-- lands in a later build step
-#   model: BAAI/bge-reranker-base
-#   top_n: 5
+reranker:                # <-- lands in a later build step; unknown key today
+  model: BAAI/bge-reranker-base
+  top_n: 5
