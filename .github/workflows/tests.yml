@@ -1,0 +1,49 @@
+name: Tests
+
+# The unit suite for the govuk-rag-eval subproject. Deliberately separate from
+# rag-eval.yml: that workflow is the *quality gate* and is skipped entirely when
+# no provider key is configured, whereas these tests are offline, free and must
+# run on every change. Until this existed the suite was never executed in CI —
+# so a regression test could be committed and still protect nothing.
+
+on:
+  pull_request:
+    paths:
+      - "govuk-rag-eval/**"
+      - ".github/workflows/tests.yml"
+  push:
+    branches: [main]
+    paths:
+      - "govuk-rag-eval/**"
+      - ".github/workflows/tests.yml"
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: govuk-rag-eval
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.lock
+
+      # No API keys are provided on purpose: every test must run offline. A test
+      # that needs a live provider belongs in the judge suite, not here.
+      - name: Run tests
+        run: python -m pytest -q
