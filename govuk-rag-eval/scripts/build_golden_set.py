@@ -449,17 +449,36 @@ MIN_CHUNK_CHARS = 200
 NEGATIVES_PER_CALL = 8
 
 
-def select_chunks(chunks: list, limit: int | None, min_chars: int = MIN_CHUNK_CHARS) -> list:
+def select_chunks(
+    chunks: list,
+    limit: int | None,
+    min_chars: int = MIN_CHUNK_CHARS,
+    per_page: int = 1,
+) -> list:
     """Pick `limit` chunks spread across pages, not the first N alphabetically.
 
     Chunk ids are `<page-path>#chunk-<n>`, so sorting by id groups every chunk
     of a page together — taking a head slice would draw the whole golden set
     from the handful of alphabetically-first pages. A golden set that only
-    covers 4 of 292 pages measures almost nothing.
+    covers 4 of 292 pages measures almost nothing. So: stride across pages,
+    then round-robin by chunk index. Deterministic (pages and chunks sorted).
 
-    Round-robins by chunk index across pages instead: chunk 0 of every page
-    first, then chunk 1, and so on. Deterministic (pages and chunks both sorted),
-    so the same corpus and limit always select the same chunks.
+    `per_page` is how many chunks to take from each selected page, and it
+    exists because the stride has a consequence that is easy to miss. The
+    stride picks about `limit` pages, so a budget of `limit` chunks is spent
+    almost entirely on ONE chunk from each — depth is never reached. At
+    limit=40 over 292 pages the stride selects 37 pages, and the round-robin
+    yields 37 chunk-0s and 3 chunk-1s before truncating.
+
+    That is not a hypothetical: it is exactly the shape of the v2 golden set,
+    whose 41 answerable questions are 37 `#chunk-0` and 4 `#chunk-1`. A set
+    like that tests whether retrieval finds the right *document* and barely
+    tests whether it finds the right *passage within* one.
+
+    per_page > 1 selects proportionally fewer pages (`limit / per_page`) and
+    takes the first `per_page` chunks of each — trading page coverage for
+    depth coverage, which is a real trade and should be a deliberate one.
+    per_page=1 reproduces the previous selection exactly.
     """
     by_page: dict[str, list] = {}
     for c in chunks:
@@ -469,25 +488,43 @@ def select_chunks(chunks: list, limit: int | None, min_chars: int = MIN_CHUNK_CH
     for page in by_page.values():
         page.sort(key=lambda c: c.chunk_index)
 
-    pages = [by_page[k] for k in sorted(by_page)]
+    all_pages = [by_page[k] for k in sorted(by_page)]
+    if per_page < 1:
+        raise ValueError("per_page must be >= 1")
+    if limit is None:
+        return _round_robin(all_pages, start=0, stop=None)
+    if limit <= 0:
+        return []
 
-    # Stride when we want fewer chunks than there are pages. Round-robin alone
-    # still walks pages in alphabetical order, so a 40-chunk budget over 292
-    # pages would sample the first 40 pages — which is how a draft ended up
-    # dominated by the /government/collections/* cluster. Striding every
-    # ceil(len(pages)/limit)-th page spreads the sample over the whole corpus.
-    if limit is not None and 0 < limit < len(pages):
-        step = math.ceil(len(pages) / limit)
-        pages = pages[::step]
+    wanted_pages = max(1, math.ceil(limit / per_page))
+    pages = all_pages
+    if wanted_pages < len(all_pages):
+        pages = all_pages[:: math.ceil(len(all_pages) / wanted_pages)]
 
-    ordered = []
+    ordered = _round_robin(pages, start=0, stop=per_page)
+
+    # Short of budget? Go deeper into the pages already selected before
+    # widening, so the depth the caller asked for is honoured first.
+    if len(ordered) < limit:
+        ordered += _round_robin(pages, start=per_page, stop=None)
+
+    # Still short — the selected pages simply do not hold enough chunks. Widen
+    # to the rest of the corpus rather than silently under-delivering a budget
+    # the caller is paying an LLM for.
+    if len(ordered) < limit:
+        seen = {id(c) for c in ordered}
+        for c in _round_robin(all_pages, start=0, stop=None):
+            if id(c) not in seen:
+                ordered.append(c)
+
+    return ordered[:limit]
+
+
+def _round_robin(pages: list[list], start: int, stop: int | None) -> list:
+    """Chunk `start` of every page, then chunk `start+1`, ... up to `stop`."""
     depth = max((len(pg) for pg in pages), default=0)
-    for i in range(depth):
-        for page in pages:
-            if i < len(page):
-                ordered.append(page[i])
-
-    return ordered if limit is None else ordered[:limit]
+    upper = depth if stop is None else min(depth, stop)
+    return [pg[i] for i in range(start, upper) for pg in pages if i < len(pg)]
 
 
 # --- CLI --------------------------------------------------------------------
@@ -497,7 +534,7 @@ def _cmd_draft(args) -> int:
     config = load_config(args.config)
     index_dir = args.index or Path(config.store.path)
     store = load_store(index_dir, config.store.type)
-    chunks = select_chunks(list(store.chunks), args.limit)
+    chunks = select_chunks(list(store.chunks), args.limit, per_page=args.per_page)
 
     # --merge-queue keeps the grounded questions from an earlier queue and
     # redrafts only the negatives, so a fix to negative drafting does not force
@@ -619,6 +656,16 @@ def main(argv: list[str] | None = None) -> int:
     d.add_argument("--index", type=Path, default=None)
     d.add_argument("--out", type=Path, default=DEFAULT_QUEUE)
     d.add_argument("--per-chunk", type=int, default=2)
+    d.add_argument(
+        "--per-page", type=int, default=1,
+        help=(
+            "chunks to draft from each selected page (default 1). Round-robin "
+            "exhausts chunk-0 of every page before reaching chunk-1, so at "
+            "per-page=1 a limit below the page count yields only #chunk-0 — "
+            "which is how the v2 set ended up 37/41 chunk-0. Raise this to "
+            "buy depth coverage at the cost of page coverage."
+        ),
+    )
     d.add_argument(
         "--limit", type=int, default=None,
         help="cap chunks, spread across pages (cost discipline)",

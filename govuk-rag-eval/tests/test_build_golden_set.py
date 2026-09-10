@@ -411,3 +411,86 @@ def test_topup_keeps_seeded_negatives_and_adds_new_ones():
     negatives = [c.question for c in got if c.difficulty == "negative"]
     assert "Existing negative?" in negatives      # the old one survives
     assert len(negatives) == 4                    # 1 kept + 3 new
+
+
+def _fake_chunks(n_pages: int, per_page: int):
+    """Synthetic chunks: n_pages pages, each with `per_page` chunks."""
+    from dataclasses import dataclass
+
+    @dataclass
+    class C:
+        chunk_id: str
+        page_path: str
+        chunk_index: int
+        text: str
+
+    return [
+        C(f"page-{p:03d}#chunk-{i}", f"page-{p:03d}", i, "x" * 400)
+        for p in range(n_pages)
+        for i in range(per_page)
+    ]
+
+
+def test_per_page_1_reproduces_the_v2_selection_shape():
+    """Documents the failure mode rather than asserting it away.
+
+    The stride selects about `limit` pages, so a budget of `limit` chunks buys
+    roughly one chunk from each and never reaches depth. At limit=40 over 292
+    pages that is 37 pages selected -> 37 chunk-0 and 3 chunk-1, which is
+    within one question of the real v2 golden set (37 chunk-0, 4 chunk-1).
+    """
+    chunks = bgs.select_chunks(_fake_chunks(292, 8), limit=40, per_page=1)
+    assert len(chunks) == 40
+    from collections import Counter
+    depths = Counter(c.chunk_index for c in chunks)
+    assert depths[0] == 37 and depths[1] == 3, depths
+    # It does spread across the corpus — that part works as intended.
+    pages = {c.page_path for c in chunks}
+    assert len(pages) == 37
+    # Spread across the whole corpus, not the alphabetically-first pages.
+    # (Checked on the page set, not the last element: chunk-1s come after all
+    # chunk-0s, so the final item is a low-numbered page by construction.)
+    assert max(pages) > "page-250"
+
+
+def test_per_page_above_1_buys_depth_coverage():
+    chunks = bgs.select_chunks(_fake_chunks(292, 8), limit=120, per_page=3)
+    assert len(chunks) == 120
+    from collections import Counter
+    depths = Counter(c.chunk_index for c in chunks)
+    # The point of the option: chunk-0 stops dominating.
+    assert depths[0] / len(chunks) < 0.4, depths
+    assert {0, 1, 2} <= set(depths)
+    # Depth is bought with page coverage: ~37 pages deep, not 120 pages shallow.
+    counts = Counter(c.page_path for c in chunks)
+    assert 30 <= len(counts) <= 45
+    assert min(counts.values()) >= 3, "every selected page contributes its depth"
+
+
+def test_widens_beyond_selected_pages_rather_than_under_delivering():
+    """A budget paid for in LLM calls must not quietly come back short."""
+    # 10 pages x 2 chunks = 20 available; per_page=5 would strand it at 4 pages.
+    chunks = bgs.select_chunks(_fake_chunks(10, 2), limit=20, per_page=5)
+    assert len(chunks) == 20, "should widen to the rest of the corpus"
+    assert len({c.chunk_id for c in chunks}) == 20, "no duplicates when widening"
+
+
+def test_cannot_return_more_than_the_corpus_holds():
+    chunks = bgs.select_chunks(_fake_chunks(3, 2), limit=99, per_page=4)
+    assert len(chunks) == 6
+    assert len({c.chunk_id for c in chunks}) == 6
+
+
+def test_per_page_1_is_unchanged_from_the_old_behaviour():
+    """per_page defaults to 1, so existing callers get identical selection."""
+    chunks = _fake_chunks(50, 4)
+    assert [c.chunk_id for c in bgs.select_chunks(chunks, limit=25)] == [
+        c.chunk_id for c in bgs.select_chunks(chunks, limit=25, per_page=1)
+    ]
+
+
+def test_per_page_rejects_nonsense():
+    import pytest as _pytest
+
+    with _pytest.raises(ValueError):
+        bgs.select_chunks(_fake_chunks(5, 2), limit=4, per_page=0)

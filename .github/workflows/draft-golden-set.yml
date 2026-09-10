@@ -19,6 +19,10 @@ on:
         description: "Questions to draft per chunk"
         required: true
         default: "2"
+      per_page:
+        description: "Chunks to draft from each page. 1 spends the whole budget on chunk-0 of many pages (how v2 ended up 37/41 chunk-0); raise it to buy depth coverage."
+        required: true
+        default: "1"
       negatives:
         description: "Unanswerable questions to draft (0 to skip; BUILD.md targets 20-30)"
         required: true
@@ -108,6 +112,7 @@ jobs:
             --out data/golden/review_queue.jsonl \
             --limit ${{ inputs.chunks }} \
             --per-chunk ${{ inputs.per_chunk }} \
+            --per-page ${{ inputs.per_page }} \
             --negatives ${{ inputs.negatives }} \
             --max-usd ${{ inputs.max_usd }} \
             ${{ inputs.merge_run_id != '' && '--merge-queue previous/review_queue.jsonl' || '' }} \
