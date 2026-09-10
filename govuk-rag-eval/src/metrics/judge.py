@@ -263,6 +263,34 @@ class RagasGrader:
         # whichever shape it needs (it supplies the async variants itself).
         return LangchainEmbeddingsWrapper(_ProjectEmbeddings())
 
+    def preflight(self) -> None:
+        """Make one cheap call so a dead key fails before anything expensive.
+
+        The judge suite generates an answer per question *before* grading, so an
+        unusable key would otherwise be discovered only after paying to generate
+        every answer — or, as in run 34486989558, midway through, once the credit
+        that funded generation ran out. One tiny call up front is a rounding
+        error against that.
+
+        Only raises for conditions retrying cannot fix (auth, credit, a bad
+        model). Anything else is left for the run itself to handle.
+        """
+        llm = self._llm()
+        try:
+            llm.langchain_llm.invoke("ping")
+        except Exception as exc:  # noqa: BLE001 - provider errors are untyped here
+            text = str(exc).lower()
+            fatal = ("credit balance", "insufficient_quota", "quota",
+                     "authentication", "invalid api key", "invalid x-api-key",
+                     "permission", "not_found_error", "model not found")
+            if any(f in text for f in fatal):
+                raise SystemExit(
+                    f"Judge pre-flight failed against {self.provider} "
+                    f"({self.model}): {exc}\n"
+                    "No questions were generated or graded. Fix the provider "
+                    "account or key and re-run."
+                ) from exc
+
     def grade(self, samples: Sequence[JudgeSample]) -> dict[str, float]:
         from datasets import Dataset  # lazy, heavy
         from ragas import evaluate as ragas_evaluate
@@ -285,6 +313,17 @@ class RagasGrader:
         embeddings = self._embeddings()
         if embeddings is not None:
             kwargs["embeddings"] = embeddings
+
+        # RAGAS defaults to max_retries=10 with waits up to 60s, per sample. That
+        # is sized for transient rate limits; against a systemic failure it is a
+        # backoff storm. Run 34486989558 spent 27 minutes retrying 172 jobs whose
+        # every call returned "credit balance is too low" — a condition no number
+        # of retries can fix — and burned almost the whole 30-minute job budget
+        # before reporting it. Bounded retries surface the same failure in about
+        # two minutes; genuine rate limits still get a couple of attempts.
+        from ragas.run_config import RunConfig
+
+        kwargs["run_config"] = RunConfig(timeout=120, max_retries=2, max_wait=10)
         result = ragas_evaluate(
             ds,
             metrics=[faithfulness, answer_relevancy, context_precision, answer_correctness],

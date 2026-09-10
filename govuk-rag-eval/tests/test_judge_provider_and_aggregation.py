@@ -115,6 +115,7 @@ def _install_fake_ragas(monkeypatch, result):
 
     def _evaluate(ds, metrics=None, llm=None, **kw):
         captured["llm"] = llm
+        captured["kwargs"] = kw
         return result
 
     ragas_mod.evaluate = _evaluate
@@ -122,6 +123,14 @@ def _install_fake_ragas(monkeypatch, result):
     metrics_mod = types.ModuleType("ragas.metrics")
     for name in J.JUDGE_METRICS:
         setattr(metrics_mod, name, object())
+
+    run_config_mod = types.ModuleType("ragas.run_config")
+
+    class _RunConfig:
+        def __init__(self, **kw):
+            self.kw = kw
+
+    run_config_mod.RunConfig = _RunConfig
 
     llms_mod = types.ModuleType("ragas.llms")
 
@@ -138,6 +147,7 @@ def _install_fake_ragas(monkeypatch, result):
         ("ragas", ragas_mod),
         ("ragas.metrics", metrics_mod),
         ("ragas.llms", llms_mod),
+        ("ragas.run_config", run_config_mod),
         ("langchain_anthropic", anthropic_mod),
     ]:
         monkeypatch.setitem(sys.modules, name, mod)
@@ -227,3 +237,56 @@ def test_embeddings_adapter_exposes_the_methods_ragas_calls(monkeypatch):
 
 def test_no_embedder_falls_back_to_the_ragas_default():
     assert J.RagasGrader(provider="openai")._embeddings() is None
+
+
+# ---- failing fast instead of retrying a condition retries cannot fix -------
+
+def _grader_with_capture(monkeypatch):
+    captured = _install_fake_ragas(monkeypatch, _FakeResult({m: [0.9] for m in J.JUDGE_METRICS}))
+    J.RagasGrader(provider="anthropic").grade(
+        [J.JudgeSample(id="q1", question="Q?", answer="A", contexts=("c",), ground_truth="A")]
+    )
+    return captured
+
+
+def test_ragas_retries_are_bounded(monkeypatch):
+    captured = _grader_with_capture(monkeypatch)
+    rc = captured["kwargs"]["run_config"]
+    assert rc.kw["max_retries"] <= 3, "a systemic failure must not retry 10x per sample"
+    assert rc.kw["max_wait"] <= 15
+
+
+def test_preflight_raises_on_credit_exhaustion(monkeypatch):
+    """The exact failure from run 34486989558, before a penny of generation."""
+
+    class _Dead:
+        def invoke(self, _):
+            raise RuntimeError(
+                "Error code: 400 - {'message': 'Your credit balance is too low "
+                "to access the Anthropic API.'}"
+            )
+
+    g = J.RagasGrader(provider="anthropic")
+    monkeypatch.setattr(g, "_llm", lambda: types.SimpleNamespace(langchain_llm=_Dead()))
+    with pytest.raises(SystemExit, match="pre-flight failed"):
+        g.preflight()
+
+
+def test_preflight_passes_a_working_provider(monkeypatch):
+    g = J.RagasGrader(provider="anthropic")
+    monkeypatch.setattr(
+        g, "_llm", lambda: types.SimpleNamespace(langchain_llm=types.SimpleNamespace(invoke=lambda _: "pong"))
+    )
+    g.preflight()          # must not raise
+
+
+def test_preflight_ignores_transient_errors(monkeypatch):
+    """A blip is the run's problem to retry, not a reason to refuse to start."""
+
+    class _Flaky:
+        def invoke(self, _):
+            raise RuntimeError("temporary connection reset")
+
+    g = J.RagasGrader(provider="anthropic")
+    monkeypatch.setattr(g, "_llm", lambda: types.SimpleNamespace(langchain_llm=_Flaky()))
+    g.preflight()          # must not raise

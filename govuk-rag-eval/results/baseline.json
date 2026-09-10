@@ -1,1 +1,19 @@
-{}
+{
+  "_provenance": {
+    "head_sha": "b718c8ff4e42dfdd1883a036fe656ffb02461fda",
+    "note": "Retrieval only. The judge suite in that run failed on Anthropic credit exhaustion, so no judge numbers exist to record and none are invented here. compare.py treats a missing suite as 'no prior' \u2014 absolute floors still apply, deltas are simply not computed until a judge run lands.",
+    "source_run": "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34486989558",
+    "values": "as reported by the run, to 3 decimal places"
+  },
+  "dataset_version": "v2",
+  "retrieval": {
+    "context_recall_at_10": 0.86,
+    "hit_at_5": 0.86,
+    "mrr": 0.678
+  },
+  "retrieval_detail": {
+    "n_answerable": 43,
+    "n_negatives": 24,
+    "n_questions": 67
+  }
+}
