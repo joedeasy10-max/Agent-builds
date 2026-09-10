@@ -113,6 +113,12 @@ jobs:
 
       - name: Run judge evaluation (RAGAS)
         if: env.HAS_KEY == 'true' && env.RUN_JUDGE == 'true'
+        env:
+          # RAGAS phones home to t.explodinggradients.com on import and during
+          # evaluation. On a locked-down runner that call hangs rather than
+          # failing fast, which shows up as unexplained TimeoutError on samples
+          # that were otherwise fine. Nothing here needs telemetry.
+          RAGAS_DO_NOT_TRACK: "true"
         run: |
           pip install -r requirements-judge.lock
           python -m src.evaluate \
