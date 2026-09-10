@@ -53,7 +53,9 @@ _RETRIEVAL_METRICS: list[tuple[str, int | None]] = [
 _EVAL_DEPTH = max((k for _, k in _RETRIEVAL_METRICS if k is not None), default=10)
 
 
-def _score_question(ranked_ids: list[str], record: GoldenRecord) -> dict:
+def _score_question(
+    ranked_ids: list[str], record: GoldenRecord, known_ids: frozenset[str] | None = None
+) -> dict:
     relevant = record.source_ids
     first_rank = next(
         (i for i, cid in enumerate(ranked_ids, start=1) if cid in set(relevant)),
@@ -73,6 +75,14 @@ def _score_question(ranked_ids: list[str], record: GoldenRecord) -> dict:
         # record names only one source.
         "retrieved": list(ranked_ids[:10]),
         "expected": list(relevant),
+        # Does the expected chunk exist in the index at all? A miss where the id
+        # is absent is a stale or hand-written reference — the retriever was
+        # never able to return it — and is a golden-set defect. A miss where the
+        # id exists is genuine ranking behaviour. Scoring cannot tell these
+        # apart, and they need opposite fixes.
+        "expected_missing_from_index": (
+            [] if known_ids is None else [c for c in relevant if c not in known_ids]
+        ),
     }
 
 
@@ -91,11 +101,13 @@ def run_retrieval_suite(
     # so a config that returns more context is measured as it actually behaves.
     depth = max(config.retrieval.top_k, _EVAL_DEPTH)
 
+    known_ids = frozenset(c.chunk_id for c in retriever.store.chunks)
+
     per_question: list[dict] = []
     for record in answerable:
         results = retriever.retrieve(record.question, top_k=depth)
         ranked_ids = [sc.chunk.chunk_id for sc in results]
-        per_question.append(_score_question(ranked_ids, record))
+        per_question.append(_score_question(ranked_ids, record, known_ids))
 
     aggregate = {
         name: R.mean([q[name] for q in per_question]) for name, _ in _RETRIEVAL_METRICS

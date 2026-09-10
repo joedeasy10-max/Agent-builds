@@ -163,3 +163,33 @@ def test_a_larger_serving_top_k_is_respected(tmp_path, fixture_pages, test_confi
     assert max(25, _EVAL_DEPTH) == 25       # depth never truncates a deeper config
     cfg = replace(test_config, retrieval=replace(test_config.retrieval, top_k=25))
     assert max(cfg.retrieval.top_k, _EVAL_DEPTH) == 25
+
+
+def test_missing_expected_chunk_is_flagged_as_a_golden_set_defect(tmp_path, fixture_pages, test_config):
+    """A gold id absent from the index is a bad label, not bad ranking.
+
+    Scoring reports both as hit@5 = 0. They need opposite fixes — one is a
+    golden-set correction, the other a retrieval change — so the suite has to
+    say which it is.
+    """
+    from src.evaluate import run_retrieval_suite
+    from src.golden import GoldenRecord
+    from src.ingest import build_index
+
+    idx = tmp_path / "idx"
+    build_index(fixture_pages, test_config, idx)
+
+    records = [
+        GoldenRecord(id="q_real", question="register", ground_truth="x",
+                     source_ids=("gov-uk/register-for-self-assessment#chunk-0",),
+                     difficulty="single_hop", added_in="v1"),
+        GoldenRecord(id="q_stale", question="register", ground_truth="x",
+                     source_ids=("gov-uk/this-page-does-not-exist#chunk-0",),
+                     difficulty="single_hop", added_in="v1"),
+    ]
+    rows = {r["id"]: r for r in run_retrieval_suite(records, test_config, idx)["per_question"]}
+
+    assert rows["q_real"]["expected_missing_from_index"] == []
+    assert rows["q_stale"]["expected_missing_from_index"] == [
+        "gov-uk/this-page-does-not-exist#chunk-0"
+    ]
