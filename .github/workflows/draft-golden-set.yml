@@ -27,6 +27,10 @@ on:
         description: "Abort if the estimated spend exceeds this"
         required: true
         default: "2.00"
+      merge_run_id:
+        description: "Optional: run id of an earlier draft. Keeps its grounded questions and redrafts only the negatives (set chunks to 0)."
+        required: false
+        default: ""
 
 concurrency:
   group: draft-golden-set
@@ -34,6 +38,7 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read   # download an earlier run's review queue for --merge-queue
 
 defaults:
   run:
@@ -79,6 +84,17 @@ jobs:
           path: govuk-rag-eval/.index/
           key: index-${{ hashFiles('govuk-rag-eval/configs/retrieval.yaml', 'govuk-rag-eval/data/corpus/manifest.json') }}
 
+      # Only when merging: pull the earlier queue so its grounded questions can
+      # be carried forward instead of redrafted.
+      - name: Fetch previous review queue
+        if: inputs.merge_run_id != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: review-queue-${{ inputs.merge_run_id }}
+          path: govuk-rag-eval/previous/
+          run-id: ${{ inputs.merge_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Draft candidates
         run: |
           python scripts/build_golden_set.py draft \
@@ -88,7 +104,8 @@ jobs:
             --limit ${{ inputs.chunks }} \
             --per-chunk ${{ inputs.per_chunk }} \
             --negatives ${{ inputs.negatives }} \
-            --max-usd ${{ inputs.max_usd }}
+            --max-usd ${{ inputs.max_usd }} \
+            ${{ inputs.merge_run_id != '' && '--merge-queue previous/review_queue.jsonl' || '' }}
 
       - name: Queue summary
         run: python scripts/build_golden_set.py status --queue data/golden/review_queue.jsonl
