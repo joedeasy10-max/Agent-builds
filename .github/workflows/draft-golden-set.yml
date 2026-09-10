@@ -1,0 +1,102 @@
+name: Draft golden set
+
+# Build step 3: LLM-draft candidate questions from the real corpus into a review
+# queue, and publish that queue as an artefact for a human to review.
+#
+# Manual only. This spends money and its output is never trusted automatically:
+# every candidate is written with status=pending, and `promote` refuses anything
+# that has not been explicitly approved by a person. Nothing here touches
+# data/golden/questions.jsonl.
+
+on:
+  workflow_dispatch:
+    inputs:
+      chunks:
+        description: "How many corpus chunks to draft from (spread across pages)"
+        required: true
+        default: "40"
+      per_chunk:
+        description: "Questions to draft per chunk"
+        required: true
+        default: "2"
+      negatives:
+        description: "Unanswerable questions to draft (0 to skip)"
+        required: true
+        default: "10"
+      max_usd:
+        description: "Abort if the estimated spend exceeds this"
+        required: true
+        default: "2.00"
+
+concurrency:
+  group: draft-golden-set
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: govuk-rag-eval
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      RAGAS_DO_NOT_TRACK: "true"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.lock
+          pip install -r requirements-judge.lock
+
+      # Same key as rag-eval.yml, so a warm index is reused rather than rebuilt.
+      - name: Restore vector index
+        id: index-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: govuk-rag-eval/.index/
+          key: index-${{ hashFiles('govuk-rag-eval/configs/retrieval.yaml', 'govuk-rag-eval/data/corpus/manifest.json') }}
+
+      - name: Build index
+        if: steps.index-cache.outputs.cache-hit != 'true'
+        run: python -m src.ingest --config configs/retrieval.yaml --out .index/
+
+      - name: Save vector index
+        if: steps.index-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: govuk-rag-eval/.index/
+          key: index-${{ hashFiles('govuk-rag-eval/configs/retrieval.yaml', 'govuk-rag-eval/data/corpus/manifest.json') }}
+
+      - name: Draft candidates
+        run: |
+          python scripts/build_golden_set.py draft \
+            --config configs/retrieval.yaml \
+            --index .index/ \
+            --out data/golden/review_queue.jsonl \
+            --limit ${{ inputs.chunks }} \
+            --per-chunk ${{ inputs.per_chunk }} \
+            --negatives ${{ inputs.negatives }} \
+            --max-usd ${{ inputs.max_usd }}
+
+      - name: Queue summary
+        run: python scripts/build_golden_set.py status --queue data/golden/review_queue.jsonl
+
+      # The queue is an artefact, not a commit: it is unreviewed model output.
+      - name: Upload review queue
+        uses: actions/upload-artifact@v4
+        with:
+          name: review-queue-${{ github.run_id }}
+          path: govuk-rag-eval/data/golden/review_queue.jsonl
+          if-no-files-found: error

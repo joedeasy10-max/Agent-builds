@@ -223,3 +223,47 @@ def test_build_drafter_rejects_echo():
 
     with pytest.raises(ValueError, match="cannot draft"):
         bgs.build_drafter(from_dict({"generation": {"provider": "echo"}}))
+
+
+# ---- chunk selection: coverage across pages, not a head slice --------------
+
+def _c(page, idx):
+    return Chunk(
+        chunk_id=f"{page}#chunk-{idx}", page_path=page, page_url="u", title="T",
+        text="t", content_hash="h", chunk_index=idx,
+    )
+
+
+def test_select_chunks_spreads_across_pages():
+    """A head slice of id-sorted chunks would draw only from page 'a'."""
+    chunks = [_c("a", i) for i in range(5)] + [_c("b", i) for i in range(5)] \
+        + [_c("c", i) for i in range(5)]
+    got = bgs.select_chunks(chunks, 3)
+    assert [c.page_path for c in got] == ["a", "b", "c"]      # one per page first
+    assert all(c.chunk_index == 0 for c in got)
+
+
+def test_select_chunks_second_pass_takes_deeper_chunks():
+    chunks = [_c("a", i) for i in range(2)] + [_c("b", i) for i in range(2)]
+    got = bgs.select_chunks(chunks, 4)
+    assert [(c.page_path, c.chunk_index) for c in got] == [
+        ("a", 0), ("b", 0), ("a", 1), ("b", 1),
+    ]
+
+
+def test_select_chunks_handles_uneven_pages():
+    chunks = [_c("a", 0), _c("b", 0), _c("b", 1), _c("b", 2)]
+    got = bgs.select_chunks(chunks, None)
+    assert [(c.page_path, c.chunk_index) for c in got] == [
+        ("a", 0), ("b", 0), ("b", 1), ("b", 2),
+    ]
+
+
+def test_select_chunks_is_deterministic():
+    chunks = [_c(p, i) for p in ("c", "a", "b") for i in range(3)]
+    assert bgs.select_chunks(chunks, 5) == bgs.select_chunks(list(reversed(chunks)), 5)
+
+
+def test_select_chunks_no_limit_returns_everything():
+    chunks = [_c("a", 0), _c("b", 0)]
+    assert len(bgs.select_chunks(chunks, None)) == 2

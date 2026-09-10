@@ -348,6 +348,35 @@ def draft_candidates(
     return out
 
 
+def select_chunks(chunks: list, limit: int | None) -> list:
+    """Pick `limit` chunks spread across pages, not the first N alphabetically.
+
+    Chunk ids are `<page-path>#chunk-<n>`, so sorting by id groups every chunk
+    of a page together — taking a head slice would draw the whole golden set
+    from the handful of alphabetically-first pages. A golden set that only
+    covers 4 of 292 pages measures almost nothing.
+
+    Round-robins by chunk index across pages instead: chunk 0 of every page
+    first, then chunk 1, and so on. Deterministic (pages and chunks both sorted),
+    so the same corpus and limit always select the same chunks.
+    """
+    by_page: dict[str, list] = {}
+    for c in chunks:
+        by_page.setdefault(c.page_path, []).append(c)
+    for page in by_page.values():
+        page.sort(key=lambda c: c.chunk_index)
+
+    ordered = []
+    pages = [by_page[k] for k in sorted(by_page)]
+    depth = max((len(p) for p in pages), default=0)
+    for i in range(depth):
+        for page in pages:
+            if i < len(page):
+                ordered.append(page[i])
+
+    return ordered if limit is None else ordered[:limit]
+
+
 # --- CLI --------------------------------------------------------------------
 
 
@@ -355,9 +384,7 @@ def _cmd_draft(args) -> int:
     config = load_config(args.config)
     index_dir = args.index or Path(config.store.path)
     store = load_store(index_dir, config.store.type)
-    chunks = sorted(store.chunks, key=lambda c: c.chunk_id)
-    if args.limit is not None:
-        chunks = chunks[: args.limit]
+    chunks = select_chunks(list(store.chunks), args.limit)
 
     calls = len(chunks) + (1 if args.negatives > 0 else 0)
     estimated = calls * _COST_PER_CALL_USD
@@ -449,7 +476,10 @@ def main(argv: list[str] | None = None) -> int:
     d.add_argument("--index", type=Path, default=None)
     d.add_argument("--out", type=Path, default=DEFAULT_QUEUE)
     d.add_argument("--per-chunk", type=int, default=2)
-    d.add_argument("--limit", type=int, default=None, help="cap chunks (cost discipline)")
+    d.add_argument(
+        "--limit", type=int, default=None,
+        help="cap chunks, spread across pages (cost discipline)",
+    )
     d.add_argument("--negatives", type=int, default=25)
     d.add_argument("--topic", type=str, default="Self Assessment and self-employment tax guidance")
     d.add_argument("--provider", choices=["openai", "anthropic"], default=None)
