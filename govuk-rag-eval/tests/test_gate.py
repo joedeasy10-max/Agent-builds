@@ -21,7 +21,12 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 EVAL_CONFIG = ROOT / "configs" / "eval_config.yaml"
-GOLDEN = ROOT / "data" / "golden" / "questions.jsonl"
+# The gate/experiment logic is what these exercise, so they use a fixture golden
+# set matched to tests/fixtures/pages — not the committed one. Pointing them at
+# the real dataset coupled them to its contents: promoting the reviewed v2 set
+# (67 records over 21 pages, only 2 of which the fixture corpus holds) dropped
+# hit@5 to 0.047 and failed tests that have nothing to do with the dataset.
+GOLDEN = ROOT / "tests" / "fixtures" / "golden_fixture.jsonl"
 
 
 def _load_compare():
@@ -124,4 +129,5 @@ def test_committed_eval_config_version_matches_golden(tmp_path):
     from src.golden import dataset_version, load_golden
 
     cfg = yaml.safe_load(EVAL_CONFIG.read_text())
-    assert cfg["dataset"]["version"] == dataset_version(load_golden(GOLDEN))
+    committed = ROOT / "data" / "golden" / "questions.jsonl"
+    assert cfg["dataset"]["version"] == dataset_version(load_golden(committed))

@@ -13,7 +13,12 @@ from src.config import from_dict
 from src.golden import load_golden
 
 ROOT = Path(__file__).resolve().parent.parent
-GOLDEN = ROOT / "data" / "golden" / "questions.jsonl"
+# The gate/experiment logic is what these exercise, so they use a fixture golden
+# set matched to tests/fixtures/pages — not the committed one. Pointing them at
+# the real dataset coupled them to its contents: promoting the reviewed v2 set
+# (67 records over 21 pages, only 2 of which the fixture corpus holds) dropped
+# hit@5 to 0.047 and failed tests that have nothing to do with the dataset.
+GOLDEN = ROOT / "tests" / "fixtures" / "golden_fixture.jsonl"
 
 
 def _load_module():
