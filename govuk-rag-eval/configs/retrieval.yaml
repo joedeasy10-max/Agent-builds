@@ -30,7 +30,7 @@ embedding:
   # deterministic. Switching back to OpenAI is one line here (provider: openai,
   # model: text-embedding-3-small, dimensions: 1536) PLUS regenerating
   # results/baseline.json — a baseline is only valid for the embedder that made it.
-  model: BAAI/bge-small-en-v1.5   # <-- regression demo target: swap to a weaker model
+  model: sentence-transformers/average_word_embeddings_glove.6B.300d   # <-- REGRESSION DEMO: weaker model
   dimensions: 384            # informational: BgeEmbedder reads it from the model
   batch_size: 64
 
