@@ -287,6 +287,22 @@ _AVOID_TEMPLATE = (
 )
 
 
+#: Conditions no amount of retrying will fix, so a run should stop rather than
+#: burn 150 sequential calls discovering the same thing 150 times. Matched on
+#: the message text because provider SDKs surface these as differently-shaped
+#: exceptions. Same list the judge pre-flight uses (src/metrics/judge.py).
+_FATAL_MARKERS = (
+    "credit balance", "insufficient_quota", "quota",
+    "authentication", "invalid api key", "invalid x-api-key",
+    "permission", "not_found_error", "model not found",
+)
+
+
+def is_fatal_provider_error(exc: Exception) -> bool:
+    text = str(exc).lower()
+    return any(marker in text for marker in _FATAL_MARKERS)
+
+
 class AnthropicDrafter:
     drafter_id = "anthropic"
 
@@ -305,6 +321,17 @@ class AnthropicDrafter:
             messages=[{"role": "user", "content": user}],
         )
         return "".join(b.text for b in resp.content if b.type == "text")
+
+    def preflight(self) -> None:
+        """One tiny call, so a dead key costs 2 seconds instead of a traceback.
+
+        Drafting is a long sequential loop of paid calls. Without this, a run
+        with no credit dies on call 1 with a raw provider traceback (run
+        34508149133 did exactly that), and a run whose credit runs out mid-way
+        dies at call N with the same traceback. The judge suite already works
+        this way; the drafter did not, which is the asymmetry this closes.
+        """
+        self._call("Reply with the single word: ok", "ping")
 
     def draft(self, chunk: Chunk, n: int) -> str:
         return self._call(
@@ -338,6 +365,10 @@ class OpenAIDrafter:
             ],
         )
         return resp.choices[0].message.content or ""
+
+    def preflight(self) -> None:
+        """See AnthropicDrafter.preflight — same contract, other provider."""
+        self._call("Reply with the single word: ok", "ping")
 
     def draft(self, chunk: Chunk, n: int) -> str:
         return self._call(
@@ -376,6 +407,19 @@ def normalise_question(question: str) -> str:
     return re.sub(r"\s+", " ", question).strip().strip("?.!").casefold()
 
 
+class PartialDraft(Exception):
+    """Raised when drafting stops on an unrecoverable provider error.
+
+    Carries the candidates drafted before the failure so the caller can write
+    them out. Losing paid work to an exception is the thing this exists to stop.
+    """
+
+    def __init__(self, candidates: list[Candidate], cause: Exception):
+        super().__init__(str(cause))
+        self.candidates = candidates
+        self.cause = cause
+
+
 def draft_candidates(
     chunks: list[Chunk],
     drafter,
@@ -395,8 +439,18 @@ def draft_candidates(
     out: list[Candidate] = [
         replace(c, candidate_id=f"cand_{i:04d}") for i, c in enumerate(seed)
     ]
+    # A fatal provider error mid-loop must not throw away the calls already
+    # paid for. Drafting 150 chunks is 150 sequential paid calls; dying at 140
+    # and losing all 140 is the failure mode this guards. `partial` is raised to
+    # the caller so it can still write the queue, then report honestly.
     for chunk in chunks:
-        out.extend(parse_candidates(drafter.draft(chunk, per_chunk), chunk, len(out)))
+        try:
+            out.extend(parse_candidates(drafter.draft(chunk, per_chunk), chunk, len(out)))
+        except Exception as exc:  # noqa: BLE001 - provider errors are untyped
+            if is_fatal_provider_error(exc):
+                raise PartialDraft(out, exc) from exc
+            # Anything transient costs this chunk, not the run.
+            print(f"  ! chunk {chunk.chunk_id} failed: {exc}", file=sys.stderr)
     # Negatives are requested in batches. A single call for all of them
     # overruns the drafter's max_tokens (25 questions of JSON did exactly that),
     # the array truncates mid-entry, and the whole batch is dropped as malformed
@@ -573,14 +627,45 @@ def _cmd_draft(args) -> int:
         )
 
     drafter = build_drafter(config, args.provider)
+
+    # One cheap call before committing to ~len(chunks) paid ones. A dead key or
+    # an empty account is then a two-second message instead of a traceback on
+    # call 1 (run 34508149133) — and the estimate above is only meaningful if
+    # the account can actually pay it.
+    preflight = getattr(drafter, "preflight", None)
+    if preflight is not None:
+        try:
+            preflight()
+        except Exception as exc:  # noqa: BLE001 - provider errors are untyped
+            if is_fatal_provider_error(exc):
+                raise SystemExit(
+                    f"Draft pre-flight failed against {drafter.drafter_id}: {exc}\n"
+                    f"Nothing was drafted and nothing was spent. {args.out} is "
+                    "unchanged. Fix the provider account or key and re-run."
+                ) from exc
+            print(f"Pre-flight warning (continuing): {exc}", file=sys.stderr)
+
     print(
         f"Drafting from {len(chunks)} chunks x {args.per_chunk} "
         f"(+{args.negatives} negatives) via {drafter.drafter_id}, est ${estimated:.2f}…",
         file=sys.stderr,
     )
-    candidates = draft_candidates(
-        chunks, drafter, args.per_chunk, args.negatives, args.topic, seed=seed
-    )
+    try:
+        candidates = draft_candidates(
+            chunks, drafter, args.per_chunk, args.negatives, args.topic, seed=seed
+        )
+    except PartialDraft as partial:
+        # Keep what was paid for. Writing the queue and THEN failing means the
+        # work is recoverable with --merge-queue instead of re-bought.
+        write_queue(args.out, partial.candidates)
+        raise SystemExit(
+            f"Drafting stopped early: {partial.cause}\n"
+            f"Kept {len(partial.candidates)} candidate(s) already drafted -> "
+            f"{args.out}. Nothing is lost: fix the provider account, then re-run "
+            f"with --merge-queue {args.out} --keep-negatives to top up rather "
+            "than redraft."
+        ) from partial
+
     write_queue(args.out, candidates)
 
     s = summarise(candidates)
