@@ -16,27 +16,69 @@ Steps are defined in `BUILD.md` → "Build order". There are **8**.
 | # | Step | State |
 |---|------|-------|
 | 1 | **Ingest + retrieve** — crawl, chunk, index, `retrieve(question)` | ✅ done |
-| 2 | **Retrieval metrics** (hit@5, MRR, recall@10) + `src/evaluate.py` | ✅ done |
-| 3 | Golden set to full size (150–300, hand-reviewed) | 🟡 tooling ready (`scripts/build_golden_set.py`); needs a corpus + your review |
-| 4 | **Generation + RAGAS judge metrics** (median-of-N, measure variance) | 🟡 scaffolded — pipeline + median-of-N done; real RAGAS grader lazy-wired |
-| 5 | **CI gate** — wire `rag-eval.yml` + `compare.py`, commit a baseline | 🟡 wired + proven end-to-end; activates with an `OPENAI_API_KEY`/`ANTHROPIC_API_KEY` + a real baseline |
-| 6 | Regression demos — 3 blocked PRs | 🟡 chunk-size demo proven offline (gate blocks); top_k/embedding demos need real data |
-| 7 | Experiment benchmark — `run_experiments.py` + table | 🟡 runner done + demoed; real table needs embeddings |
-| 8 | **Corpus-drift workflow** (`refresh-corpus.yml`) | 🟡 scaffolded — workflow + `refresh_corpus.py` + drift logic tested; runs once egress exists |
+| 2 | **Retrieval metrics** (hit@5, MRR, recall@10, served recall) + `src/evaluate.py` | ✅ done |
+| 3 | Golden set to full size (150–300, hand-reviewed) | 🟡 **65 reviewed records** (41 answerable, 24 negatives) — real and gating, but short of the 150–300 target, and only 4 multi-hop |
+| 4 | **Generation + RAGAS judge metrics** (median-of-N, measure variance) | 🟡 grader runs for real (medians below); the **3-run spread is not yet recorded** — see note |
+| 5 | **CI gate** — wire `rag-eval.yml` + `compare.py`, commit a baseline | ✅ done — active, with a committed v2 baseline; blocks PRs (see step 6) |
+| 6 | Regression demos — 3 blocked PRs | ✅ done — PRs #18, #19, #20 are open and red; each fails on real numbers |
+| 7 | Experiment benchmark — `run_experiments.py` + table | ✅ done — table below |
+| 8 | **Corpus-drift workflow** (`refresh-corpus.yml`) | ✅ done — `refresh_corpus.py` + drift logic tested; runs on schedule |
 
 The gate lives at the **repo root** workflow `.github/workflows/rag-eval.yml`
 (GitHub only runs workflows from the root; the steps `cd` into `govuk-rag-eval/`).
-`evaluate` + `compare.py` are wired and the full pass/fail chain is proven
-offline in `tests/test_gate.py` (a run matching baseline passes; a regression
-below a floor fails; no baseline reports-only). The `eval_config` dataset version
-is aligned to the shipped golden set (`v1`), and `results/baseline.json` is an
-intentional `{}` placeholder (reporting-only). The workflow is **guarded on
-`OPENAI_API_KEY`**: without the secret every real step skips and the job stays
-green, so it is never a red check; it activates once the secret is set and a real
-corpus + golden set (step 3) + committed baseline exist — see
-`results/README.md`. If this subproject is ever split into its own repo, move the
-root workflow to that repo's `.github/workflows/` and drop the `govuk-rag-eval/`
-path prefixes.
+It is **live**: `eval_config` is on dataset `v2`, `results/baseline.json` holds a
+real measured baseline, and three regression PRs are sitting red against it.
+
+The workflow is **guarded on a provider key** (`OPENAI_API_KEY` *or*
+`ANTHROPIC_API_KEY` — they are interchangeable): without either, every real step
+skips and the job stays green, so it is never a red check on a fork that has not
+opted in. Judge metrics are extra-gated on `RUN_JUDGE`, which is true nightly, on
+manual dispatch, and on a PR labelled `full-eval` — retrieval alone runs on every
+PR, because it is deterministic and free.
+
+If this subproject is ever split into its own repo, move the root workflow to
+that repo's `.github/workflows/` and drop the `govuk-rag-eval/` path prefixes.
+
+### Current baseline (dataset `v2`, 65 records)
+
+Deterministic retrieval, measured on
+[run 34500807132](https://github.com/joedeasy10-max/Agent-builds/actions/runs/34500807132):
+
+| Metric | Value | Floor |
+| --- | ---: | ---: |
+| `hit_at_5` | 0.902 | 0.82 |
+| `mrr` | 0.715 | 0.65 |
+| `context_recall_at_10` | 0.927 | 0.88 |
+| `served_context_recall` | 0.902 | 0.82 |
+
+Judge medians, measured on
+[run 34498691301](https://github.com/joedeasy10-max/Agent-builds/actions/runs/34498691301)
+(41 questions × 3 runs, ~$3.69): `faithfulness` **0.975**, `answer_relevancy`
+**0.892**, `context_precision` **0.814**.
+
+> **Not yet done (step 4):** those are medians. The **run-to-run spread** — the
+> measurement that is supposed to justify the `max_relative_drop` tolerances in
+> `eval_config.yaml` — was computed by that run but only written to the workflow
+> artefact, and the artefact host is unreachable from some networks. The
+> tolerances (0.05 / 0.05 / 0.06) are therefore still **guesses**. The gate now
+> prints the spread directly to the log, so the next judge run records it; the
+> judge numbers are consequently **not** in `results/baseline.json` yet.
+
+### Where retrieval still misses
+
+4 of 41 answerable questions miss at rank 5. None of them is a stale label —
+every gold chunk id is present in the index:
+
+| Question | What happened |
+| --- | --- |
+| `q_0006` | gold chunk found at **rank 6** — a near miss, recoverable by depth |
+| `q_0015` | ranks 1 and 2 are `#chunk-1` and `#chunk-3` of **the correct page**; the gold label names `#chunk-0`. Retrieval found the right document and the metric scores it zero |
+| `q_0001` | gold chunk absent from the top 10; nothing on-topic retrieved |
+| `q_0042` | gold chunk absent from the top 10; nothing on-topic retrieved |
+
+`q_0015` is the interesting one: it argues for a page-level companion to the
+chunk-level metric, since "right page, adjacent chunk" is scored identically to
+"completely wrong".
 
 ## Everything is a config value
 
@@ -143,16 +185,29 @@ an LLM.
 Three deliberate regressions the gate is meant to catch, each a one-line edit to
 `configs/retrieval.yaml`:
 
-| Demo | Edit | Offline-provable here? |
-| --- | --- | --- |
-| Chunking | `chunk_size: 512 → 2000` | ✅ yes — `tests/test_regression_demo.py` shows the gate failing (exit 1) |
-| Retrieval depth | `top_k: 5 → 2` | ⬜ needs the full golden set (on the 3-record starter every relevant chunk is already rank 1) |
-| Embedding | `text-embedding-3-small → a weaker model` | ⬜ needs real embeddings (a key) |
+All three are open and red against the committed `v2` baseline. Numbers are
+from each PR's own gate run, not a simulation:
 
-The chunk-size demo is proven deterministically: a bigger chunk size collapses
-pages and invalidates the golden set's `#chunk-N` references, so metrics fall
-below their floor and `compare.py` blocks the PR. The other two behave the same
-way once the real corpus/model and full golden set are in place.
+| PR | Edit | `hit_at_5` | `mrr` | `recall@10` | `served_recall` | Verdict |
+| --- | --- | ---: | ---: | ---: | ---: | --- |
+| — | *baseline* | 0.902 | 0.715 | 0.927 | 0.902 | — |
+| [#18](https://github.com/joedeasy10-max/Agent-builds/pull/18) | `chunk_size: 512 → 2000` | **0.805** ❌ | 0.735 ⬆ | 0.902 ⬆ | **0.805** ❌ | failed on 2 metrics |
+| [#19](https://github.com/joedeasy10-max/Agent-builds/pull/19) | `top_k: 5 → 2` | 0.902 ✅ | 0.715 ✅ | 0.927 ✅ | **0.732** ❌ | failed on 1 metric |
+| [#20](https://github.com/joedeasy10-max/Agent-builds/pull/20) | weaker embedding model | **0.537** ❌ | **0.418** ❌ | **0.659** ❌ | **0.537** ❌ | failed on 4 metrics |
+
+Two of these are worth reading closely.
+
+**#18 shows why a single metric is not a gate.** Bigger chunks *improved* `mrr`
+and `context_recall_at_10` — a fatter chunk is more likely to contain the gold
+text — while `hit_at_5` fell through the floor. A gate watching only the
+average, or only recall, would have waved this through.
+
+**#19 is the reason `served_context_recall` exists.** Cutting `top_k` from 5 to
+2 left `hit_at_5`, `mrr` and `context_recall_at_10` *completely unchanged*, since
+all three are measured at fixed cutoffs and cannot see how much context is
+actually served. Only `served_context_recall` moved, and it alone blocked the
+PR. Before that metric was added (PR #17) this regression would have passed the
+gate untouched.
 
 ### Experiment benchmark (step 7)
 
@@ -168,10 +223,43 @@ python scripts/run_experiments.py \
     --primary-metric mrr --out results/experiments
 ```
 
-Real numbers for the four named experiments (`baseline`, `small_chunks`,
-`hybrid_bm25`, `reranked`) go here once embeddings are available; see
-`results/experiments/README.md`. The runner and its table are proven offline in
-`tests/test_run_experiments.py` (including the chunk-size effect).
+Measured on the real corpus (292 GOV.UK pages) and the `v2` golden set, on
+[run 34501424650](https://github.com/joedeasy10-max/Agent-builds/actions/runs/34501424650).
+Each config gets its own index — a shared one would score three configs against
+vectors built for the fourth.
+
+| Config | `hit_at_5` | `mrr` | `recall@10` | `served_recall` | chunks | status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `baseline` 🏆 | **0.902** | **0.715** | **0.927** | **0.902** | 6103 | ok |
+| `small_chunks` (256) | 0.512 | 0.457 | 0.610 | 0.512 | 13834 | ok |
+| `hybrid_bm25` | — | — | — | — | — | skipped: `hybrid` retriever not implemented |
+| `reranked` | — | — | — | — | — | skipped: `reranker` section not implemented |
+
+**Winner: `baseline`** — the shipped `configs/retrieval.yaml`, on the primary
+metric `mrr`. It is not a close call: halving the chunk size costs 39 points of
+`hit_at_5`.
+
+Two of the four are honestly *pending*, not run. `hybrid_bm25` needs a retriever
+that does not exist yet; `reranked` declares a `reranker:` section that
+`Config` rejects, so it fails to load and says so. That second row used to
+report numbers — it carried the reranker commented out, which made the file
+identical to `baseline.yaml`, and the benchmark dutifully published baseline's
+results under the name of an experiment that had never been performed. A
+pending experiment should look pending.
+
+> **Open question on `small_chunks`.** A 39-point drop from halving the chunk
+> size is larger than a chunking change alone would suggest, and the cause is
+> not yet established. The obvious suspect — that `#chunk-N` gold labels
+> renumber when chunk size changes — was checked and **does not hold**: 37 of
+> the 41 answerable questions reference `#chunk-0`, which is the first chunk of
+> its page at any chunk size. Whether the remainder is a genuine retrieval
+> effect (256-char chunks being too small to carry enough context to match a
+> question) or a subtler labelling artefact needs the real corpus to settle,
+> and is not claimed either way here.
+
+The runner and its table are proven offline in `tests/test_run_experiments.py`,
+including that the table has a column for every metric in the suite and that an
+unloadable config becomes a skipped row rather than a crashed run.
 
 ### Corpus-drift workflow (step 8)
 
