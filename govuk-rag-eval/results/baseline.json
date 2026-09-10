@@ -1,18 +1,19 @@
 {
   "_provenance": {
-    "measured_on": "2c1e5591a5bb98ef3a0753d24fff43d7e287666b",
-    "note": "Retrieval only, measured AFTER the evaluation-depth fix, so context_recall_at_10 now genuinely inspects rank 10 rather than being a second copy of hit_at_5. Values verified identical on PR #14, whose tree for govuk-rag-eval matches this commit exactly. The judge half is still absent: that run's pre-flight stopped in 31s on Anthropic credit exhaustion, so no judge numbers exist and none are invented. compare.py treats a missing suite as 'no prior' \u2014 absolute floors still apply.",
-    "source_run": "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34492516894"
+    "measured_on": "e56576ab4c03881a098e097e7b231948ad2e6f07",
+    "note": "Retrieval only. Measured on the v2 golden set as it stands after PR #16 dropped two self-referential questions: 65 records, 41 answerable, 24 negatives. Includes served_context_recall, the metric added in PR #17 that can see a top_k change. The judge half is deliberately absent: the pre-flight on this run stopped in 31s on Anthropic credit exhaustion, so no judge numbers were produced and none are invented. compare.py treats a missing suite as 'no prior' - the absolute floors still apply to it.",
+    "source_run": "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34500807132"
   },
   "dataset_version": "v2",
   "retrieval": {
-    "context_recall_at_10": 0.884,
-    "hit_at_5": 0.86,
-    "mrr": 0.682
+    "context_recall_at_10": 0.926829268292683,
+    "hit_at_5": 0.9024390243902439,
+    "mrr": 0.7154471544715447,
+    "served_context_recall": 0.9024390243902439
   },
   "retrieval_detail": {
-    "n_answerable": 43,
+    "n_answerable": 41,
     "n_negatives": 24,
-    "n_questions": 67
+    "n_questions": 65
   }
 }

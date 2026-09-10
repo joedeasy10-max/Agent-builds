@@ -9,11 +9,16 @@
 dataset:
   path: data/golden/questions.jsonl
   version: v2           # bump on every change to the golden set
-  # v2 is the first reviewed golden set (build step 3): 67 records — 43
+  # v2 is the first reviewed golden set (build step 3): 65 records — 41
   # answerable across 21 GOV.UK pages, 24 negatives. Drafted by Claude from the
   # pinned corpus, then accepted or rejected by a human; nothing reaches this
   # file unreviewed. Any baseline taken on v1 is not comparable and must be
   # regenerated.
+  #
+  # (This comment said 67/43 until the counts were re-derived from the file:
+  # PR #16 dropped two self-referential questions and the comment was not
+  # updated with them. Counting is one line — `wc -l data/golden/questions.jsonl`
+  # — so prefer that over trusting this sentence.)
   # A baseline is only comparable within the same dataset version.
   # compare.py refuses to gate across versions and warns instead.
 
