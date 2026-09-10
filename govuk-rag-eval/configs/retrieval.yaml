@@ -40,7 +40,7 @@ store:
 
 retrieval:
   retriever: dense           # dense | bm25 | hybrid  (dense implemented in step 1)
-  top_k: 5                   # <-- regression demo target: 5 -> 2
+  top_k: 2                   # <-- REGRESSION DEMO: 5 -> 2
   normalize: true            # cosine similarity via normalised vectors
 
 generation:                  # answer synthesis for the judge suite (step 4)
