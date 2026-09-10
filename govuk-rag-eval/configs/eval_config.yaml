@@ -8,10 +8,12 @@
 
 dataset:
   path: data/golden/questions.jsonl
-  version: v1           # bump on every change to the golden set
-  # Aligned to the shipped starter golden set (v1). Bumps to v3 when the full
-  # 150-300 record set lands (build step 3), which also invalidates the baseline
-  # until it is regenerated on the new version.
+  version: v2           # bump on every change to the golden set
+  # v2 is the first reviewed golden set (build step 3): 67 records — 43
+  # answerable across 21 GOV.UK pages, 24 negatives. Drafted by Claude from the
+  # pinned corpus, then accepted or rejected by a human; nothing reaches this
+  # file unreviewed. Any baseline taken on v1 is not comparable and must be
+  # regenerated.
   # A baseline is only comparable within the same dataset version.
   # compare.py refuses to gate across versions and warns instead.
 

@@ -60,10 +60,27 @@ def test_rejects_empty(tmp_path):
 
 
 def test_committed_golden_set_is_valid():
-    """The starter golden set that ships in the repo must load."""
+    """The golden set that ships in the repo must load and be internally sound.
+
+    Asserts properties that stay true as the set grows, not a pinned version
+    literal — the literal broke the moment the reviewed v2 set was promoted, which
+    is a change to the data, not a defect. The version is checked for agreement
+    with eval_config instead: a baseline is only comparable within one version, so
+    a set promoted without bumping the config is the bug worth catching.
+    """
     from pathlib import Path
+
+    import yaml
 
     root = Path(__file__).resolve().parent.parent
     recs = load_golden(root / "data" / "golden" / "questions.jsonl")
     assert len(recs) >= 1
-    assert dataset_version(recs) == "v1"
+
+    cfg = yaml.safe_load((root / "configs" / "eval_config.yaml").read_text())
+    assert dataset_version(recs) == cfg["dataset"]["version"]
+
+    assert any(r.is_answerable for r in recs), "no answerable questions"
+    assert any(r.is_negative for r in recs), "no negatives — refusal is untested"
+    assert all(r.source_ids for r in recs if r.is_answerable)
+    assert not any(r.source_ids for r in recs if r.is_negative)
+    assert len({r.id for r in recs}) == len(recs), "duplicate ids"

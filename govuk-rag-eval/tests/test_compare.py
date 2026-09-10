@@ -14,6 +14,14 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 THRESHOLDS = ROOT / "configs" / "eval_config.yaml"
 
+# Read from the config rather than pinned here. These tests are about compare.py's
+# version logic, not about which version the dataset happens to be on, and a
+# hardcoded literal has now broken them on two separate dataset bumps.
+import yaml  # noqa: E402
+
+CONFIG_VERSION = yaml.safe_load(THRESHOLDS.read_text())["dataset"]["version"]
+OTHER_VERSION = "v0" if CONFIG_VERSION != "v0" else "v99"
+
 
 def _load_compare():
     spec = importlib.util.spec_from_file_location("compare", ROOT / "scripts" / "compare.py")
@@ -47,9 +55,9 @@ def _run(tmp_path, current: dict | None, baseline: dict | None) -> tuple[int, st
     return code, (md.read_text() if md.exists() else "")
 
 
-def _current(hit_at_5=0.90, version="v1"):  # matches configs/eval_config.yaml
+def _current(hit_at_5=0.90, version=None):  # defaults to the configured version
     return {
-        "dataset_version": version,
+        "dataset_version": CONFIG_VERSION if version is None else version,
         "retrieval": {"hit_at_5": hit_at_5, "mrr": 0.70, "context_recall_at_10": 0.91},
     }
 
@@ -82,14 +90,15 @@ def test_no_baseline_reports_only(tmp_path):
 
 
 def test_dataset_version_mismatch_baseline_vs_current_reports_only(tmp_path):
-    # current matches config (v1), baseline is an older v0 -> not comparable.
-    code, report = _run(tmp_path, _current(version="v1"), _current(version="v0"))
+    # current matches config, baseline is an older version -> not comparable.
+    code, report = _run(tmp_path, _current(), _current(version=OTHER_VERSION))
     assert code == 0
     assert "not comparable across versions" in report
 
 
 def test_current_version_disagrees_with_config_cannot_compare(tmp_path):
-    code, _ = _run(tmp_path, _current(version="v2"), _current(version="v2"))
+    code, _ = _run(tmp_path, _current(version=OTHER_VERSION),
+                   _current(version=OTHER_VERSION))
     assert code == 2
 
 
