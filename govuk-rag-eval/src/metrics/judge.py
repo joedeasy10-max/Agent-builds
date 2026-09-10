@@ -236,22 +236,32 @@ class RagasGrader:
         """
         if self.embedder is None:
             return None
-        from ragas.embeddings import BaseRagasEmbedding
+        from langchain_core.embeddings import Embeddings
+        from ragas.embeddings import LangchainEmbeddingsWrapper
 
         inner = self.embedder
 
-        class _ProjectEmbedding(BaseRagasEmbedding):
-            def embed_text(self, text: str, **kwargs) -> list[float]:
-                return [float(x) for x in inner.embed([text])[0]]
+        class _ProjectEmbeddings(Embeddings):
+            """The project's embedder behind langchain's two-method interface."""
 
-            async def aembed_text(self, text: str, **kwargs) -> list[float]:
-                return self.embed_text(text)
-
-            def embed_texts(self, texts: list[str], **kwargs) -> list[list[float]]:
-                # Batched: the whole point of a local model is one forward pass.
+            def embed_documents(self, texts: list[str]) -> list[list[float]]:
+                # Batched: the point of a local model is one forward pass.
                 return [[float(x) for x in row] for row in inner.embed(list(texts))]
 
-        return _ProjectEmbedding()
+            def embed_query(self, text: str) -> list[float]:
+                return self.embed_documents([text])[0]
+
+        # Wrapped by RAGAS's own adapter rather than implementing a RAGAS
+        # interface directly. A previous attempt subclassed `BaseRagasEmbedding`
+        # and satisfied its abstract methods (embed_text/aembed_text) — but the
+        # metrics call `embed_query`/`embed_documents`, so every sample died on
+        #   AttributeError: '_ProjectEmbedding' object has no attribute
+        #   'embed_query'
+        # Satisfying an ABC is not the same as satisfying the caller. Going
+        # through LangchainEmbeddingsWrapper puts this on exactly the supported
+        # path, and `Embeddings` is a two-method interface that RAGAS adapts to
+        # whichever shape it needs (it supplies the async variants itself).
+        return LangchainEmbeddingsWrapper(_ProjectEmbeddings())
 
     def grade(self, samples: Sequence[JudgeSample]) -> dict[str, float]:
         from datasets import Dataset  # lazy, heavy

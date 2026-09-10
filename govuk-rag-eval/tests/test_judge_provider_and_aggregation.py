@@ -174,3 +174,56 @@ def test_grade_uses_the_configured_anthropic_model(monkeypatch):
     # reject the parameter (400: `temperature` is deprecated for this model),
     # which failed every sample of run 34453595063.
     assert kwargs.get("bypass_temperature") is True
+
+
+# ---- 4. the embeddings adapter exposes what RAGAS actually calls ------------
+
+class _FakeProjectEmbedder:
+    """Mimics the project Embedder protocol: .embed(list[str]) -> ndarray."""
+
+    embedder_id = "fake"
+
+    def embed(self, texts):
+        import numpy as np
+
+        return np.array([[float(len(t)), 0.5] for t in texts], dtype="float32")
+
+
+def test_embeddings_adapter_exposes_the_methods_ragas_calls(monkeypatch):
+    """Regression: the first adapter satisfied BaseRagasEmbedding's abstract
+    methods (embed_text/aembed_text) but RAGAS's metrics call embed_query and
+    embed_documents, so every sample died with
+
+        AttributeError: '_ProjectEmbedding' object has no attribute 'embed_query'
+
+    Satisfying an ABC is not the same as satisfying the caller — so this test
+    pins the caller's contract, not the ABC's.
+    """
+    captured = {}
+
+    ragas_mod = types.ModuleType("ragas")
+    emb_mod = types.ModuleType("ragas.embeddings")
+
+    def _wrapper(inner):
+        captured["inner"] = inner
+        return ("wrapped", inner)
+
+    emb_mod.LangchainEmbeddingsWrapper = _wrapper
+    monkeypatch.setitem(sys.modules, "ragas", ragas_mod)
+    monkeypatch.setitem(sys.modules, "ragas.embeddings", emb_mod)
+
+    grader = J.RagasGrader(provider="anthropic", embedder=_FakeProjectEmbedder())
+    grader._embeddings()
+
+    inner = captured["inner"]
+    assert inner.embed_query("hello") == [5.0, 0.5]
+    assert inner.embed_documents(["a", "bb"]) == [[1.0, 0.5], [2.0, 0.5]]
+
+    # A real langchain Embeddings, so RAGAS supplies the async variants itself.
+    from langchain_core.embeddings import Embeddings
+
+    assert isinstance(inner, Embeddings)
+
+
+def test_no_embedder_falls_back_to_the_ragas_default():
+    assert J.RagasGrader(provider="openai")._embeddings() is None
