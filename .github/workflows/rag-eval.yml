@@ -135,6 +135,35 @@ jobs:
             --runs 3 \
             --merge-into results/current.json
 
+      # Which questions failed, not just how many. results/current.json carries
+      # per_question detail with first_relevant_rank, but it only ever reaches an
+      # artefact — and an artefact download that some networks block is no use
+      # when you are trying to work out why six questions miss.
+      - name: Report retrieval misses
+        if: env.HAS_KEY == 'true' && always()
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          f = pathlib.Path("results/current.json")
+          if not f.exists():
+              print("no results/current.json — retrieval did not run")
+              raise SystemExit(0)
+          d = json.loads(f.read_text())
+          rows = d.get("retrieval_detail", {}).get("per_question", [])
+          if not rows:
+              print("no per-question detail in results")
+              raise SystemExit(0)
+          misses = [r for r in rows if not r.get("hit_at_5")]
+          print(f"{len(rows)} answerable · {len(rows)-len(misses)} hit@5 · {len(misses)} missed\n")
+          for r in sorted(misses, key=lambda r: (r.get("first_relevant_rank") or 10**6)):
+              rank = r.get("first_relevant_rank")
+              where = f"found at rank {rank}" if rank else "NOT in the retrieved list at all"
+              print(f"  {r['id']}  [{r.get('difficulty','?')}]  {where}")
+          deep = [r for r in misses if r.get("first_relevant_rank")]
+          print(f"\nnear-misses recoverable by depth: {len(deep)}")
+          print(f"hard misses (absent from the whole list): {len(misses)-len(deep)}")
+          PY
+
       - name: Fetch baseline from main
         if: env.HAS_KEY == 'true'
         run: |
