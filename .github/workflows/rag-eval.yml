@@ -173,6 +173,72 @@ jobs:
           print(f"of which bad labels (gold id not in the index): {len(bad_label)}")
           PY
 
+      # The judge's three-run spread is the whole justification for the
+      # tolerance bands in eval_config.yaml, and until now it existed only
+      # inside results/current.json in an artefact. Artefact downloads are
+      # blocked on some networks (blob.core.windows.net), which made the
+      # measurement effectively unreadable. Print it, and print the exact
+      # object that should be committed as results/baseline.json, so a
+      # baseline can be promoted from the log alone.
+      - name: Report judge spread and baseline-ready JSON
+        if: env.HAS_KEY == 'true' && always()
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          f = pathlib.Path("results/current.json")
+          if not f.exists():
+              print("no results/current.json — nothing ran")
+              raise SystemExit(0)
+          d = json.loads(f.read_text())
+
+          spread = d.get("judge_detail", {}).get("spread") or {}
+          if spread:
+              runs = d.get("judge_runs", "?")
+              print(f"judge spread over {runs} runs (median is what the gate uses)\n")
+              width = max(len(m) for m in spread)
+              header = f"  {'metric'.ljust(width)}  median     min      max    spread"
+              print(header)
+              print("  " + "-" * (len(header) - 2))
+              for metric, s in sorted(spread.items()):
+                  vals = [v for v in s.get("runs", []) if v is not None]
+                  median = d.get("judge", {}).get(metric)
+                  lo, hi = s.get("min"), s.get("max")
+                  band = (hi - lo) if (lo is not None and hi is not None) else None
+                  def fmt(v):
+                      return "  n/a " if v is None else f"{v:.4f}"
+                  print(
+                      f"  {metric.ljust(width)}  {fmt(median)}  {fmt(lo)}  {fmt(hi)}  "
+                      f"{fmt(band)}   runs={[round(v, 4) for v in vals]}"
+                  )
+              widest = max(
+                  ((s.get("max") or 0) - (s.get("min") or 0), m)
+                  for m, s in spread.items()
+              )
+              print(
+                  f"\nwidest observed spread: {widest[1]} at {widest[0]:.4f} — a "
+                  f"max_relative_drop tolerance below this would fail on noise alone."
+              )
+          else:
+              print("no judge spread in results (judge suite did not run)\n")
+
+          detail = d.get("retrieval_detail", {})
+          baseline = {
+              "dataset_version": d.get("dataset_version"),
+              "retrieval": d.get("retrieval", {}),
+              "retrieval_detail": {
+                  k: detail[k] for k in ("n_questions", "n_answerable", "n_negatives")
+                  if k in detail
+              },
+          }
+          if d.get("judge"):
+              baseline["judge"] = d["judge"]
+              baseline["judge_runs"] = d.get("judge_runs")
+              baseline["judge_spread"] = spread
+          print("\n=== BASELINE-READY JSON (copy into results/baseline.json) ===")
+          print(json.dumps(baseline, indent=2, sort_keys=True))
+          print("=== END BASELINE-READY JSON ===")
+          PY
+
       - name: Fetch baseline from main
         if: env.HAS_KEY == 'true'
         run: |
