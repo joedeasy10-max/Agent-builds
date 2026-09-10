@@ -117,8 +117,12 @@ class _FakeDrafter:
     def draft(self, chunk, n):
         return json.dumps([{"question": f"About {chunk.chunk_id}?", "ground_truth": "A"}])
 
-    def draft_negatives(self, topic, n):
-        return json.dumps([{"question": f"Unanswerable about {topic}?"} for _ in range(n)])
+    def draft_negatives(self, topic, n, avoid=()):
+        # Distinct per call, so the dedup check does not collapse the batch.
+        start = len(avoid)
+        return json.dumps(
+            [{"question": f"Unanswerable {start + i} about {topic}?"} for i in range(n)]
+        )
 
 
 def test_draft_candidates_covers_chunks_and_negatives():
@@ -301,9 +305,10 @@ def test_draft_candidates_batches_negatives(monkeypatch):
     calls = []
 
     class _Counting(_FakeDrafter):
-        def draft_negatives(self, topic, n):
+        def draft_negatives(self, topic, n, avoid=()):
             calls.append(n)
-            return json.dumps([{"question": f"Q{i}?"} for i in range(n)])
+            start = len(avoid)
+            return json.dumps([{"question": f"Q{start + i}?"} for i in range(n)])
 
     got = bgs.draft_candidates([], _Counting(), per_chunk=1, negatives=25, topic="tax")
     assert calls == [8, 8, 8, 1]                      # batched, never 25 at once
@@ -320,3 +325,70 @@ def test_parse_candidates_warns_when_it_drops_everything(capsys):
 def test_parse_candidates_stays_quiet_on_empty_output(capsys):
     bgs.parse_candidates("   ", _chunk(), 0)
     assert capsys.readouterr().err == ""
+
+
+# ---- negatives must not repeat across batches ------------------------------
+
+class _RepeatingDrafter(_FakeDrafter):
+    """Worst case: every batch returns exactly the same questions."""
+
+    def __init__(self):
+        self.seen_avoid = []
+
+    def draft_negatives(self, topic, n, avoid=()):
+        self.seen_avoid.append(tuple(avoid))
+        return json.dumps([{"question": f"Fixed question {i}?"} for i in range(n)])
+
+
+def test_duplicate_negatives_are_dropped_across_batches():
+    """A real run emitted the same negative twice; the prompt alone can't prevent it."""
+    d = _RepeatingDrafter()
+    got = bgs.draft_candidates([], d, per_chunk=1, negatives=24, topic="tax")
+    questions = [c.question for c in got]
+    assert len(questions) == len(set(questions))          # no repeats survive
+    assert len(questions) == bgs.NEGATIVES_PER_CALL       # only the first batch is new
+
+
+def test_later_batches_are_told_what_was_already_asked():
+    d = _RepeatingDrafter()
+    bgs.draft_candidates([], d, per_chunk=1, negatives=24, topic="tax")
+    assert d.seen_avoid[0] == ()                          # nothing to avoid yet
+    assert len(d.seen_avoid[1]) == bgs.NEGATIVES_PER_CALL  # batch 2 sees batch 1
+
+
+def test_candidate_ids_stay_contiguous_after_duplicates_are_dropped():
+    got = bgs.draft_candidates([], _RepeatingDrafter(), per_chunk=1, negatives=24, topic="tax")
+    assert [c.candidate_id for c in got] == [f"cand_{i:04d}" for i in range(len(got))]
+
+
+def test_normalise_question_ignores_case_spacing_and_punctuation():
+    assert bgs.normalise_question("  What IS   this? ") == bgs.normalise_question("what is this")
+    assert bgs.normalise_question("A?") != bgs.normalise_question("B?")
+
+
+# ---- seeding: redraft negatives without redrafting grounded questions ------
+
+def test_seed_is_carried_through_and_renumbered():
+    seed = [_cand("old_a", "Grounded one?"), _cand("old_b", "Grounded two?")]
+    got = bgs.draft_candidates([], _FakeDrafter(), per_chunk=1, negatives=2, topic="tax", seed=seed)
+    assert [c.question for c in got[:2]] == ["Grounded one?", "Grounded two?"]
+    assert [c.candidate_id for c in got] == [f"cand_{i:04d}" for i in range(len(got))]
+    assert sum(c.difficulty == "negative" for c in got) == 2
+
+
+def test_new_negatives_cannot_duplicate_a_seeded_question():
+    """The seed counts for dedup, or a redraft could restate a kept question."""
+
+    class _EchoesSeed(_FakeDrafter):
+        def draft_negatives(self, topic, n, avoid=()):
+            return json.dumps([{"question": "Grounded one?"} for _ in range(n)])
+
+    seed = [_cand("old_a", "Grounded one?")]
+    got = bgs.draft_candidates([], _EchoesSeed(), per_chunk=1, negatives=4, topic="tax", seed=seed)
+    assert len(got) == 1                                  # nothing new survived
+    assert got[0].question == "Grounded one?"
+
+
+def test_select_chunks_limit_zero_selects_nothing():
+    """`--limit 0` is how a negatives-only redraft skips chunk drafting."""
+    assert bgs.select_chunks([_c("a", 0), _c("b", 0)], 0) == []

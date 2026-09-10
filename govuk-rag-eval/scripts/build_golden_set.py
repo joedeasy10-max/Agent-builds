@@ -40,7 +40,8 @@ import json
 import math
 import re
 import sys
-from dataclasses import asdict, dataclass
+from collections.abc import Sequence
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
 # Run as a plain script: put the repo root on the path so `src` imports resolve.
@@ -275,6 +276,16 @@ _NEGATIVE_SYSTEM = (
     '{"question": str, "ground_truth": "Not answerable from the corpus."}'
 )
 
+#: Appended when earlier batches already produced negatives. Each batch is an
+#: independent call with an identical prompt, so without this the model happily
+#: writes the same question again — one real run produced two verbatim copies of
+#: "What percentage of self-employed people were audited by HMRC last year?"
+_AVOID_TEMPLATE = (
+    "\n\nThese questions have already been written. Do not repeat them, and do not "
+    "write minor variations of them (swapping a country, a year, or a figure is a "
+    "repeat):\n{listing}"
+)
+
 
 class AnthropicDrafter:
     drafter_id = "anthropic"
@@ -302,8 +313,8 @@ class AnthropicDrafter:
             f"Title: {chunk.title}\nPassage:\n{chunk.text}",
         )
 
-    def draft_negatives(self, topic: str, n: int) -> str:
-        return self._call(_NEGATIVE_SYSTEM, f"Topic of the corpus: {topic}\nWrite {n} questions.")
+    def draft_negatives(self, topic: str, n: int, avoid: Sequence[str] = ()) -> str:
+        return self._call(_NEGATIVE_SYSTEM, _negative_prompt(topic, n, avoid))
 
 
 class OpenAIDrafter:
@@ -335,8 +346,8 @@ class OpenAIDrafter:
             f"Title: {chunk.title}\nPassage:\n{chunk.text}",
         )
 
-    def draft_negatives(self, topic: str, n: int) -> str:
-        return self._call(_NEGATIVE_SYSTEM, f"Topic of the corpus: {topic}\nWrite {n} questions.")
+    def draft_negatives(self, topic: str, n: int, avoid: Sequence[str] = ()) -> str:
+        return self._call(_NEGATIVE_SYSTEM, _negative_prompt(topic, n, avoid))
 
 
 def build_drafter(config: Config, provider: str | None = None):
@@ -351,11 +362,39 @@ def build_drafter(config: Config, provider: str | None = None):
     )
 
 
+def _negative_prompt(topic: str, n: int, avoid: Sequence[str] = ()) -> str:
+    """User message for a negatives batch, naming what not to repeat."""
+    prompt = f"Topic of the corpus: {topic}\nWrite {n} questions."
+    if avoid:
+        listing = "\n".join(f"- {q}" for q in avoid)
+        prompt += _AVOID_TEMPLATE.format(listing=listing)
+    return prompt
+
+
+def normalise_question(question: str) -> str:
+    """Key for duplicate detection: case, spacing and trailing punctuation only."""
+    return re.sub(r"\s+", " ", question).strip().strip("?.!").casefold()
+
+
 def draft_candidates(
-    chunks: list[Chunk], drafter, per_chunk: int, negatives: int, topic: str
+    chunks: list[Chunk],
+    drafter,
+    per_chunk: int,
+    negatives: int,
+    topic: str,
+    seed: Sequence[Candidate] = (),
 ) -> list[Candidate]:
-    """Draft over chunks (+ optional negatives). `drafter` is injected for tests."""
-    out: list[Candidate] = []
+    """Draft over chunks (+ optional negatives). `drafter` is injected for tests.
+
+    `seed` carries candidates forward from an existing queue, so negatives can be
+    redrafted without paying to redraft — and re-review — grounded questions that
+    were already fine. Seeded questions also count for duplicate detection, so a
+    new negative cannot restate a question the queue already holds.
+    """
+    # Renumbered so ids stay contiguous even if the seed had gaps.
+    out: list[Candidate] = [
+        replace(c, candidate_id=f"cand_{i:04d}") for i, c in enumerate(seed)
+    ]
     for chunk in chunks:
         out.extend(parse_candidates(drafter.draft(chunk, per_chunk), chunk, len(out)))
     # Negatives are requested in batches. A single call for all of them
@@ -364,17 +403,34 @@ def draft_candidates(
     # — silently, because dropping bad output is the documented behaviour. Small
     # batches keep every response inside the token budget, and a batch that does
     # fail now costs a few candidates instead of all of them.
+    #
+    # Each batch is an independent call with an identical prompt, so the model
+    # repeats itself across batches unless told what it has already written —
+    # one run produced two verbatim copies of the same question. Earlier
+    # questions are fed back in, and an exact-duplicate check backs that up,
+    # because a prompt instruction is guidance and this needs a guarantee.
+    seen = {normalise_question(c.question) for c in out}
+    asked: list[str] = []
     remaining = negatives
     while remaining > 0:
         batch = min(NEGATIVES_PER_CALL, remaining)
-        before = len(out)
-        out.extend(
-            parse_candidates(drafter.draft_negatives(topic, batch), None, len(out), negative=True)
+        drafted = parse_candidates(
+            drafter.draft_negatives(topic, batch, tuple(asked)), None, len(out), negative=True
         )
-        got = len(out) - before
-        if got < batch:
+        kept = 0
+        for cand in drafted:
+            key = normalise_question(cand.question)
+            if key in seen:
+                continue
+            seen.add(key)
+            asked.append(cand.question)
+            # Renumber: ids must stay contiguous once duplicates are dropped.
+            out.append(replace(cand, candidate_id=f"cand_{len(out):04d}"))
+            kept += 1
+        if kept < batch:
             print(
-                f"WARNING: asked for {batch} negatives, kept {got}.",
+                f"WARNING: asked for {batch} negatives, kept {kept} "
+                f"({len(drafted) - kept} duplicate(s) dropped).",
                 file=sys.stderr,
             )
         remaining -= batch
@@ -440,6 +496,21 @@ def _cmd_draft(args) -> int:
     store = load_store(index_dir, config.store.type)
     chunks = select_chunks(list(store.chunks), args.limit)
 
+    # --merge-queue keeps the grounded questions from an earlier queue and
+    # redrafts only the negatives, so a fix to negative drafting does not force
+    # a re-review of work that was already good.
+    seed: list[Candidate] = []
+    if args.merge_queue is not None:
+        existing = load_queue(args.merge_queue)
+        if not existing:
+            raise SystemExit(f"--merge-queue {args.merge_queue} is empty or missing.")
+        seed = [c for c in existing if c.difficulty != "negative"]
+        print(
+            f"Merging: kept {len(seed)} grounded candidate(s) from {args.merge_queue}, "
+            f"dropped {len(existing) - len(seed)} negative(s) to redraft.",
+            file=sys.stderr,
+        )
+
     calls = len(chunks) + (1 if args.negatives > 0 else 0)
     estimated = calls * _COST_PER_CALL_USD
     if estimated > args.max_usd:
@@ -454,7 +525,9 @@ def _cmd_draft(args) -> int:
         f"(+{args.negatives} negatives) via {drafter.drafter_id}, est ${estimated:.2f}…",
         file=sys.stderr,
     )
-    candidates = draft_candidates(chunks, drafter, args.per_chunk, args.negatives, args.topic)
+    candidates = draft_candidates(
+        chunks, drafter, args.per_chunk, args.negatives, args.topic, seed=seed
+    )
     write_queue(args.out, candidates)
 
     s = summarise(candidates)
@@ -537,6 +610,10 @@ def main(argv: list[str] | None = None) -> int:
     d.add_argument("--negatives", type=int, default=25)
     d.add_argument("--topic", type=str, default="Self Assessment and self-employment tax guidance")
     d.add_argument("--provider", choices=["openai", "anthropic"], default=None)
+    d.add_argument(
+        "--merge-queue", type=Path, default=None,
+        help="keep grounded candidates from this queue and redraft only the negatives",
+    )
     d.add_argument("--max-usd", type=float, default=5.0)
     d.set_defaults(func=_cmd_draft)
 
