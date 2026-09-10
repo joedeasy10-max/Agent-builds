@@ -47,17 +47,58 @@ suites:
   judge:
     gating: true
     runs: 3             # median of N runs, to damp judge variance
+    # The tolerances below were GUESSES (0.05/0.05/0.06) until the spread was
+    # measured on run 34505214155 — 41 questions x 3 runs, anthropic/
+    # claude-sonnet-5. They are now derived from that measurement. The rule is
+    # that max_relative_drop must sit above the noise floor, or the gate fails
+    # on variance rather than on regressions.
+    #
+    #   metric              median   spread     rel   old tol   new tol
+    #   faithfulness        0.9502   0.0318   3.35%      5%        8%
+    #   answer_relevancy    0.8992   0.0012   0.14%      5%        2%
+    #   context_precision   0.8197   0.0187   2.28%      6%        5%
+    #   answer_correctness  0.8305   0.0119   1.43%      —    ungated
+    #
+    # Full run values live in results/baseline.json under judge_spread.
     metrics:
       faithfulness:
         absolute_floor: 0.85
-        max_relative_drop: 0.05
+        # Widened from 0.05 — for margin, not because 5% was breached.
+        # Being precise about that, since it is easy to overstate: nothing
+        # observed would have failed at 5%. The worst plausible
+        # median-to-median drop, taking the highest run value as a baseline
+        # and the lowest as a later run, is
+        #     (0.9756 - 0.9438) / 0.9756 = 3.26%
+        # which passes 5% but consumes 65% of the budget. The median also
+        # moved 2.5% between two independent 3-run measurements (0.975 on run
+        # 34498691301, 0.950 on 34505214155), so a real regression would have
+        # roughly a third of the band left to show up in before this metric
+        # is fighting its own noise. 8% takes budget usage down to 41%.
+        #
+        # The better fix is more runs — median-of-3 is thin for this metric
+        # specifically, and the median moving between measurements is the
+        # symptom. That costs about $1.20 per extra run, so widening the band
+        # is a deliberate cost trade, not a conclusion that 3 runs suffice.
+        max_relative_drop: 0.08
       answer_relevancy:
         absolute_floor: 0.80
-        max_relative_drop: 0.05
+        # TIGHTENED from 0.05. Measured spread is 0.14% — this metric is
+        # remarkably stable across runs, and a 5% band was so loose it could
+        # not have caught any realistic regression. 2% is still ~14x the
+        # observed noise, which is deliberately conservative: three samples is
+        # a thin basis for tightening, so this leaves room for the estimate to
+        # be wrong rather than cutting to the measurement.
+        max_relative_drop: 0.02
       context_precision:
         absolute_floor: 0.70
-        max_relative_drop: 0.06
-      # Reported but never gated — too noisy to be a build signal yet.
+        # Tightened from 0.06. Measured spread 2.28%; 5% keeps ~2.2x headroom.
+        max_relative_drop: 0.05
+      # Reported but never gated. The stated reason was "too noisy to be a
+      # build signal" — the measurement does not support that: at 1.43% it is
+      # less noisy than faithfulness or context_precision. The real reason to
+      # keep it ungated is that it scores an answer against a hand-written
+      # ground_truth string, so it measures agreement with one phrasing rather
+      # than correctness. Left ungated on that basis, not on noise.
       answer_correctness:
         gating: false
 

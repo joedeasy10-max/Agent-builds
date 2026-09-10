@@ -18,7 +18,7 @@ Steps are defined in `BUILD.md` → "Build order". There are **8**.
 | 1 | **Ingest + retrieve** — crawl, chunk, index, `retrieve(question)` | ✅ done |
 | 2 | **Retrieval metrics** (hit@5, MRR, recall@10, served recall) + `src/evaluate.py` | ✅ done |
 | 3 | Golden set to full size (150–300, hand-reviewed) | 🟡 **65 reviewed records** (41 answerable, 24 negatives) — real and gating, but short of the 150–300 target, and only 4 multi-hop |
-| 4 | **Generation + RAGAS judge metrics** (median-of-N, measure variance) | 🟡 grader runs for real (medians below); the **3-run spread is not yet recorded** — see note |
+| 4 | **Generation + RAGAS judge metrics** (median-of-N, measure variance) | ✅ done — spread measured, tolerances derived from it (table below) |
 | 5 | **CI gate** — wire `rag-eval.yml` + `compare.py`, commit a baseline | ✅ done — active, with a committed v2 baseline; blocks PRs (see step 6) |
 | 6 | Regression demos — 3 blocked PRs | ✅ done — PRs #18, #19, #20 are open and red; each fails on real numbers |
 | 7 | Experiment benchmark — `run_experiments.py` + table | ✅ done — table below |
@@ -51,18 +51,42 @@ Deterministic retrieval, measured on
 | `context_recall_at_10` | 0.927 | 0.88 |
 | `served_context_recall` | 0.902 | 0.82 |
 
-Judge medians, measured on
-[run 34498691301](https://github.com/joedeasy10-max/Agent-builds/actions/runs/34498691301)
-(41 questions × 3 runs, ~$3.69): `faithfulness` **0.975**, `answer_relevancy`
-**0.892**, `context_precision` **0.814**.
+### Judge metrics and their measured noise
 
-> **Not yet done (step 4):** those are medians. The **run-to-run spread** — the
-> measurement that is supposed to justify the `max_relative_drop` tolerances in
-> `eval_config.yaml` — was computed by that run but only written to the workflow
-> artefact, and the artefact host is unreachable from some networks. The
-> tolerances (0.05 / 0.05 / 0.06) are therefore still **guesses**. The gate now
-> prints the spread directly to the log, so the next judge run records it; the
-> judge numbers are consequently **not** in `results/baseline.json` yet.
+RAGAS, graded by `anthropic/claude-sonnet-5`, 41 questions × 3 runs, ~$3.69 per
+run, from
+[run 34505214155](https://github.com/joedeasy10-max/Agent-builds/actions/runs/34505214155).
+The gate uses the **median**; the spread is what calibrates the tolerances.
+
+| Metric | Median | Run values | Spread | Relative | Floor | Tolerance |
+| --- | ---: | --- | ---: | ---: | ---: | ---: |
+| `faithfulness` | 0.950 | 0.944 / 0.950 / 0.976 | 0.032 | 3.35% | 0.85 | 8% |
+| `answer_relevancy` | 0.899 | 0.898 / 0.899 / 0.900 | 0.001 | 0.14% | 0.80 | 2% |
+| `context_precision` | 0.820 | 0.809 / 0.820 / 0.827 | 0.019 | 2.28% | 0.70 | 5% |
+| `answer_correctness` | 0.831 | 0.822 / 0.831 / 0.834 | 0.012 | 1.43% | — | ungated |
+
+**The tolerances were guesses (0.05 / 0.05 / 0.06) and are now derived from
+this.** Two of the three moved, in opposite directions:
+
+- **`answer_relevancy` was far too loose.** At 0.14% spread it is the most
+  stable metric here by a factor of ten, and a 5% band could not have caught
+  any realistic regression. Tightened to 2% — still ~14× the observed noise,
+  deliberately conservative because three samples is a thin basis for cutting
+  close to the measurement.
+- **`faithfulness` was thin, though not breached.** Worth being exact: nothing
+  observed would have failed at 5%. The worst plausible median-to-median drop
+  is (0.9756 − 0.9438) / 0.9756 = **3.26%**, which passes 5% while consuming
+  65% of the budget. Its median also moved 2.5% between two independent 3-run
+  measurements (0.975 → 0.950), so a genuine regression had only about a third
+  of the band left to show up in. Widened to 8%, taking budget usage to 41%.
+  The better fix is more runs — median-of-3 is thin for this metric — but at
+  ~$1.20 per extra run, widening is a deliberate cost trade.
+- **`answer_correctness` stays ungated, for a corrected reason.** It was
+  described as "too noisy to be a build signal"; the measurement doesn't
+  support that — at 1.43% it is *less* noisy than two metrics that do gate. The
+  real reason is that it scores answers against one hand-written
+  `ground_truth` string, so it measures agreement with a phrasing rather than
+  correctness.
 
 ### Where retrieval still misses
 
