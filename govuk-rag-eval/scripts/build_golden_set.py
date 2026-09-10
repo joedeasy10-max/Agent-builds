@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import sys
 from dataclasses import asdict, dataclass
@@ -82,6 +83,18 @@ def strip_fences(text: str) -> str:
     return _FENCE_RE.sub("", text.strip())
 
 
+def _warn_dropped(raw: str, why: str) -> None:
+    """Report unusable drafting output loudly; empty output is not noteworthy."""
+    if not raw.strip():
+        return
+    tail = raw.strip()[-160:].replace("\n", " ")
+    print(
+        f"WARNING: dropped a drafting response ({why}); "
+        f"{len(raw)} chars, ends: …{tail}",
+        file=sys.stderr,
+    )
+
+
 def parse_candidates(
     raw: str, chunk: Chunk | None, start_index: int, negative: bool = False
 ) -> list[Candidate]:
@@ -93,8 +106,14 @@ def parse_candidates(
     try:
         rows = json.loads(strip_fences(raw))
     except json.JSONDecodeError:
+        # Dropping malformed output is correct — it is untrusted — but doing it
+        # silently is how a run asked for 25 negatives, got 0, and reported
+        # success. The usual cause is a response truncated at max_tokens, so the
+        # tail of the raw text is the useful diagnostic.
+        _warn_dropped(raw, "not valid JSON")
         return []
     if not isinstance(rows, list):
+        _warn_dropped(raw, f"top level is {type(rows).__name__}, expected a list")
         return []
 
     out: list[Candidate] = []
@@ -339,16 +358,39 @@ def draft_candidates(
     out: list[Candidate] = []
     for chunk in chunks:
         out.extend(parse_candidates(drafter.draft(chunk, per_chunk), chunk, len(out)))
-    if negatives > 0:
+    # Negatives are requested in batches. A single call for all of them
+    # overruns the drafter's max_tokens (25 questions of JSON did exactly that),
+    # the array truncates mid-entry, and the whole batch is dropped as malformed
+    # — silently, because dropping bad output is the documented behaviour. Small
+    # batches keep every response inside the token budget, and a batch that does
+    # fail now costs a few candidates instead of all of them.
+    remaining = negatives
+    while remaining > 0:
+        batch = min(NEGATIVES_PER_CALL, remaining)
+        before = len(out)
         out.extend(
-            parse_candidates(
-                drafter.draft_negatives(topic, negatives), None, len(out), negative=True
-            )
+            parse_candidates(drafter.draft_negatives(topic, batch), None, len(out), negative=True)
         )
+        got = len(out) - before
+        if got < batch:
+            print(
+                f"WARNING: asked for {batch} negatives, kept {got}.",
+                file=sys.stderr,
+            )
+        remaining -= batch
     return out
 
 
-def select_chunks(chunks: list, limit: int | None) -> list:
+#: Chunks shorter than this are navigation/boilerplate ("Log in and file your
+#: Self Assessment tax return"), and a question drafted from one is worthless as
+#: ground truth — it tests nothing a retriever could get wrong.
+MIN_CHUNK_CHARS = 200
+
+#: Negatives per LLM call — small enough that the JSON array cannot truncate.
+NEGATIVES_PER_CALL = 8
+
+
+def select_chunks(chunks: list, limit: int | None, min_chars: int = MIN_CHUNK_CHARS) -> list:
     """Pick `limit` chunks spread across pages, not the first N alphabetically.
 
     Chunk ids are `<page-path>#chunk-<n>`, so sorting by id groups every chunk
@@ -362,13 +404,25 @@ def select_chunks(chunks: list, limit: int | None) -> list:
     """
     by_page: dict[str, list] = {}
     for c in chunks:
+        if len(c.text.strip()) < min_chars:
+            continue
         by_page.setdefault(c.page_path, []).append(c)
     for page in by_page.values():
         page.sort(key=lambda c: c.chunk_index)
 
-    ordered = []
     pages = [by_page[k] for k in sorted(by_page)]
-    depth = max((len(p) for p in pages), default=0)
+
+    # Stride when we want fewer chunks than there are pages. Round-robin alone
+    # still walks pages in alphabetical order, so a 40-chunk budget over 292
+    # pages would sample the first 40 pages — which is how a draft ended up
+    # dominated by the /government/collections/* cluster. Striding every
+    # ceil(len(pages)/limit)-th page spreads the sample over the whole corpus.
+    if limit is not None and 0 < limit < len(pages):
+        step = math.ceil(len(pages) / limit)
+        pages = pages[::step]
+
+    ordered = []
+    depth = max((len(pg) for pg in pages), default=0)
     for i in range(depth):
         for page in pages:
             if i < len(page):

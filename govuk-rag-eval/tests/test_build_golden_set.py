@@ -227,10 +227,13 @@ def test_build_drafter_rejects_echo():
 
 # ---- chunk selection: coverage across pages, not a head slice --------------
 
-def _c(page, idx):
+_SUBSTANTIAL = "x" * (bgs.MIN_CHUNK_CHARS + 50)
+
+
+def _c(page, idx, text=None):
     return Chunk(
         chunk_id=f"{page}#chunk-{idx}", page_path=page, page_url="u", title="T",
-        text="t", content_hash="h", chunk_index=idx,
+        text=_SUBSTANTIAL if text is None else text, content_hash="h", chunk_index=idx,
     )
 
 
@@ -267,3 +270,53 @@ def test_select_chunks_is_deterministic():
 def test_select_chunks_no_limit_returns_everything():
     chunks = [_c("a", 0), _c("b", 0)]
     assert len(bgs.select_chunks(chunks, None)) == 2
+
+
+def test_select_chunks_skips_boilerplate():
+    """One-line nav chunks make worthless ground truth, so they never draft."""
+    chunks = [_c("a", 0, "Log in and file your Self Assessment tax return"), _c("b", 0)]
+    got = bgs.select_chunks(chunks, None)
+    assert [c.page_path for c in got] == ["b"]
+
+
+def test_select_chunks_strides_when_budget_is_smaller_than_the_corpus():
+    """A budget of 3 over 9 pages must span the corpus, not take the first 3.
+
+    Round-robin alone walks pages alphabetically, so a small budget sampled only
+    the alphabetically-first pages — which is how a real draft came back
+    dominated by one section of GOV.UK.
+    """
+    chunks = [_c(f"p{i:02d}", 0) for i in range(9)]
+    got = bgs.select_chunks(chunks, 3)
+    assert [c.page_path for c in got] == ["p00", "p03", "p06"]
+
+
+def test_select_chunks_limit_at_or_above_page_count_does_not_stride():
+    chunks = [_c(f"p{i}", 0) for i in range(3)]
+    assert [c.page_path for c in bgs.select_chunks(chunks, 3)] == ["p0", "p1", "p2"]
+
+
+def test_draft_candidates_batches_negatives(monkeypatch):
+    """25 negatives in one call truncated at max_tokens and silently yielded 0."""
+    calls = []
+
+    class _Counting(_FakeDrafter):
+        def draft_negatives(self, topic, n):
+            calls.append(n)
+            return json.dumps([{"question": f"Q{i}?"} for i in range(n)])
+
+    got = bgs.draft_candidates([], _Counting(), per_chunk=1, negatives=25, topic="tax")
+    assert calls == [8, 8, 8, 1]                      # batched, never 25 at once
+    assert all(n <= bgs.NEGATIVES_PER_CALL for n in calls)
+    assert sum(c.difficulty == "negative" for c in got) == 25
+
+
+def test_parse_candidates_warns_when_it_drops_everything(capsys):
+    """Silent drops are how a run reported success having produced nothing."""
+    bgs.parse_candidates('[{"question": "truncated...', _chunk(), 0)
+    assert "WARNING" in capsys.readouterr().err
+
+
+def test_parse_candidates_stays_quiet_on_empty_output(capsys):
+    bgs.parse_candidates("   ", _chunk(), 0)
+    assert capsys.readouterr().err == ""
