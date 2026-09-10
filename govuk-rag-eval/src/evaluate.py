@@ -66,6 +66,13 @@ def _score_question(ranked_ids: list[str], record: GoldenRecord) -> dict:
         "mrr": R.reciprocal_rank(ranked_ids, relevant),
         "context_recall_at_10": R.recall_at_k(ranked_ids, relevant, 10),
         "first_relevant_rank": first_rank,
+        # What was actually returned. "hit@5 = 0.86" says six questions fail;
+        # only the ranking says WHY — whether the gold chunk lost narrowly, or
+        # whether the retriever went somewhere else entirely, or whether an
+        # equally-correct chunk was returned and scored wrong because the golden
+        # record names only one source.
+        "retrieved": list(ranked_ids[:10]),
+        "expected": list(relevant),
     }
 
 
