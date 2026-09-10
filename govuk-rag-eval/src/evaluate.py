@@ -110,7 +110,7 @@ def run_judge_suite(
     backend: str,
     caps: dict,
     limit: int | None = None,
-    judge_provider: str = "openai",
+    judge_provider: str | None = None,
 ) -> dict:
     """Generate answers over the golden questions and grade them (median-of-N).
 
@@ -119,7 +119,6 @@ def run_judge_suite(
     """
     retriever = Retriever(config, index_dir)
     generator = build_generator(config)
-    grader = J.build_grader(backend, provider=judge_provider)
 
     answerable = [r for r in records if r.is_answerable]
     max_q = caps["max_judge_questions_per_run"]
@@ -134,6 +133,22 @@ def run_judge_suite(
             f"${caps['max_usd_per_run']:.2f} cap. Lower --limit, --runs, or the "
             "backend cost."
         )
+
+    # Built only once the spend guard has passed — nothing that could contact a
+    # provider is constructed before the run is known to be affordable.
+    #
+    # Only the ragas backend talks to an LLM. The config picks which one unless
+    # the caller overrides it, so a repo on Anthropic is never silently graded
+    # by OpenAI (and vice versa). The heuristic grader is offline, so it must
+    # stay runnable under generation.provider: echo, which cannot grade.
+    if backend == "ragas":
+        provider = J.resolve_judge_provider(config.generation.provider, judge_provider)
+    else:
+        provider = J.JUDGE_PROVIDERS[0]  # unused: HeuristicGrader calls no LLM
+    # Reuse the retriever's embedder rather than letting RAGAS default to
+    # OpenAI embeddings: same vector space as the retrieval metrics, one model
+    # load, and no call to a provider the config did not ask for.
+    grader = J.build_grader(backend, provider=provider, embedder=retriever.embedder)
 
     samples = []
     for record in answerable:
@@ -182,8 +197,8 @@ def main(argv: list[str] | None = None) -> int:
         help="judge grader: ragas (real, needs a key) or heuristic (offline stub)",
     )
     parser.add_argument(
-        "--judge-provider", choices=["openai", "anthropic"], default="openai",
-        help="LLM provider for the ragas judge",
+        "--judge-provider", choices=list(J.JUDGE_PROVIDERS), default=None,
+        help="override the ragas judge LLM (default: generation.provider from the config)",
     )
     parser.add_argument(
         "--eval-config", type=Path, default=Path("configs/eval_config.yaml"),

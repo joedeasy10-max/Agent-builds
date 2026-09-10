@@ -27,6 +27,7 @@ offline runs; NOT a real quality signal).
 
 from __future__ import annotations
 
+import math
 import re
 import statistics
 from collections.abc import Sequence
@@ -94,29 +95,107 @@ class HeuristicGrader:
 
 _DEFAULT_JUDGE_MODEL = {"openai": "gpt-4o-mini", "anthropic": "claude-sonnet-5"}
 
+#: Providers that can act as a judge LLM. `echo` generates but cannot grade.
+JUDGE_PROVIDERS: tuple[str, ...] = tuple(sorted(_DEFAULT_JUDGE_MODEL))
+
+
+def resolve_judge_provider(generation_provider: str, override: str | None = None) -> str:
+    """Which LLM grades the judge suite — the config decides unless overridden.
+
+    The judge provider used to default to "openai" independently of the config,
+    so a repo that had switched `generation.provider` to anthropic still judged
+    on OpenAI. That is not a preference mismatch, it is a wrong answer: the run
+    burns the wrong key and reports metrics from a model nobody selected. Here
+    the config is the source of truth; an explicit --judge-provider still wins.
+    """
+    if override:
+        if override not in _DEFAULT_JUDGE_MODEL:
+            raise ValueError(f"Unknown judge provider: {override!r}")
+        return override
+    if generation_provider in _DEFAULT_JUDGE_MODEL:
+        return generation_provider
+    raise ValueError(
+        f"generation.provider is {generation_provider!r}, which cannot grade. "
+        f"Set it to one of {list(JUDGE_PROVIDERS)} in the config, or pass "
+        "--judge-provider explicitly."
+    )
+
+
+def _as_finite(value: object) -> float | None:
+    """Coerce one RAGAS score to a float, or None if it is not a usable number."""
+    if isinstance(value, bool):  # bool is an int subclass; never a score
+        return None
+    try:
+        out = float(value)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return None
+    return out if math.isfinite(out) else None
+
+
+def aggregate_metric(value: object, metric: str) -> float:
+    """Reduce one RAGAS metric to a single mean over samples.
+
+    RAGAS returns a **list** of per-sample scores, not a scalar, so the previous
+    `float(result[m])` raised `TypeError: float() argument must be ... not
+    'list'` on every real run. Worse, a sample whose grading call failed (rate
+    limit, refusal, timeout) comes back as NaN/None *inside* that list instead
+    of raising, so a naive mean silently poisons the whole metric.
+
+    Non-finite entries are therefore dropped before the mean. If nothing usable
+    survives we raise rather than return 0.0: a zero would read as a genuine
+    quality collapse and trip the gate, hiding the fact that grading never
+    actually happened.
+    """
+    if isinstance(value, (str, bytes)):
+        raise TypeError(f"Judge metric {metric!r} came back as text, not a score: {value!r}")
+    if isinstance(value, (int, float)):
+        raw: list[object] = [value]
+    else:
+        try:
+            raw = list(value)  # type: ignore[arg-type]
+        except TypeError as exc:
+            raise TypeError(
+                f"Judge metric {metric!r} is neither a number nor a sequence of "
+                f"scores (got {type(value).__name__})"
+            ) from exc
+    if not raw:
+        raise RuntimeError(f"Judge metric {metric!r} came back empty — nothing was graded.")
+    usable = [f for f in (_as_finite(v) for v in raw) if f is not None]
+    if not usable:
+        raise RuntimeError(
+            f"Judge metric {metric!r}: all {len(raw)} sample score(s) failed to "
+            "grade (NaN/None). The judge LLM returned no usable output — check "
+            "the provider key and the run log for per-sample errors."
+        )
+    return sum(usable) / len(usable)
+
 
 class RagasGrader:
     """Real judge metrics via RAGAS. Lazy-imported; needs a provider key.
 
     The judge LLM is interchangeable: `provider="openai"` (needs OPENAI_API_KEY)
     or `provider="anthropic"` (needs ANTHROPIC_API_KEY, via langchain-anthropic).
-    Not exercised by tests (they never call an LLM). This is the production
-    grader the nightly / full-eval runs use.
+    This is the production grader the nightly / full-eval runs use. Tests never
+    call a real LLM; they inject a fake `ragas` module to pin down the response
+    handling, which is where both of this class's historical bugs lived.
 
-    Note: RAGAS `answer_relevancy` also needs an embeddings model. Anthropic has
-    no embeddings API, so an Anthropic judge still uses an embeddings backend
-    (OpenAI, or a local one) for that one metric — configure it in the RAGAS run
-    if you go Anthropic-only.
+    `answer_relevancy` and `answer_correctness` additionally need an *embeddings*
+    model, and RAGAS falls back to OpenAI embeddings when none is supplied — so
+    an Anthropic-only run would still hit OpenAI for half the suite. Pass the
+    project's own embedder (`embedder=`) and the judge stays on the configured
+    stack end to end; leave it None only to accept the RAGAS default.
     """
 
     grader_id = "ragas"
     metrics = JUDGE_METRICS
 
-    def __init__(self, provider: str = "openai", model: str = ""):
+    def __init__(self, provider: str = "openai", model: str = "", embedder=None):
         if provider not in _DEFAULT_JUDGE_MODEL:
             raise ValueError(f"Unknown judge provider: {provider!r}")
         self.provider = provider
         self.model = model or _DEFAULT_JUDGE_MODEL[provider]
+        #: Project `Embedder` (see src.embed). None = let RAGAS pick its default.
+        self.embedder = embedder
 
     def _llm(self):
         """Build the RAGAS-wrapped LLM for the configured provider (lazy)."""
@@ -129,6 +208,34 @@ class RagasGrader:
         from langchain_openai import ChatOpenAI
 
         return LangchainLLMWrapper(ChatOpenAI(model=self.model))
+
+    def _embeddings(self):
+        """Adapt the project's embedder to the RAGAS embedding interface.
+
+        Without this, RAGAS silently falls back to OpenAI embeddings for the two
+        metrics that need them, which defeats the point of choosing a provider
+        and fails outright on a key-less or credit-less OpenAI account. Reusing
+        the retriever's own embedder also means the judge scores answers in the
+        same vector space the retrieval was measured in.
+        """
+        if self.embedder is None:
+            return None
+        from ragas.embeddings import BaseRagasEmbedding
+
+        inner = self.embedder
+
+        class _ProjectEmbedding(BaseRagasEmbedding):
+            def embed_text(self, text: str, **kwargs) -> list[float]:
+                return [float(x) for x in inner.embed([text])[0]]
+
+            async def aembed_text(self, text: str, **kwargs) -> list[float]:
+                return self.embed_text(text)
+
+            def embed_texts(self, texts: list[str], **kwargs) -> list[list[float]]:
+                # Batched: the whole point of a local model is one forward pass.
+                return [[float(x) for x in row] for row in inner.embed(list(texts))]
+
+        return _ProjectEmbedding()
 
     def grade(self, samples: Sequence[JudgeSample]) -> dict[str, float]:
         from datasets import Dataset  # lazy, heavy
@@ -148,12 +255,17 @@ class RagasGrader:
                 "ground_truth": [s.ground_truth for s in samples],
             }
         )
+        kwargs = {}
+        embeddings = self._embeddings()
+        if embeddings is not None:
+            kwargs["embeddings"] = embeddings
         result = ragas_evaluate(
             ds,
             metrics=[faithfulness, answer_relevancy, context_precision, answer_correctness],
             llm=self._llm(),
+            **kwargs,
         )
-        return {m: float(result[m]) for m in self.metrics}
+        return {m: aggregate_metric(result[m], m) for m in self.metrics}
 
 
 def median(values: Sequence[float]) -> float:
@@ -176,9 +288,11 @@ def run_judge(
     return {"metrics": metrics_out, "spread": spread, "runs": runs}
 
 
-def build_grader(backend: str, provider: str = "openai", model: str = "") -> Grader:
+def build_grader(
+    backend: str, provider: str = "openai", model: str = "", embedder=None
+) -> Grader:
     if backend == "heuristic":
         return HeuristicGrader()
     if backend == "ragas":
-        return RagasGrader(provider=provider, model=model)
+        return RagasGrader(provider=provider, model=model, embedder=embedder)
     raise ValueError(f"Unknown judge backend: {backend!r}")
