@@ -494,3 +494,94 @@ def test_per_page_rejects_nonsense():
 
     with _pytest.raises(ValueError):
         bgs.select_chunks(_fake_chunks(5, 2), limit=4, per_page=0)
+
+
+# --- fail-fast + don't-lose-paid-work (run 34508149133) ---------------------
+
+_CREDIT_ERROR = (
+    "Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', "
+    "'message': 'Your credit balance is too low to access the Anthropic API.'}}"
+)
+
+
+def test_recognises_the_errors_that_retrying_cannot_fix():
+    assert bgs.is_fatal_provider_error(Exception(_CREDIT_ERROR))
+    assert bgs.is_fatal_provider_error(Exception("invalid x-api-key"))
+    assert bgs.is_fatal_provider_error(Exception("insufficient_quota"))
+    assert bgs.is_fatal_provider_error(Exception("model not found"))
+    # Transient things must NOT abort a 150-call run.
+    assert not bgs.is_fatal_provider_error(Exception("overloaded_error"))
+    assert not bgs.is_fatal_provider_error(Exception("Connection reset by peer"))
+    assert not bgs.is_fatal_provider_error(Exception("rate_limit_error: slow down"))
+
+
+class _DrafterDyingAfter:
+    """Drafts fine for `n` chunks, then raises the credit error for good."""
+
+    drafter_id = "fake"
+
+    def __init__(self, n):
+        self.n = n
+        self.calls = 0
+
+    def draft(self, chunk, per_chunk):
+        self.calls += 1
+        if self.calls > self.n:
+            raise Exception(_CREDIT_ERROR)
+        return json.dumps(
+            [{"question": f"Q{self.calls}?", "ground_truth": "GT", "difficulty": "single_hop"}]
+        )
+
+    def draft_negatives(self, topic, n, avoid=()):
+        return "[]"
+
+
+def test_fatal_error_midway_preserves_the_calls_already_paid_for():
+    """The failure this guards: dying at call 140 of 150 and losing all 140."""
+    chunks = [_chunk(cid=f"gov-uk/p{i}#chunk-0", text="Register by 5 October." * 12)
+              for i in range(10)]
+    drafter = _DrafterDyingAfter(6)
+    with pytest.raises(bgs.PartialDraft) as caught:
+        bgs.draft_candidates(chunks, drafter, per_chunk=1, negatives=0, topic="t")
+    assert len(caught.value.candidates) == 6, "must carry the 6 successful drafts"
+    assert "credit balance" in str(caught.value)
+
+
+def test_transient_error_costs_one_chunk_not_the_run(capsys):
+    class _Flaky:
+        drafter_id = "fake"
+
+        def __init__(self):
+            self.calls = 0
+
+        def draft(self, chunk, per_chunk):
+            self.calls += 1
+            if self.calls == 2:
+                raise Exception("overloaded_error: try again")
+            return json.dumps(
+                [{"question": f"Q{self.calls}?", "ground_truth": "GT",
+                  "difficulty": "single_hop"}]
+            )
+
+        def draft_negatives(self, topic, n, avoid=()):
+            return "[]"
+
+    chunks = [_chunk(cid=f"gov-uk/p{i}#chunk-0", text="Register by 5 October." * 12)
+              for i in range(4)]
+    out = bgs.draft_candidates(chunks, _Flaky(), per_chunk=1, negatives=0, topic="t")
+    assert len(out) == 3, "3 of 4 chunks drafted; the run continued"
+    assert "overloaded_error" in capsys.readouterr().err
+
+
+def test_drafters_expose_a_preflight():
+    """Both providers must offer it, or the fail-fast path silently no-ops."""
+    for cls in (bgs.AnthropicDrafter, bgs.OpenAIDrafter):
+        assert callable(getattr(cls("", 16), "preflight", None)), cls.__name__
+
+
+def test_preflight_makes_exactly_one_cheap_call():
+    calls = []
+    d = bgs.AnthropicDrafter("claude-sonnet-5")
+    d._call = lambda system, user: calls.append((system, user)) or "ok"
+    d.preflight()
+    assert len(calls) == 1
