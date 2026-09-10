@@ -392,3 +392,22 @@ def test_new_negatives_cannot_duplicate_a_seeded_question():
 def test_select_chunks_limit_zero_selects_nothing():
     """`--limit 0` is how a negatives-only redraft skips chunk drafting."""
     assert bgs.select_chunks([_c("a", 0), _c("b", 0)], 0) == []
+
+
+def test_topup_tells_the_drafter_about_existing_negatives():
+    """Otherwise a top-up regenerates what the queue already has and dedup bins it."""
+    d = _RepeatingDrafter()
+    seed = [
+        _cand("old_a", "Grounded?"),
+        _cand("old_n", "Existing negative?", difficulty="negative", source_ids=()),
+    ]
+    bgs.draft_candidates([], d, per_chunk=1, negatives=8, topic="tax", seed=seed)
+    assert d.seen_avoid[0] == ("Existing negative?",)   # not the grounded one
+
+
+def test_topup_keeps_seeded_negatives_and_adds_new_ones():
+    seed = [_cand("old_n", "Existing negative?", difficulty="negative", source_ids=())]
+    got = bgs.draft_candidates([], _FakeDrafter(), per_chunk=1, negatives=3, topic="tax", seed=seed)
+    negatives = [c.question for c in got if c.difficulty == "negative"]
+    assert "Existing negative?" in negatives      # the old one survives
+    assert len(negatives) == 4                    # 1 kept + 3 new
