@@ -204,7 +204,23 @@ class RagasGrader:
         if self.provider == "anthropic":
             from langchain_anthropic import ChatAnthropic
 
-            return LangchainLLMWrapper(ChatAnthropic(model=self.model))
+            # bypass_temperature: RAGAS *mutates* `llm.temperature` before each
+            # call (default 0.01) to vary sampling across n completions. Recent
+            # Claude models reject the parameter outright —
+            #   400 invalid_request_error: `temperature` is deprecated for this
+            #   model
+            # — which failed every sample in run 34453595063. ChatAnthropic
+            # omits temperature when it is None, so the flag is all that is
+            # needed. OpenAI is left alone: temperature works there, and RAGAS
+            # varies it deliberately.
+            #
+            # Note: only ragas' async path (`agenerate_text`) honours this flag;
+            # the sync `generate_text` sets the attribute regardless. evaluate()
+            # takes the async path, so this holds — but a future ragas that
+            # switched to the sync path would reintroduce the 400.
+            return LangchainLLMWrapper(
+                ChatAnthropic(model=self.model), bypass_temperature=True
+            )
         from langchain_openai import ChatOpenAI
 
         return LangchainLLMWrapper(ChatOpenAI(model=self.model))
