@@ -70,7 +70,11 @@ def test_retrieval_suite_values(tmp_path, fixture_pages, test_config):
     code, results = _run(tmp_path, fixture_pages, test_config)
     assert code == 0
     assert results["dataset_version"] == "v1"
-    assert set(results["retrieval"]) == {"hit_at_5", "mrr", "context_recall_at_10"}
+    from src.evaluate import _RETRIEVAL_METRICS
+
+    # Derived, not restated: a metric added to the suite is reported, and this
+    # test should not have to be edited to say so.
+    assert set(results["retrieval"]) == {name for name, _ in _RETRIEVAL_METRICS}
     assert results["retrieval"]["hit_at_5"] == 0.5
     assert results["retrieval"]["mrr"] == 0.5
     assert results["retrieval"]["context_recall_at_10"] == 0.5
@@ -163,3 +167,61 @@ def test_a_larger_serving_top_k_is_respected(tmp_path, fixture_pages, test_confi
     assert max(25, _EVAL_DEPTH) == 25       # depth never truncates a deeper config
     cfg = replace(test_config, retrieval=replace(test_config.retrieval, top_k=25))
     assert max(cfg.retrieval.top_k, _EVAL_DEPTH) == 25
+
+
+def test_missing_expected_chunk_is_flagged_as_a_golden_set_defect(tmp_path, fixture_pages, test_config):
+    """A gold id absent from the index is a bad label, not bad ranking.
+
+    Scoring reports both as hit@5 = 0. They need opposite fixes — one is a
+    golden-set correction, the other a retrieval change — so the suite has to
+    say which it is.
+    """
+    from src.evaluate import run_retrieval_suite
+    from src.golden import GoldenRecord
+    from src.ingest import build_index
+
+    idx = tmp_path / "idx"
+    build_index(fixture_pages, test_config, idx)
+
+    records = [
+        GoldenRecord(id="q_real", question="register", ground_truth="x",
+                     source_ids=("gov-uk/register-for-self-assessment#chunk-0",),
+                     difficulty="single_hop", added_in="v1"),
+        GoldenRecord(id="q_stale", question="register", ground_truth="x",
+                     source_ids=("gov-uk/this-page-does-not-exist#chunk-0",),
+                     difficulty="single_hop", added_in="v1"),
+    ]
+    rows = {r["id"]: r for r in run_retrieval_suite(records, test_config, idx)["per_question"]}
+
+    assert rows["q_real"]["expected_missing_from_index"] == []
+    assert rows["q_stale"]["expected_missing_from_index"] == [
+        "gov-uk/this-page-does-not-exist#chunk-0"
+    ]
+
+
+def test_served_context_recall_tracks_top_k(tmp_path, fixture_pages, test_config):
+    """The only metric that can see a top_k regression.
+
+    hit_at_5 / mrr / context_recall_at_10 are measured at fixed cutoffs, and the
+    suite retrieves max(top_k, _EVAL_DEPTH) — so for any top_k <= 10 they score
+    the same ten results and cannot move. A PR halving top_k would pass the gate
+    while halving the context the generator receives.
+    """
+    from dataclasses import replace
+
+    from src.evaluate import _score_question
+    from src.golden import GoldenRecord
+
+    ranked = [f"c{i}" for i in range(10)]
+    record = GoldenRecord(id="q", question="q", ground_truth="g",
+                          source_ids=("c6",), difficulty="single_hop", added_in="v1")
+
+    served_5 = _score_question(ranked, record, None, served_k=5)
+    served_10 = _score_question(ranked, record, None, served_k=10)
+
+    # The gold chunk sits at rank 7: outside a served top_k of 5, inside 10.
+    assert served_5["served_context_recall"] == 0.0
+    assert served_10["served_context_recall"] == 1.0
+    # …while the fixed-cutoff metrics are identical either way.
+    for m in ("hit_at_5", "mrr", "context_recall_at_10"):
+        assert served_5[m] == served_10[m], f"{m} should not depend on served_k"
