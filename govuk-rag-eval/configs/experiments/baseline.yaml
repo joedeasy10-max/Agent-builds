@@ -14,9 +14,12 @@ chunking:
   chunk_overlap: 64
   separators: ["\n\n", "\n", ". ", " ", ""]
 embedding:
-  provider: openai
-  model: text-embedding-3-small
-  dimensions: 1536
+  # Matches the active config. These were written against OpenAI before the
+  # project moved to a local embedder; comparing configs on an embedder the
+  # project no longer uses would benchmark something nobody runs.
+  provider: bge
+  model: BAAI/bge-small-en-v1.5
+  dimensions: 384
   batch_size: 64
 store:
   type: flat
