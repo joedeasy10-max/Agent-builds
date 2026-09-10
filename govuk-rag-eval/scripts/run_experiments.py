@@ -34,11 +34,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.chunk import Page
 from src.config import Config, load_config
-from src.evaluate import run_retrieval_suite
+from src.evaluate import _RETRIEVAL_METRICS, run_retrieval_suite
 from src.golden import GoldenRecord, dataset_version, load_golden
 from src.ingest import build_index, gather_pages
 
-_METRICS = ("hit_at_5", "mrr", "context_recall_at_10")
+# Derived from the suite rather than restated. This tuple had already drifted:
+# it still listed three metrics after a fourth was added, so the benchmark would
+# have silently omitted it from every comparison table.
+_METRICS = tuple(name for name, _ in _RETRIEVAL_METRICS)
 
 
 def run_experiments(
