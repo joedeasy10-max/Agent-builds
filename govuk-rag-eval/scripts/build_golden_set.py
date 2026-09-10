@@ -410,7 +410,10 @@ def draft_candidates(
     # questions are fed back in, and an exact-duplicate check backs that up,
     # because a prompt instruction is guidance and this needs a guarantee.
     seen = {normalise_question(c.question) for c in out}
-    asked: list[str] = []
+    # Seeded negatives go into the avoid list too. Without this a top-up spends
+    # its whole budget regenerating questions the queue already has, and the
+    # duplicate check silently throws them all away.
+    asked: list[str] = [c.question for c in out if c.difficulty == "negative"]
     remaining = negatives
     while remaining > 0:
         batch = min(NEGATIVES_PER_CALL, remaining)
@@ -504,12 +507,25 @@ def _cmd_draft(args) -> int:
         existing = load_queue(args.merge_queue)
         if not existing:
             raise SystemExit(f"--merge-queue {args.merge_queue} is empty or missing.")
-        seed = [c for c in existing if c.difficulty != "negative"]
-        print(
-            f"Merging: kept {len(seed)} grounded candidate(s) from {args.merge_queue}, "
-            f"dropped {len(existing) - len(seed)} negative(s) to redraft.",
-            file=sys.stderr,
-        )
+        if args.keep_negatives:
+            # Top up: everything survives and the existing negatives seed the
+            # duplicate check, so new ones must actually be new.
+            seed = list(existing)
+            kept_neg = sum(c.difficulty == "negative" for c in seed)
+            print(
+                f"Merging (top-up): kept all {len(seed)} candidate(s) from "
+                f"{args.merge_queue}, including {kept_neg} negative(s); drafting "
+                f"{args.negatives} more.",
+                file=sys.stderr,
+            )
+        else:
+            seed = [c for c in existing if c.difficulty != "negative"]
+            print(
+                f"Merging (redraft): kept {len(seed)} grounded candidate(s) from "
+                f"{args.merge_queue}, dropped {len(existing) - len(seed)} negative(s) "
+                "to redraft.",
+                file=sys.stderr,
+            )
 
     calls = len(chunks) + (1 if args.negatives > 0 else 0)
     estimated = calls * _COST_PER_CALL_USD
@@ -613,6 +629,11 @@ def main(argv: list[str] | None = None) -> int:
     d.add_argument(
         "--merge-queue", type=Path, default=None,
         help="keep grounded candidates from this queue and redraft only the negatives",
+    )
+    d.add_argument(
+        "--keep-negatives", action="store_true",
+        help="with --merge-queue: keep the existing negatives too and top up, "
+             "rather than replacing them",
     )
     d.add_argument("--max-usd", type=float, default=5.0)
     d.set_defaults(func=_cmd_draft)

@@ -28,9 +28,14 @@ on:
         required: true
         default: "2.00"
       merge_run_id:
-        description: "Optional: run id of an earlier draft. Keeps its grounded questions and redrafts only the negatives (set chunks to 0)."
+        description: "Optional: run id of an earlier draft to merge with (set chunks to 0 for a negatives-only run)."
         required: false
         default: ""
+      keep_negatives:
+        description: "With merge_run_id: keep the earlier negatives and TOP UP. Leave false to REPLACE them."
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: draft-golden-set
@@ -105,7 +110,8 @@ jobs:
             --per-chunk ${{ inputs.per_chunk }} \
             --negatives ${{ inputs.negatives }} \
             --max-usd ${{ inputs.max_usd }} \
-            ${{ inputs.merge_run_id != '' && '--merge-queue previous/review_queue.jsonl' || '' }}
+            ${{ inputs.merge_run_id != '' && '--merge-queue previous/review_queue.jsonl' || '' }} \
+            ${{ inputs.merge_run_id != '' && inputs.keep_negatives && '--keep-negatives' || '' }}
 
       - name: Queue summary
         run: python scripts/build_golden_set.py status --queue data/golden/review_queue.jsonl
