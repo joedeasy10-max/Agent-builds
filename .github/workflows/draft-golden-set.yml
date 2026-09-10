@@ -20,9 +20,9 @@ on:
         required: true
         default: "2"
       negatives:
-        description: "Unanswerable questions to draft (0 to skip)"
+        description: "Unanswerable questions to draft (0 to skip; BUILD.md targets 20-30)"
         required: true
-        default: "10"
+        default: "25"
       max_usd:
         description: "Abort if the estimated spend exceeds this"
         required: true
@@ -92,6 +92,27 @@ jobs:
 
       - name: Queue summary
         run: python scripts/build_golden_set.py status --queue data/golden/review_queue.jsonl
+
+      # The queue is also printed here, not just uploaded. The artefact download
+      # redirects to blob storage that some networks block, and a queue nobody
+      # can open is a queue nobody reviews — while the log is readable anywhere
+      # the run is. It is ~11KB of text; the artefact remains the file you edit.
+      - name: Print queue for review
+        run: |
+          python - <<'PY'
+          import json, pathlib, textwrap
+          rows = [json.loads(l) for l in
+                  pathlib.Path("data/golden/review_queue.jsonl").read_text().splitlines() if l.strip()]
+          for r in rows:
+              print(f"--- {r['candidate_id']} [{r['difficulty']}] {r['status']}")
+              print(f"  Q : {r['question']}")
+              print(f"  GT: {r.get('ground_truth', '')}")
+              print(f"  SRC: {', '.join(r.get('source_ids') or []) or '(none — negative)'}")
+              excerpt = (r.get("source_excerpt") or "").strip()
+              if excerpt:
+                  print(textwrap.indent(textwrap.fill(excerpt[:300], 100), "  | "))
+          print(f"\n{len(rows)} candidates printed.")
+          PY
 
       # The queue is an artefact, not a commit: it is unreviewed model output.
       - name: Upload review queue
