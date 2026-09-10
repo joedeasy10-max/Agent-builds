@@ -75,10 +75,16 @@ jobs:
 
       # The index is deterministic given the corpus + retrieval config, so
       # key the cache on both. A config change correctly forces a rebuild.
-      - name: Cache vector index
+      #
+      # restore/save are split deliberately. The combined `actions/cache` action
+      # only saves in post-job cleanup *when the job succeeds*, so a failure in a
+      # later step (the judge, typically) threw away a perfectly good index and
+      # the next run paid ~10 minutes to rebuild it. The index's validity does
+      # not depend on whether grading afterwards worked.
+      - name: Restore vector index
         id: index-cache
         if: env.HAS_KEY == 'true'
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: govuk-rag-eval/.index/
           key: index-${{ hashFiles('govuk-rag-eval/configs/retrieval.yaml', 'govuk-rag-eval/data/corpus/manifest.json') }}
@@ -86,6 +92,14 @@ jobs:
       - name: Build index
         if: env.HAS_KEY == 'true' && steps.index-cache.outputs.cache-hit != 'true'
         run: python -m src.ingest --config configs/retrieval.yaml --out .index/
+
+      # Saved immediately, before anything that can fail downstream.
+      - name: Save vector index
+        if: env.HAS_KEY == 'true' && steps.index-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: govuk-rag-eval/.index/
+          key: index-${{ hashFiles('govuk-rag-eval/configs/retrieval.yaml', 'govuk-rag-eval/data/corpus/manifest.json') }}
 
       - name: Run retrieval evaluation (deterministic, always)
         if: env.HAS_KEY == 'true'

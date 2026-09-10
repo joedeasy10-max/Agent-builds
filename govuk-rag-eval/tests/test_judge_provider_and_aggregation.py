@@ -124,7 +124,11 @@ def _install_fake_ragas(monkeypatch, result):
         setattr(metrics_mod, name, object())
 
     llms_mod = types.ModuleType("ragas.llms")
-    llms_mod.LangchainLLMWrapper = lambda inner: ("wrapped", inner)
+
+    def _wrapper(inner, **kwargs):
+        return ("wrapped", inner, kwargs)
+
+    llms_mod.LangchainLLMWrapper = _wrapper
 
     anthropic_mod = types.ModuleType("langchain_anthropic")
     anthropic_mod.ChatAnthropic = lambda model: ("ChatAnthropic", model)
@@ -164,4 +168,9 @@ def test_grade_uses_the_configured_anthropic_model(monkeypatch):
         [J.JudgeSample(id="q1", question="Q?", answer="A", contexts=("c",), ground_truth="A")]
     )
 
-    assert captured["llm"] == ("wrapped", ("ChatAnthropic", "claude-sonnet-5"))
+    kind, inner, kwargs = captured["llm"]
+    assert (kind, inner) == ("wrapped", ("ChatAnthropic", "claude-sonnet-5"))
+    # RAGAS mutates llm.temperature before each call and recent Claude models
+    # reject the parameter (400: `temperature` is deprecated for this model),
+    # which failed every sample of run 34453595063.
+    assert kwargs.get("bypass_temperature") is True
