@@ -113,6 +113,11 @@ jobs:
 
       - name: Run judge evaluation (RAGAS)
         if: env.HAS_KEY == 'true' && env.RUN_JUDGE == 'true'
+        # Backstop only; bounded retries and the pre-flight check are the real
+        # fix. A judge step that eats the whole 30-minute job budget also takes
+        # the compare and artefact steps down with it, which is how run
+        # 34486989558 produced no report at all.
+        timeout-minutes: 20
         env:
           # RAGAS phones home to t.explodinggradients.com on import and during
           # evaluation. On a locked-down runner that call hangs rather than

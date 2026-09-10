@@ -150,6 +150,12 @@ def run_judge_suite(
     # load, and no call to a provider the config did not ask for.
     grader = J.build_grader(backend, provider=provider, embedder=retriever.embedder)
 
+    # Before generating a single answer: one cheap call proves the judge provider
+    # is usable. Generation runs over every answerable question and costs real
+    # money, so discovering a dead key afterwards wastes all of it.
+    if hasattr(grader, "preflight"):
+        grader.preflight()
+
     samples = []
     for record in answerable:
         results = retriever.retrieve(record.question)
