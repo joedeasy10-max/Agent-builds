@@ -148,16 +148,25 @@ def test_unusable_output_becomes_review(raw):
     assert all(getattr(ev, c) == "unknown" for c in CRITERIA)
 
 
-def test_provider_failure_becomes_review_not_an_exception():
-    class Dead:
-        drafter_id = "dead"
+def test_transient_provider_failure_becomes_review_not_an_exception():
+    """A one-off failure is a verdict; an unrecoverable one aborts the batch.
+
+    This test originally used "credit balance is too low" and asserted a review
+    verdict. That was the behaviour before run 34605958838 showed why it is
+    wrong: an evaluator that cannot work should stop, not produce 134 identical
+    non-verdicts. Unrecoverable errors now raise (see
+    test_unrecoverable_error_raises_instead_of_scoring); transient ones still
+    degrade to review, which is what this asserts.
+    """
+    class Flaky:
+        drafter_id = "flaky"
 
         def complete(self, system, user):
-            raise RuntimeError("credit balance is too low")
+            raise RuntimeError("upstream connect error, reset before headers")
 
-    ev = evaluate_one(Cand(), Dead())
+    ev = evaluate_one(Cand(), Flaky())
     assert ev.decision == "review"
-    assert "credit balance" in ev.reason
+    assert "reset before headers" in ev.reason
 
 
 def test_negative_candidates_always_reach_a_human():
@@ -316,3 +325,50 @@ def test_third_copy_is_compared_against_the_survivor_not_the_rejected_one():
 def test_preceding_peers_is_empty_for_the_first_candidate():
     from src.candidate_review import preceding_peers
     assert preceding_peers([Cand(cid="c0")], 0) == []
+
+
+# --- a hopeless evaluator must stop, not repeat itself 134 times ------------
+
+
+def test_missing_sdk_is_unrecoverable():
+    """The gap that let run 34605958838 burn a whole batch.
+
+    "No module named 'anthropic'" is not a provider error, so it was classified
+    non-fatal: the pre-flight logged a warning, the run continued, and all 134
+    candidates came back as `review` with reason "evaluator call failed".
+    """
+    from src.candidate_review import is_unrecoverable
+
+    assert is_unrecoverable(ModuleNotFoundError("No module named 'anthropic'"))
+    assert is_unrecoverable(Exception("credit balance is too low"))
+    assert is_unrecoverable(Exception("invalid x-api-key"))
+    # Transient failures must not abort a long batch.
+    assert not is_unrecoverable(Exception("overloaded_error"))
+    assert not is_unrecoverable(Exception("Connection reset by peer"))
+    assert not is_unrecoverable(Exception("rate_limit_error"))
+
+
+def test_unrecoverable_error_raises_instead_of_scoring():
+    from src.candidate_review import FatalEvaluatorError
+
+    class NoSdk:
+        drafter_id = "anthropic"
+
+        def complete(self, system, user):
+            raise ModuleNotFoundError("No module named 'anthropic'")
+
+    with pytest.raises(FatalEvaluatorError):
+        evaluate_one(Cand(), NoSdk())
+
+
+def test_transient_error_still_becomes_a_review_verdict():
+    """Only unrecoverable errors abort; a one-off failure is still a verdict."""
+    class Flaky:
+        drafter_id = "flaky"
+
+        def complete(self, system, user):
+            raise RuntimeError("overloaded_error, try again")
+
+    ev = evaluate_one(Cand(), Flaky())
+    assert ev.decision == "review"
+    assert ev.rule == "unparseable"

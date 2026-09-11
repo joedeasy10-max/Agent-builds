@@ -643,3 +643,83 @@ def test_review_verdict_cannot_promote_itself(tmp_path):
     ]
     new, skipped = bgs.promote(cands, [], "v3")
     assert [r["question"] for r in new] == ["Good?"], "only the approved one"
+
+
+def test_all_unreadable_evaluations_is_a_failure_not_a_green_run(tmp_path, capsys):
+    """Run 34605958838: 134 candidates, every verdict unreadable, exit 0.
+
+    Each verdict was individually correct — a failure never becomes an approval —
+    and the run was still worthless. A screen that screened nothing must fail.
+    """
+    import argparse
+
+    q = tmp_path / "queue.jsonl"
+    bgs.write_queue(q, [
+        bgs.Candidate(candidate_id=f"cand_{i:04d}", status="pending",
+                      question=f"Question {i}?", ground_truth="GT",
+                      source_ids=("gov-uk/p#chunk-0",), difficulty="single_hop",
+                      source_excerpt="a passage")
+        for i in range(3)
+    ])
+
+    class Garbage:
+        drafter_id = "garbage"
+
+        def preflight(self):
+            pass
+
+        def complete(self, system, user):
+            return "this is not JSON"
+
+    bgs.build_drafter = lambda config, provider=None: Garbage()
+    bgs.load_config = lambda path: None
+    with pytest.raises(SystemExit) as exc:
+        bgs._cmd_evaluate(argparse.Namespace(
+            queue=q, config=None, out=None, provider=None, limit=0, max_usd=4.0,
+            reevaluate=False, annotate_only=False, override_human=False))
+    assert "nothing was actually screened" in str(exc.value)
+    # Statuses untouched: an environment fault is not a verdict.
+    assert all(c.status == "pending" for c in bgs.load_queue(q))
+
+
+def test_fatal_error_stops_the_batch_and_keeps_what_was_screened(tmp_path):
+    import argparse
+
+    q = tmp_path / "queue.jsonl"
+    bgs.write_queue(q, [
+        bgs.Candidate(candidate_id=f"cand_{i:04d}", status="pending",
+                      question=f"Question {i}?", ground_truth="GT",
+                      source_ids=("gov-uk/p#chunk-0",), difficulty="single_hop",
+                      source_excerpt="a passage")
+        for i in range(5)
+    ])
+
+    class DiesAfterTwo:
+        drafter_id = "dies"
+
+        def __init__(self):
+            self.n = 0
+
+        def preflight(self):
+            pass
+
+        def complete(self, system, user):
+            self.n += 1
+            if self.n > 2:
+                raise ModuleNotFoundError("No module named 'anthropic'")
+            return json.dumps({
+                "decision": "approve", "confidence": 0.95, "relevance": "pass",
+                "ground_truth_accuracy": "pass", "source_support": "pass",
+                "question_quality": "pass", "duplicate": False,
+                "reason": "fine", "suggested_question": "",
+            })
+
+    bgs.build_drafter = lambda config, provider=None: DiesAfterTwo()
+    bgs.load_config = lambda path: None
+    with pytest.raises(SystemExit) as exc:
+        bgs._cmd_evaluate(argparse.Namespace(
+            queue=q, config=None, out=None, provider=None, limit=0, max_usd=4.0,
+            reevaluate=False, annotate_only=False, override_human=False))
+    assert "2 of 5" in str(exc.value), "must say how much was salvaged"
+    screened = [c for c in bgs.load_queue(q) if c.evaluation]
+    assert len(screened) == 2, "the two paid-for verdicts survive"
