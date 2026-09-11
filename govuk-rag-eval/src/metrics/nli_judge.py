@@ -13,6 +13,15 @@ cruder than an LLM's judgement.
 
 How each metric is computed here, and how that differs from RAGAS:
 
+**Scope: this makes GRADING free, not the whole judge suite.** The suite scores
+generated answers, so it still generates them, and that uses
+`generation.provider`. Run 34616093028 is the proof: the NLI grader loaded
+correctly and the step then died on `import anthropic` inside the generator.
+What actually changes is the bulk of the bill — grading was $3.69 a run
+(41 questions x 3 runs x $0.03) and is now zero, leaving one generation pass per
+question at --runs 1. For a fully key-free suite you would also need a local or
+extractive generator, which measures something different and is not claimed here.
+
 * faithfulness      Natural-language inference, the standard pre-LLM approach
                     (SummaC / AlignScore style). Each answer sentence is a
                     hypothesis; each retrieved context is a premise; the score

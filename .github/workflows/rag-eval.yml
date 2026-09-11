@@ -130,12 +130,19 @@ jobs:
       # API key, no per-question cost. Median-of-N is pointless for a
       # deterministic grader, hence --runs 1 and a spread of exactly zero.
       #
-      # It needs no requirements-judge.lock: CrossEncoder ships with
-      # sentence-transformers, which is already pinned for the bge embedder.
+      # GRADING is free; GENERATION is not. The judge scores answers, so it has
+      # to produce them first, and that still uses generation.provider — which
+      # is why requirements-judge.lock is installed here for its provider SDK.
+      # Run 34616093028 failed on exactly this: the NLI grader loaded fine and
+      # the step then died on `import anthropic` inside the generator.
+      #
+      # The saving is still most of the cost: grading went from $3.69 a run to
+      # zero, leaving ~41 generations at --runs 1 rather than 41 x 3 gradings.
       - name: Run judge evaluation (local NLI)
         if: env.HAS_KEY == 'true' && env.JUDGE_BACKEND == 'nli'
         timeout-minutes: 15
         run: |
+          pip install -r requirements-judge.lock
           python -m src.evaluate \
             --suite judge \
             --dataset data/golden/questions.jsonl \
