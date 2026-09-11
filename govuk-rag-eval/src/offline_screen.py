@@ -31,10 +31,32 @@ median moved 2.5% between two identical runs, which is why its tolerance had to
 be widened to 8%. A deterministic screen has zero run-to-run variance, so a
 change in its output always means the candidates changed.
 
+Measured against the paid screen on the same 134 candidates, full passages,
+run 34613876697 vs 34610387397:
+
+    offline   106 approve / 28 review     < 1 second      $0.00
+    LLM       113 approve / 21 review     6m 41s          $1.34
+    agreement 117/134 = 87%
+
+The 17 disagreements split 12 / 5. Twelve are the offline screener being more
+cautious than the model, which costs review time and nothing else. **Five are
+the other direction and are the real price of this change**: candidates offline
+approves that the model held back —
+
+    2  the model found a source-support problem the lexical check missed
+    2  the model disliked phrasing the rules here accept
+    1  the model was simply unsure
+
+Two unsupported answers reaching the dataset unreviewed, per 134 candidates, is
+the honest cost. Whether that is worth $1.34 and seven minutes a batch is a
+judgement, not a fact, and the `llm` backend is still there for anyone who
+decides it is — the sensible middle is to screen offline per batch and run the
+paid screen once before a promotion.
+
 What this deliberately does NOT claim: it cannot tell you a ground truth is
-factually wrong in a way that reuses the passage's own vocabulary. Nothing here
-pretends to. Candidates it cannot judge go to a human, which is what the LLM
-screen did with them anyway.
+factually wrong in a way that reuses the passage's own vocabulary, and the two
+missed support failures above are exactly that shape. Nothing here pretends
+otherwise. Candidates it cannot judge go to a human.
 """
 
 from __future__ import annotations
