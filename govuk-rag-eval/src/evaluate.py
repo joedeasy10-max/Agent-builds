@@ -139,7 +139,11 @@ def run_retrieval_suite(
 # Rough per-question cost of one judge run, by backend. The heuristic grader is
 # free (no LLM); the ragas figure is a deliberately conservative guess used only
 # for the pre-flight cap check, not for billing.
-_JUDGE_COST_PER_QUESTION_USD = {"heuristic": 0.0, "ragas": 0.03}
+#: Per-question judge cost by backend. `nli` runs a local model, so it is
+#: free in the sense that matters here — no per-call billing — and the cost
+#: cap simply never binds. `.get(..., 0.0)` would have covered it silently;
+#: naming it keeps the free backends visible rather than implied.
+_JUDGE_COST_PER_QUESTION_USD = {"heuristic": 0.0, "nli": 0.0, "ragas": 0.03}
 
 
 def _load_cost_caps(eval_config_path: Path | None) -> dict:
@@ -162,6 +166,7 @@ def run_judge_suite(
     caps: dict,
     limit: int | None = None,
     judge_provider: str | None = None,
+    nli_model: str = "",
 ) -> dict:
     """Generate answers over the golden questions and grade them (median-of-N).
 
@@ -199,7 +204,12 @@ def run_judge_suite(
     # Reuse the retriever's embedder rather than letting RAGAS default to
     # OpenAI embeddings: same vector space as the retrieval metrics, one model
     # load, and no call to a provider the config did not ask for.
-    grader = J.build_grader(backend, provider=provider, embedder=retriever.embedder)
+    grader = J.build_grader(
+        backend,
+        provider=provider,
+        embedder=retriever.embedder,
+        nli_model=nli_model,
+    )
 
     # Before generating a single answer: one cheap call proves the judge provider
     # is usable. Generation runs over every answerable question and costs real
@@ -250,8 +260,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--limit", type=int, default=None, help="cap questions (cost discipline)")
     parser.add_argument("--runs", type=int, default=1, help="judge suite: median-of-N runs")
     parser.add_argument(
-        "--judge-backend", choices=["ragas", "heuristic"], default="ragas",
-        help="judge grader: ragas (real, needs a key) or heuristic (offline stub)",
+        "--judge-backend", choices=["nli", "ragas", "heuristic"], default="nli",
+        help=(
+            "nli (default): local NLI entailment, no key, deterministic. "
+            "ragas: LLM-graded, needs a key, costs money and varies between "
+            "runs. heuristic: lexical stub for tests. Numbers from different "
+            "backends are NOT comparable — switching one invalidates the "
+            "judge half of the baseline."
+        ),
+    )
+    parser.add_argument(
+        "--nli-model", default="",
+        help=(
+            "NLI checkpoint for --judge-backend nli (default: "
+            + J.DEFAULT_NLI_MODEL + ")"
+        ),
     )
     parser.add_argument(
         "--judge-provider", choices=list(J.JUDGE_PROVIDERS), default=None,
@@ -281,10 +304,14 @@ def main(argv: list[str] | None = None) -> int:
         suite = run_judge_suite(
             records, config, index_dir, runs=args.runs,
             backend=args.judge_backend, caps=caps, limit=args.limit,
+            nli_model=args.nli_model,
             judge_provider=args.judge_provider,
         )
         payload["judge"] = suite["metrics"]
         payload["judge_runs"] = suite["runs"]
+        # Recorded so compare.py can refuse to gate NLI numbers against an
+        # LLM-graded baseline; the two are not on the same scale.
+        payload["judge_backend"] = suite["backend"]
         payload["estimated_cost_usd"] = suite["estimated_cost_usd"]
         payload["judge_detail"] = {
             "n_judged": suite["n_judged"],

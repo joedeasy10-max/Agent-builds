@@ -353,11 +353,34 @@ def run_judge(
     return {"metrics": metrics_out, "spread": spread, "runs": runs}
 
 
+#: Default NLI checkpoint for the `nli` backend. A config value, not an import:
+#: swapping it changes the numbers, so it belongs with the other things that do.
+DEFAULT_NLI_MODEL = "cross-encoder/nli-deberta-v3-small"
+
+
 def build_grader(
-    backend: str, provider: str = "openai", model: str = "", embedder=None
+    backend: str,
+    provider: str = "openai",
+    model: str = "",
+    embedder=None,
+    nli_model: str = "",
 ) -> Grader:
     if backend == "heuristic":
         return HeuristicGrader()
     if backend == "ragas":
         return RagasGrader(provider=provider, model=model, embedder=embedder)
+    if backend == "nli":
+        # Local, deterministic, no key. Lazy-imported so the offline suite does
+        # not need torch present just to import this module.
+        from .nli_judge import CrossEncoderEntailment, NLIGrader
+
+        if embedder is None:
+            raise ValueError(
+                "the nli backend needs the project embedder for its similarity "
+                "metrics; pass the one the retrieval config built"
+            )
+        return NLIGrader(
+            entailment=CrossEncoderEntailment(nli_model or DEFAULT_NLI_MODEL),
+            embedder=embedder,
+        )
     raise ValueError(f"Unknown judge backend: {backend!r}")

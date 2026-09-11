@@ -116,6 +116,28 @@ def main() -> int:
 
         suite_baseline = baseline.get(suite_name, {}) if baseline else {}
 
+        # A judge metric is only comparable against the SAME grader. An NLI
+        # entailment score and an LLM's judgement measure similar ideas on
+        # different scales, so gating one against the other would invent a
+        # regression (or hide one) out of nothing. Same reasoning as the dataset
+        # version check above, and the same response: report, do not gate.
+        suite_comparable = comparable
+        if suite_name == "judge" and baseline:
+            here = current.get("judge_backend")
+            there = baseline.get("judge_backend")
+            if here and there and here != there:
+                lines.append(
+                    f"| _judge grader_ | `{there}` | `{here}` | — | "
+                    "not comparable — reporting only |"
+                )
+                suite_comparable = False
+            elif here and not there:
+                lines.append(
+                    f"| _judge grader_ | unrecorded | `{here}` | — | "
+                    "baseline predates grader tracking — reporting only |"
+                )
+                suite_comparable = False
+
         for metric, rules in suite["metrics"].items():
             if metric not in suite_current:
                 continue
@@ -123,7 +145,7 @@ def main() -> int:
             prior = suite_baseline.get(metric)
             prior = float(prior) if prior is not None else None
 
-            gated = suite_gating and rules.get("gating", True) and comparable
+            gated = suite_gating and rules.get("gating", True) and suite_comparable
             passed, reason = (
                 evaluate_metric(metric, value, prior, rules)
                 if gated

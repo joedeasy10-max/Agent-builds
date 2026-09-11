@@ -105,3 +105,75 @@ def test_current_version_disagrees_with_config_cannot_compare(tmp_path):
 def test_missing_current_cannot_compare(tmp_path):
     code, _ = _run(tmp_path, None, _current())
     assert code == 2
+
+
+# --- judge metrics are only comparable against the SAME grader --------------
+
+
+def _judge_payload(backend, faithfulness=0.90, version=None):
+    import json as _json
+    from pathlib import Path as _Path
+    return {
+        "dataset_version": version or CONFIG_VERSION,
+        "retrieval": {"hit_at_5": 0.90, "mrr": 0.72,
+                      "context_recall_at_10": 0.93, "served_context_recall": 0.90},
+        "judge": {"faithfulness": faithfulness, "answer_relevancy": 0.89,
+                  "context_precision": 0.82, "answer_correctness": 0.83},
+        "judge_backend": backend,
+        "judge_runs": 1,
+    }
+
+
+def _run_compare(tmp_path, current, baseline):
+    import json, subprocess, sys
+    (tmp_path / "cur.json").write_text(json.dumps(current))
+    (tmp_path / "base.json").write_text(json.dumps(baseline))
+    out = tmp_path / "report.md"
+    proc = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "compare.py"),
+         "--current", str(tmp_path / "cur.json"),
+         "--baseline", str(tmp_path / "base.json"),
+         "--thresholds", str(ROOT / "configs" / "eval_config.yaml"),
+         "--markdown", str(out)],
+        capture_output=True, text=True, cwd=ROOT,
+    )
+    return proc, out.read_text() if out.exists() else ""
+
+
+def test_a_grader_change_reports_instead_of_gating(tmp_path):
+    """An NLI score and an LLM's judgement are different scales.
+
+    Gating one against the other would invent a regression out of nothing — a
+    faithfulness of 0.82 from entailment is not "worse" than 0.95 from a model.
+    """
+    current = _judge_payload("nli", faithfulness=0.55)      # far below the floor
+    baseline = _judge_payload("ragas", faithfulness=0.95)
+    proc, report = _run_compare(tmp_path, current, baseline)
+    assert "not comparable" in report
+    assert proc.returncode == 0, "a grader change must not fail the gate"
+
+
+def test_the_same_grader_still_gates(tmp_path):
+    current = _judge_payload("nli", faithfulness=0.10)
+    baseline = _judge_payload("nli", faithfulness=0.95)
+    proc, report = _run_compare(tmp_path, current, baseline)
+    assert "not comparable" not in report
+    assert proc.returncode == 1, "a real drop under the same grader must fail"
+
+
+def test_a_baseline_predating_grader_tracking_reports_only(tmp_path):
+    current = _judge_payload("nli", faithfulness=0.10)
+    baseline = _judge_payload("nli")
+    del baseline["judge_backend"]
+    proc, report = _run_compare(tmp_path, current, baseline)
+    assert "predates grader tracking" in report
+    assert proc.returncode == 0
+
+
+def test_retrieval_still_gates_when_the_grader_changed(tmp_path):
+    """Only the judge suite is affected; retrieval is grader-independent."""
+    current = _judge_payload("nli")
+    current["retrieval"]["hit_at_5"] = 0.10
+    baseline = _judge_payload("ragas")
+    proc, report = _run_compare(tmp_path, current, baseline)
+    assert proc.returncode == 1, "retrieval must still block"
