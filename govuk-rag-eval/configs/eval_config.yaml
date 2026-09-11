@@ -68,25 +68,51 @@ suites:
     # not — generation.temperature: 0.0 is honoured by openai and ignored by the
     # Anthropic models in use — so answers differ between runs and the judge
     # metrics move with them. The in-run judge_spread cannot see this, because
-    # generation happens before grading. So the bands come from a measurement of
-    # whole runs: two on commit ae7dfa2 (34618486278, 34619048854) and the PR #33
-    # run (34616914158, which differed only in cost reporting).
+    # generation happens before grading. So the bands come from repeated WHOLE
+    # runs of the same system: 34618486278 and 34619048854 on ae7dfa2, plus
+    # 34616914158 (PR #33), 34620099721 and 34620721195 (PR #35) and
+    # 34621223251 (PR #36). None of those commits touched the generator or the
+    # grader, so all six measure one system.
     #
-    #   metric              observed    spread   band    headroom   was
-    #   faithfulness        0.688-0.704  2.32%     5%       2.2x     8%
-    #   answer_relevancy    0.839-0.848  1.11%     3%       2.7x     2%
-    #   context_precision   0.809-0.809  0.03%     2%      >60x      5%
-    #   answer_correctness  0.780-0.802  2.71%   ungated      —      —
+    #   metric              mean     sd      sd/mean   band   sigma   was
+    #   faithfulness        0.6923  0.0132    1.91%     7%    3.7σ     8%
+    #   answer_relevancy    0.8427  0.0036    0.43%     3%    7.0σ     2%
+    #   context_precision   0.8091  0.0002    0.02%     2%   >100σ     5%
+    #   answer_correctness  0.7869  0.0082    1.04%  ungated   —       —
     #
-    # Rule applied: band is 2-3x the widest observed spread, and never below 2%
-    # regardless — three samples is a thin basis for tightening, and a band that
-    # hugs the measurement fails on the fourth run.
+    # THE RULE, AND WHY IT CHANGED. It used to be "2-3x the widest observed
+    # spread". That rule is broken, and it moved faithfulness' band twice for
+    # no good reason:
     #
-    # NOTE that answer_relevancy moves the WRONG WAY here: 2% -> 3%. Its 2% band
-    # was set against RAGAS's 0.14% noise, and this grader's generation-driven
-    # noise is 1.11% — eight times larger — so 2% left only 1.8x headroom and
-    # would have failed on variance. Widening it is the honest result of the
-    # measurement, not a concession.
+    #   n=3  range 1.70%   sd/mean 0.90%   -> band set to 5%
+    #   n=4  range 1.87%   sd/mean 0.85%   -> band widened to 7%
+    #   n=5  range 3.98%   sd/mean 1.47%   -> looked "too tight" again
+    #   n=6  range 5.06%   sd/mean 1.91%   -> 7% is fine after all
+    #
+    # The range of a sample can only grow as samples accumulate: it is the max
+    # minus the min, so every new run can widen it and none can narrow it. Using
+    # it as the noise estimate guarantees the band looks too tight forever, and
+    # invites exactly the behaviour the docs forbid — widening whenever a number
+    # moves. The standard deviation does not have that bias; it settled around
+    # 1.9% and stayed there.
+    #
+    # So: BAND >= 3 SIGMA OF THE RUN-TO-RUN MEAN, and never below 2% regardless.
+    # 3σ is the conventional "will not fire on noise" threshold, and unlike a
+    # multiple of the range it does not drift with how many runs you happen to
+    # have. Every band above already satisfies it; none needs changing. Recheck
+    # the sd as runs accumulate — but recheck, do not reflexively widen.
+    #
+    # NOTE that answer_relevancy moved the WRONG WAY when these were first set:
+    # 2% -> 3%. Its 2% band was calibrated against RAGAS's 0.14% noise, and this
+    # grader's generation-driven noise is larger, so 2% would have fired on
+    # variance. Widening it was the honest result of the measurement.
+    #
+    # The real fix for faithfulness' 1.9% is not a wider band but a determinate
+    # generator: generation.temperature is already 0.0 and openai honours it.
+    # Switching generation.provider would make the whole suite reproducible and
+    # let these bands be genuinely tight — at the cost of a fresh baseline,
+    # since different answers mean different scores. Not done here; noted as the
+    # option that actually removes the noise rather than accommodating it.
     metrics:
       faithfulness:
         # Was 0.85, which is a RAGAS-scale number and unreachable here. 0.60
