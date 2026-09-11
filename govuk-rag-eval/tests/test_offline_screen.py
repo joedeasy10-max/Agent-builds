@@ -12,6 +12,7 @@ from src.offline_screen import (
     OfflineScreener,
     content_tokens,
     overlap,
+    reads_as_question,
     unsupported_figures,
 )
 
@@ -172,3 +173,58 @@ def test_overlap_ignores_stopwords():
     assert "the" not in content_tokens("the tax return")
     assert overlap("the tax return", "tax return forms") == 1.0
     assert overlap("capital gains", "beef carcase classification") == 0.0
+
+
+# --- question phrasing --------------------------------------------------
+# These are not invented examples. Every string below is a real candidate from
+# the 134-question drafting run, screened by CI run 34613876697, where the
+# anchored `^(what|when|...)` check sent seven perfectly good questions to
+# human review because they open with an adverbial clause.
+
+
+ADVERBIAL_OPENERS = [
+    "While studying, what is the interest rate typically charged on a Plan 2 loan?",
+    "From which tax year does cash basis become the default method of accounting "
+    "for self-employed people, and what applies before then?",
+    "As the intermediary, what do you need to do regarding the worker's employment status?",
+    "As a share fisher filling in a Self Assessment tax return, should you record "
+    "any tax that has been deducted by the owner?",
+    "From what date must sole traders and landlords use Making Tax Digital for "
+    "Income Tax if their annual income is over the threshold?",
+    "From what date must eligible individuals use Making Tax Digital for Income "
+    "Tax, and what two types of income must they have?",
+    "From when will HMRC start signing up individuals for Making Tax Digital for "
+    "Income Tax for the 2026 to 2027 tax year?",
+]
+
+
+@pytest.mark.parametrize("question", ADVERBIAL_OPENERS)
+def test_a_question_opening_with_a_clause_still_reads_as_a_question(question):
+    assert reads_as_question(question)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "List the three types of support available.",
+        "The rules are set out in the guidance below.",
+        "Explain how to register for Self Assessment",
+        "",
+        "   ",
+    ],
+)
+def test_statements_and_instructions_do_not_read_as_questions(text):
+    assert not reads_as_question(text)
+
+
+def test_an_auxiliary_mid_sentence_is_not_enough():
+    """Guards the obvious wrong fix: searching for a question word near the front.
+
+    'are' sits in the first six words here, so a search-based check passes this
+    statement. Trailing '?' plus first-word inversion does not.
+    """
+    assert not reads_as_question("The rules are set out in the guidance below.")
+
+
+def test_a_question_without_its_punctuation_still_counts():
+    assert reads_as_question("Is the child and family ASYE programme mandatory")
