@@ -204,6 +204,55 @@ lazy-imported) or `heuristic` (deterministic offline stub, **not** a real qualit
 signal). The real RAGAS grader is wired but not exercised by tests — no test calls
 an LLM.
 
+### Screening candidates without an API key
+
+`scripts/build_golden_set.py evaluate` defaults to `--backend offline`:
+deterministic checks, no key, no spend, no run-to-run variance.
+
+```bash
+# free, deterministic, ~1 second for 134 candidates
+python scripts/build_golden_set.py evaluate --queue data/golden/review_queue.jsonl
+
+# ask a model as well — slower, costs money, varies between runs
+python scripts/build_golden_set.py evaluate --backend llm
+```
+
+Measured on the same 134 candidates with full passages
+([offline](https://github.com/joedeasy10-max/Agent-builds/actions/runs/34613876697)
+vs [LLM](https://github.com/joedeasy10-max/Agent-builds/actions/runs/34610387397)):
+
+| | approve | review | time | cost |
+| --- | ---: | ---: | ---: | ---: |
+| `offline` | 106 | 28 | **< 1 s** | **$0.00** |
+| `llm` | 113 | 21 | 6m 41s | $1.34 |
+
+**They agree on 117 of 134 (87%).** Of the 17 disagreements, 12 are offline
+being more cautious — which costs review time and nothing else. Five go the
+other way and are the real price: 2 source-support problems the model caught and
+the lexical check missed, 2 phrasing calls, 1 the model was unsure about.
+
+Why offline is the default despite that:
+
+- Across two paid screens the model produced **zero rejections** and drove **8
+  of 134 decisions** independently. The rest were already decided by
+  deterministic checks. Candidates are drafted *from* their passages, so
+  relevance and ground-truth accuracy are near-guaranteed by construction — the
+  criteria a model is needed for are the ones that cannot fail here.
+- What *does* go wrong is mechanical, and code is better at mechanical: on
+  self-referential phrasing the model caught 10 of 13, a regex caught 13 of 13.
+- **Reproducibility.** The judge's faithfulness median moved 2.5% between two
+  identical runs, which is why its tolerance sits at 8%. This screen has zero
+  variance, so a change in its output always means the candidates changed.
+
+The sharpest deterministic check is figure support: every money amount,
+percentage, date, year and form code asserted by an answer must appear in the
+passage, compared by value so `£1,000` matches `£1000`. A drafted answer citing
+a number the passage does not contain is wrong in a way that needs no judgement
+to see.
+
+The sensible middle, if you want both: screen offline per batch, and run
+`--backend llm` once before promoting.
+
 ### Regression demos (step 6)
 
 Three deliberate regressions the gate is meant to catch, each a one-line edit to
