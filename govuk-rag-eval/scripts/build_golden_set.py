@@ -48,6 +48,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.candidate_review import (  # noqa: E402
+    FatalEvaluatorError,
     apply_decision,
     evaluate_one,
     preceding_peers,
@@ -316,6 +317,11 @@ _FATAL_MARKERS = (
     "credit balance", "insufficient_quota", "quota",
     "authentication", "invalid api key", "invalid x-api-key",
     "permission", "not_found_error", "model not found",
+    # A missing SDK is not a provider problem but it is just as unrecoverable,
+    # and it used to slip through: the pre-flight treated "No module named
+    # 'anthropic'" as a non-fatal warning and let the run continue, so
+    # run 34605958838 made 134 calls that could never have worked.
+    "no module named",
 )
 
 
@@ -767,10 +773,20 @@ def _cmd_evaluate(args) -> int:
     # and lose it entirely — found by an end-to-end run, not by unit tests.
     dropped: set[str] = set()
     done = 0
+    unreadable = 0
+    fatal: Exception | None = None
     try:
         for c in targets:
             peers = preceding_peers(candidates, position[c.candidate_id], dropped)
-            ev = evaluate_one(c, completer, others=peers)
+            try:
+                ev = evaluate_one(c, completer, others=peers)
+            except FatalEvaluatorError as exc:
+                # The evaluator cannot work at all. Stop rather than make the
+                # same doomed call once per remaining candidate.
+                fatal = exc
+                break
+            if ev.rule == "unparseable":
+                unreadable += 1
             if ev.decision == "reject":
                 dropped.add(c.candidate_id)
             status = (
@@ -792,8 +808,36 @@ def _cmd_evaluate(args) -> int:
     print(
         f"Evaluated {done} candidate(s) -> {args.out or args.queue}\n"
         f"  automated: {s['by_auto']}\n"
-        f"  status:    {s['by_status']}\n\n"
-        "Nothing uncertain was promoted: `review` leaves status=pending, and "
+        f"  status:    {s['by_status']}"
+    )
+
+    if fatal is not None:
+        raise SystemExit(
+            f"\nEvaluator stopped: {fatal}\n"
+            f"{done} of {len(targets)} candidate(s) were screened and saved; the "
+            "rest are untouched. Re-run once fixed and only the unscreened ones "
+            "are charged for."
+        )
+
+    # A screen that screened nothing must not be a green build. Run 34605958838
+    # turned every one of 134 candidates into `review` because the anthropic SDK
+    # was missing, and still exited 0 — the verdicts were individually correct
+    # (a failure never becomes an approval) and the run was still worthless.
+    if done and unreadable == done:
+        raise SystemExit(
+            f"\nEvery one of {done} evaluations was unreadable, so nothing was "
+            "actually screened. That is an evaluator or environment fault, not a "
+            "verdict on these candidates — check the reasons above. Statuses were "
+            "left as they were."
+        )
+    if unreadable:
+        print(
+            f"\nWARNING: {unreadable} of {done} evaluations were unreadable and "
+            "defaulted to human review. Check the reasons before trusting the split."
+        )
+
+    print(
+        "\nNothing uncertain was promoted: `review` leaves status=pending, and "
         "promote only takes approved.\n"
         "NEXT: open the review page (or `status`) and work the review pile."
     )

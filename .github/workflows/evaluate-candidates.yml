@@ -60,7 +60,13 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: pip install -r requirements.lock
+        # BOTH locks. The anthropic SDK is only in requirements-judge.lock, and
+        # generation.provider is anthropic — installing just the base lock made
+        # run 34605958838 evaluate 134 candidates as "No module named 'anthropic'"
+        # and still report success. The drafting workflow already installs both.
+        run: |
+          pip install -r requirements.lock
+          pip install -r requirements-judge.lock
 
       - name: Fetch the drafted review queue
         uses: actions/download-artifact@v4

@@ -219,6 +219,23 @@ class Completer(Protocol):
 # --- pure helpers: no LLM, no network, fully unit-tested --------------------
 
 
+#: Conditions that mean the evaluator cannot work for ANY candidate, so there is
+#: no point continuing the batch. Matched on message text because provider SDKs
+#: surface these as differently-shaped exceptions. `no module named` is here
+#: because its absence is what let run 34605958838 burn a whole batch.
+_UNRECOVERABLE_MARKERS = (
+    "credit balance", "insufficient_quota", "quota",
+    "authentication", "invalid api key", "invalid x-api-key",
+    "permission", "not_found_error", "model not found",
+    "no module named",
+)
+
+
+def is_unrecoverable(exc: BaseException) -> bool:
+    text = str(exc).lower()
+    return any(marker in text for marker in _UNRECOVERABLE_MARKERS)
+
+
 def tokens(text: str) -> set[str]:
     return set(_WORD_RE.findall(text.casefold()))
 
@@ -423,6 +440,17 @@ def build_messages(
     return _SYSTEM, user
 
 
+class FatalEvaluatorError(RuntimeError):
+    """The evaluator cannot work at all: no SDK, no credit, a dead key.
+
+    Raised out of `evaluate_one` so a batch stops on the first occurrence rather
+    than making the same doomed call once per candidate. Run 34605958838 made
+    134 of them — each one correctly downgraded to `review`, each one pointless —
+    and the job still reported success. Stopping is the useful behaviour; the
+    caller writes whatever it already has and exits non-zero.
+    """
+
+
 class EvaluationParseError(ValueError):
     """Raised when a response cannot be read as a verdict.
 
@@ -549,6 +577,8 @@ def evaluate_one(
     except EvaluationParseError as exc:
         return _unreadable(f"evaluator output unusable: {exc}", evaluator_id)
     except Exception as exc:  # noqa: BLE001 - provider errors are untyped
+        if is_unrecoverable(exc):
+            raise FatalEvaluatorError(str(exc)) from exc
         return _unreadable(f"evaluator call failed: {exc}", evaluator_id)
 
     # Word overlap alone is enough to call a duplicate; the model can only add.
