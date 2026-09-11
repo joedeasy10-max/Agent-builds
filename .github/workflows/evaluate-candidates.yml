@@ -7,6 +7,12 @@ name: Evaluate candidates
 #
 # Manual only, and it never touches data/golden/questions.jsonl. The screened
 # queue is an artefact; promotion stays a separate, deliberate step.
+#
+# The default backend is `offline`: deterministic checks, no API key, no spend
+# and no run-to-run variance. Two paid screens over the same 134 candidates
+# contributed 8 independent decisions and zero rejections between them, which is
+# what src/offline_screen.py documents. `llm` remains available for the cases
+# where a semantic judgement is actually wanted.
 
 on:
   workflow_dispatch:
@@ -14,8 +20,14 @@ on:
       draft_run_id:
         description: "Run id of the `Draft golden set` run whose queue to screen"
         required: true
+      backend:
+        description: "offline = deterministic, no API key, $0. llm = ask a model as well (costs money, varies between runs)."
+        required: true
+        type: choice
+        options: ["offline", "llm"]
+        default: "offline"
       provider:
-        description: "LLM provider for the evaluator (blank = generation.provider from the config)"
+        description: "LLM backend only: provider override (blank = generation.provider from the config)"
         required: false
         default: ""
       limit:
@@ -60,10 +72,10 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        # BOTH locks. The anthropic SDK is only in requirements-judge.lock, and
-        # generation.provider is anthropic — installing just the base lock made
-        # run 34605958838 evaluate 134 candidates as "No module named 'anthropic'"
-        # and still report success. The drafting workflow already installs both.
+        # The offline backend needs neither lock's LLM SDKs, but installing both
+        # keeps one code path. requirements-judge.lock carries the anthropic SDK;
+        # omitting it made run 34605958838 screen 134 candidates as "No module
+        # named 'anthropic'" and still report success.
         run: |
           pip install -r requirements.lock
           pip install -r requirements-judge.lock
@@ -81,6 +93,7 @@ jobs:
           python scripts/build_golden_set.py evaluate \
             --queue data/golden/review_queue.jsonl \
             --config configs/retrieval.yaml \
+            --backend ${{ inputs.backend }} \
             --limit ${{ inputs.limit }} \
             --max-usd ${{ inputs.max_usd }} \
             ${{ inputs.provider != '' && format('--provider {0}', inputs.provider) || '' }} \
