@@ -44,6 +44,11 @@ jobs:
       # Judge metrics are slow + cost money. Only run the full suite nightly,
       # on manual dispatch, or when a PR carries the `full-eval` label.
       RUN_JUDGE: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'full-eval') }}
+      # Which grader produces the judge metrics. `nli` is local, deterministic
+      # and free, so it runs on every PR. `ragas` costs money and varies between
+      # runs, so it stays behind RUN_JUDGE. Their numbers are NOT comparable —
+      # compare.py reports rather than gates when the grader changes.
+      JUDGE_BACKEND: ${{ contains(github.event.pull_request.labels.*.name, 'ragas-judge') && 'ragas' || 'nli' }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       # The gate needs an LLM provider key (OpenAI or Anthropic — the providers
@@ -68,6 +73,15 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+
+      # The NLI checkpoint is ~250MB and identical between runs; caching it
+      # keeps the judge step at inference time rather than download time.
+      - name: Restore NLI model cache
+        if: env.HAS_KEY == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-${{ hashFiles('govuk-rag-eval/requirements.lock') }}-nli-v1
 
       - name: Install dependencies
         if: env.HAS_KEY == 'true'
@@ -111,8 +125,35 @@ jobs:
             --index .index/ \
             --out results/current.json
 
-      - name: Run judge evaluation (RAGAS)
-        if: env.HAS_KEY == 'true' && env.RUN_JUDGE == 'true'
+      # Judge metrics run on EVERY run now, not just nightly, because the
+      # default grader is local: NLI entailment over the retrieved contexts, no
+      # API key, no per-question cost. Median-of-N is pointless for a
+      # deterministic grader, hence --runs 1 and a spread of exactly zero.
+      #
+      # GRADING is free; GENERATION is not. The judge scores answers, so it has
+      # to produce them first, and that still uses generation.provider — which
+      # is why requirements-judge.lock is installed here for its provider SDK.
+      # Run 34616093028 failed on exactly this: the NLI grader loaded fine and
+      # the step then died on `import anthropic` inside the generator.
+      #
+      # The saving is still most of the cost: grading went from $3.69 a run to
+      # zero, leaving ~41 generations at --runs 1 rather than 41 x 3 gradings.
+      - name: Run judge evaluation (local NLI)
+        if: env.HAS_KEY == 'true' && env.JUDGE_BACKEND == 'nli'
+        timeout-minutes: 15
+        run: |
+          pip install -r requirements-judge.lock
+          python -m src.evaluate \
+            --suite judge \
+            --dataset data/golden/questions.jsonl \
+            --config configs/retrieval.yaml \
+            --index .index/ \
+            --judge-backend nli \
+            --runs 1 \
+            --merge-into results/current.json
+
+      - name: Run judge evaluation (RAGAS, paid)
+        if: env.HAS_KEY == 'true' && env.JUDGE_BACKEND == 'ragas' && env.RUN_JUDGE == 'true'
         # Backstop only; bounded retries and the pre-flight check are the real
         # fix. A judge step that eats the whole 30-minute job budget also takes
         # the compare and artefact steps down with it, which is how run
