@@ -70,6 +70,53 @@ REJECT_MIN_CONFIDENCE = 0.70
 DUPLICATE_SIMILARITY = 0.82
 
 _WORD_RE = re.compile(r"[a-z0-9]+")
+
+#: Phrasings that make a question refer to the passage instead of standing on
+#: its own. "According to the guidance, what is an unauthorised payment?" is not
+#: a question any real user asks — they ask "What is an unauthorised payment?"
+#: and the retrieval system is supposed to find the guidance. A golden set full
+#: of these measures reading comprehension, not retrieval.
+#:
+#: Checked in code rather than left to the model. On the 134-candidate screen
+#: (run 34608236507) the evaluator caught 10 of 13 and auto-approved 3, which
+#: would have put two plainly self-referential questions into the dataset
+#: unreviewed. This regex caught all 13. Mechanical patterns belong in code; the
+#: model is for the judgement calls.
+#:
+#: Deliberately narrow on the attribution forms: "according to HMRC" and
+#: "according to the rules" are things a real person says, so only "the/this
+#: <document-ish>" fires.
+#: Both halves of this pattern were corrected by running it over the real 134
+#: candidates rather than over invented examples:
+#:
+#:   * "According to this GOV.UK guidance, ..." was MISSED, because the
+#:     qualifier slot used \w+ and "GOV.UK" contains a dot. The slot now allows
+#:     dots, hyphens and apostrophes.
+#:   * "What is the government's vision as set out in its 10-year tax
+#:     administration strategy?" was WRONGLY caught. "as set out in" followed by
+#:     a NAMED external document is a perfectly good self-contained question;
+#:     only "as set out in the/this guidance" refers to the passage. The bare
+#:     "as ... in" form now requires a document word after the/this, while
+#:     "as stated above/below" still fires on its own.
+_DOCWORD = r"(?:guide|guidance|passage|page|document|section|text|notes?|extract|workbook)"
+_SELF_REFERENTIAL_RE = re.compile(
+    r"\b("
+    rf"according to (?:the|this)\s+(?:[\w.'\-]+\s+){{0,2}}{_DOCWORD}"
+    rf"|in (?:this|the (?:above|following))\s+{_DOCWORD}"
+    rf"|(?:the|this)\s+{_DOCWORD}\s+"
+    r"(?:says|states|mentions|explains|describes|notes|sets out)"
+    rf"|as (?:stated|mentioned|described|set out|noted)\s+in\s+(?:the|this)\s+{_DOCWORD}"
+    r"|as (?:stated|mentioned|described|set out|noted)\s+(?:above|below)"
+    r"|(?:mentioned|described|listed|shown)\s+(?:above|below)"
+    r"|this (?:section|passage|extract)"
+    r")\b",
+    re.IGNORECASE,
+)
+
+
+def is_self_referential(question: str) -> bool:
+    """Does this question refer to the source rather than stand on its own?"""
+    return bool(_SELF_REFERENTIAL_RE.search(question or ""))
 _FENCE_RE = re.compile(r"^```(?:json)?\s*|\s*```$", re.MULTILINE)
 
 #: Ordered decision table. First matching rule wins.
@@ -194,6 +241,9 @@ class Evaluation:
     question_quality: str
     duplicate: bool
     reason: str
+    #: Set by the deterministic phrasing check, not by the evaluator. When true,
+    #: question_quality is forced to "fail" regardless of what the model said.
+    self_referential: bool = False
     suggested_question: str = ""
     model_decision: str = ""
     model_reason: str = ""
@@ -583,8 +633,16 @@ def evaluate_one(
 
     # Word overlap alone is enough to call a duplicate; the model can only add.
     duplicate = parsed["duplicate"] or bool(near)
+
+    # Same principle for self-reference: a code check that fires is decisive,
+    # because the model demonstrably misses some (3 of 13 on run 34608236507).
+    # It can only ever turn a pass into a fail, so it cannot cause an approval.
+    criteria = dict(parsed["criteria"])
+    self_ref = is_self_referential(candidate.question)
+    if self_ref:
+        criteria["question_quality"] = "fail"
     decision, reason, rule = decide(
-        parsed["criteria"],
+        criteria,
         confidence=parsed["confidence"],
         duplicate=duplicate,
         is_negative=is_negative,
@@ -593,12 +651,16 @@ def evaluate_one(
     return Evaluation(
         decision=decision,
         confidence=parsed["confidence"],
-        relevance=parsed["criteria"]["relevance"],
-        ground_truth_accuracy=parsed["criteria"]["ground_truth_accuracy"],
-        source_support=parsed["criteria"]["source_support"],
-        question_quality=parsed["criteria"]["question_quality"],
+        relevance=criteria["relevance"],
+        ground_truth_accuracy=criteria["ground_truth_accuracy"],
+        source_support=criteria["source_support"],
+        question_quality=criteria["question_quality"],
         duplicate=duplicate,
-        reason=reason,
+        reason=(
+            reason + " Phrasing refers to the source rather than standing alone "
+            "(detected in code, not by the evaluator)." if self_ref else reason
+        ),
+        self_referential=self_ref,
         suggested_question=parsed["suggested_question"],
         model_decision=parsed["model_decision"],
         model_reason=parsed["reason"],
@@ -641,6 +703,7 @@ def _unreadable(why: str, evaluator_id: str) -> Evaluation:
         question_quality="unknown",
         duplicate=False,
         reason=f"{reason} ({why})",
+        self_referential=False,
         rule=rule,
         evaluator=evaluator_id,
     )

@@ -372,3 +372,76 @@ def test_transient_error_still_becomes_a_review_verdict():
     ev = evaluate_one(Cand(), Flaky())
     assert ev.decision == "review"
     assert ev.rule == "unparseable"
+
+
+# --- deterministic self-reference check ------------------------------------
+
+
+@pytest.mark.parametrize("question", [
+    # The three the evaluator auto-approved on run 34608236507.
+    "According to the guidance, what is an unauthorised payment, and one example?",
+    "According to the update notes for the ACS self-assessment workbook, which criteria changed?",
+    "Under what terms should loans be settled, according to the guidance updated after FA 2020?",
+    # Missed by the first version of the regex: \w+ does not match the dot.
+    "According to this GOV.UK guidance, what topics can you find HMRC contact details for?",
+    "What does this passage say about registering?",
+    "As stated above, when must you pay?",
+    "As set out in the guidance, who must file?",
+    "Which of the reliefs mentioned above applies to gifts?",
+    "This section covers which kinds of income?",
+])
+def test_self_referential_phrasings_are_caught_in_code(question):
+    from src.candidate_review import is_self_referential
+    assert is_self_referential(question), question
+
+
+@pytest.mark.parametrize("question", [
+    "When must you register for Self Assessment?",
+    "What is an unauthorised payment?",
+    # A real person says these; they are not references to the passage.
+    "According to HMRC, what is the filing deadline?",
+    "According to the rules for sole traders, when do you pay?",
+    # Wrongly caught by the first version: a NAMED external document is fine.
+    "What is the government's vision as set out in its 10-year tax administration strategy?",
+    "How much is the trading allowance?",
+])
+def test_legitimate_phrasings_are_not_caught(question):
+    from src.candidate_review import is_self_referential
+    assert not is_self_referential(question), question
+
+
+def test_code_check_overrides_a_model_that_says_the_phrasing_is_fine():
+    """The point of the check: the model said pass on 3 of 13, so code decides.
+
+    An override can only ever turn a pass into a fail, so it can never cause an
+    approval — it can only withhold one.
+    """
+    ev = evaluate_one(
+        Cand(question="According to the guidance, what is an unauthorised payment?"),
+        FakeEvaluator(_verdict(confidence=0.95)),   # model says every criterion passes
+    )
+    assert ev.question_quality == "fail"
+    assert ev.decision == "review"
+    assert ev.rule == "quality_fixable"
+    assert ev.self_referential is True
+    assert "detected in code" in ev.reason
+    # The model's own view is preserved so the disagreement stays visible.
+    assert ev.model_decision == "approve"
+
+
+def test_the_check_never_manufactures_an_approval():
+    """It can withhold approval; it must not create one."""
+    from src.candidate_review import is_self_referential
+
+    ev = evaluate_one(
+        Cand(question="When must you register for Self Assessment?"),
+        FakeEvaluator(_verdict(relevance="fail", confidence=0.95)),
+    )
+    assert not is_self_referential("When must you register for Self Assessment?")
+    assert ev.decision == "reject", "a clean phrasing does not rescue a failing criterion"
+
+
+def test_self_referential_flag_is_false_when_unreadable():
+    ev = evaluate_one(Cand(), FakeEvaluator(None, raw="not json"))
+    assert ev.self_referential is False
+    assert ev.decision == "review"
