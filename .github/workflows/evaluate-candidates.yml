@@ -1,0 +1,123 @@
+name: Evaluate candidates
+
+# Build step 3. Automated pre-screen of a drafted review queue: every candidate
+# gets a verdict (approve / reject / review) before a human opens the queue, so
+# review attention lands on the uncertain cases instead of being spread evenly
+# over ~150 mostly-fine questions.
+#
+# Manual only, and it never touches data/golden/questions.jsonl. The screened
+# queue is an artefact; promotion stays a separate, deliberate step.
+
+on:
+  workflow_dispatch:
+    inputs:
+      draft_run_id:
+        description: "Run id of the `Draft golden set` run whose queue to screen"
+        required: true
+      provider:
+        description: "LLM provider for the evaluator (blank = generation.provider from the config)"
+        required: false
+        default: ""
+      limit:
+        description: "Evaluate at most N candidates (0 = all)"
+        required: true
+        default: "0"
+      max_usd:
+        description: "Abort if the estimated spend exceeds this"
+        required: true
+        default: "4.00"
+      annotate_only:
+        description: "Record verdicts without changing any candidate's status"
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: evaluate-candidates
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read   # to download the draft run's review-queue artefact
+
+defaults:
+  run:
+    working-directory: govuk-rag-eval
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.lock
+
+      - name: Fetch the drafted review queue
+        uses: actions/download-artifact@v4
+        with:
+          name: review-queue-${{ inputs.draft_run_id }}
+          path: govuk-rag-eval/data/golden/
+          run-id: ${{ inputs.draft_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Screen the candidates
+        run: |
+          python scripts/build_golden_set.py evaluate \
+            --queue data/golden/review_queue.jsonl \
+            --config configs/retrieval.yaml \
+            --limit ${{ inputs.limit }} \
+            --max-usd ${{ inputs.max_usd }} \
+            ${{ inputs.provider != '' && format('--provider {0}', inputs.provider) || '' }} \
+            ${{ inputs.annotate_only && '--annotate-only' || '' }}
+
+      - name: Queue summary
+        if: always()
+        run: python scripts/build_golden_set.py status --queue data/golden/review_queue.jsonl
+
+      # Printed as well as uploaded: artefact downloads redirect to blob storage
+      # that some networks block, and a verdict nobody can read is a verdict
+      # nobody acts on. Same reasoning as the retrieval-miss report in rag-eval.yml.
+      - name: Print the verdicts
+        if: always()
+        run: |
+          python - <<'PY'
+          import json, pathlib, collections, textwrap
+          f = pathlib.Path("data/golden/review_queue.jsonl")
+          rows = [json.loads(l) for l in f.read_text().splitlines() if l.strip()]
+          by = collections.Counter((r.get("evaluation") or {}).get("decision", "unevaluated")
+                                   for r in rows)
+          print(f"{len(rows)} candidates: {dict(by)}\n")
+          for want in ("reject", "review", "approve"):
+              sel = [r for r in rows if (r.get("evaluation") or {}).get("decision") == want]
+              if not sel:
+                  continue
+              print(f"=== {want.upper()} ({len(sel)}) " + "=" * 40)
+              for r in sel:
+                  e = r["evaluation"]
+                  print(f"  {r['candidate_id']}  conf={e['confidence']:.2f}  rule={e['rule']}")
+                  print(f"    Q : {r['question'][:110]}")
+                  print(textwrap.indent(textwrap.fill(e["reason"], 96), "    > "))
+                  if e.get("suggested_question"):
+                      print(f"    suggested: {e['suggested_question'][:110]}")
+                  if e.get("duplicate_of"):
+                      print(f"    duplicate of: {e['duplicate_of']}")
+                  print()
+          PY
+
+      - name: Upload the screened queue
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screened-queue-${{ github.run_id }}
+          path: govuk-rag-eval/data/golden/review_queue.jsonl
+          if-no-files-found: error

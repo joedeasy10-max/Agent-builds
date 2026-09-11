@@ -585,3 +585,61 @@ def test_preflight_makes_exactly_one_cheap_call():
     d._call = lambda system, user: calls.append((system, user)) or "ok"
     d.preflight()
     assert len(calls) == 1
+
+
+# --- evaluate subcommand: queue round-trip + promotion safety ----------------
+
+
+def test_evaluation_round_trips_through_the_queue(tmp_path):
+    q = tmp_path / "queue.jsonl"
+    c = bgs.Candidate(
+        candidate_id="cand_0000", status="pending", question="Q?",
+        ground_truth="GT", source_ids=("gov-uk/p#chunk-0",),
+        difficulty="single_hop", source_excerpt="passage",
+        evaluation={"decision": "review", "confidence": 0.4, "rule": "clean_but_unsure"},
+    )
+    bgs.write_queue(q, [c])
+    back = bgs.load_queue(q)[0]
+    assert back.evaluation["decision"] == "review"
+    assert back.evaluation["rule"] == "clean_but_unsure"
+    # A candidate written before this feature existed still loads.
+    q.write_text('{"candidate_id":"cand_0001","status":"pending","question":"Q?",'
+                 '"ground_truth":"GT","source_ids":["gov-uk/p#chunk-0"],'
+                 '"difficulty":"single_hop","source_excerpt":"p","notes":""}\n')
+    assert bgs.load_queue(q)[0].evaluation is None
+
+
+def test_summarise_reports_the_automated_split():
+    def mk(cid, status, decision):
+        return bgs.Candidate(
+            candidate_id=cid, status=status, question=cid, ground_truth="GT",
+            source_ids=("gov-uk/p#chunk-0",), difficulty="single_hop",
+            source_excerpt="p",
+            evaluation={"decision": decision} if decision else None,
+        )
+    s = bgs.summarise([
+        mk("a", "approved", "approve"), mk("b", "rejected", "reject"),
+        mk("c", "pending", "review"), mk("d", "pending", None),
+    ])
+    assert s["by_auto"] == {"unevaluated": 1, "approve": 1, "reject": 1, "review": 1}
+    assert s["by_status"]["approved"] == 1
+
+
+def test_review_verdict_cannot_promote_itself(tmp_path):
+    """The safety property: `review` -> pending, and promote ignores pending."""
+    cands = [
+        bgs.Candidate(candidate_id="cand_0000", status="pending", question="Uncertain?",
+                      ground_truth="GT", source_ids=("gov-uk/p#chunk-0",),
+                      difficulty="single_hop", source_excerpt="p",
+                      evaluation={"decision": "review", "confidence": 0.3}),
+        bgs.Candidate(candidate_id="cand_0001", status="rejected", question="Bad?",
+                      ground_truth="GT", source_ids=("gov-uk/p#chunk-0",),
+                      difficulty="single_hop", source_excerpt="p",
+                      evaluation={"decision": "reject", "confidence": 0.95}),
+        bgs.Candidate(candidate_id="cand_0002", status="approved", question="Good?",
+                      ground_truth="GT", source_ids=("gov-uk/p#chunk-0",),
+                      difficulty="single_hop", source_excerpt="p",
+                      evaluation={"decision": "approve", "confidence": 0.95}),
+    ]
+    new, skipped = bgs.promote(cands, [], "v3")
+    assert [r["question"] for r in new] == ["Good?"], "only the approved one"
