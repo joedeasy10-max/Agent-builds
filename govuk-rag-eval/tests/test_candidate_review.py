@@ -445,3 +445,60 @@ def test_self_referential_flag_is_false_when_unreadable():
     ev = evaluate_one(Cand(), FakeEvaluator(None, raw="not json"))
     assert ev.self_referential is False
     assert ev.decision == "review"
+
+
+from src.candidate_review import is_self_referential  # noqa: E402
+
+# --- self-referential phrasing: bare source names -----------------------
+# The pattern required a determiner — "according to (the|this) <docword>" — so a
+# question naming its source directly walked straight through. All five strings
+# below are real candidates from the 134-question drafting run (CI run
+# 34613876697). They did reach human review, but only because an unrelated
+# phrasing check happened to catch them, and they were reported under the wrong
+# reason ("does not read as a question").
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "According to GOV.UK guidance, in what four ways might you 'dispose' of "
+        "cryptoasset tokens?",
+        "According to GOV.UK guidance, why should you use HMRC's online services?",
+        "According to HMRC's guidance on Self Assessment videos, what topics are covered?",
+        "According to GOV.UK guidance on self-employed expenses, what are two examples?",
+        "According to HS320, what can you find out if you have gains on UK life "
+        "insurance policies?",
+    ],
+)
+def test_a_bare_source_name_is_still_self_referential(question):
+    assert is_self_referential(question)
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        # Determiner form — was already caught, must stay caught.
+        "According to the guidance, what is an unauthorised payment?",
+        "According to this GOV.UK guidance, what topics can you find contact details for?",
+        "According to the passage, what are the three levels of security clearance?",
+    ],
+)
+def test_the_determiner_form_still_matches(question):
+    assert is_self_referential(question)
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        # "according to" with no document behind it is ordinary English.
+        "According to your circumstances, what can you claim?",
+        "Is the amount you pay according to your income?",
+        # Caught me out once before: a real document mentioned as SUBJECT
+        # matter, not as the thing being quoted from.
+        "What is the government's vision as set out in its 10-year tax "
+        "administration strategy?",
+        "While studying, what is the interest rate typically charged on a Plan 2 loan?",
+    ],
+)
+def test_ordinary_questions_are_not_self_referential(question):
+    assert not is_self_referential(question)

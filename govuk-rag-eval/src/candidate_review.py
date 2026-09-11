@@ -101,7 +101,18 @@ _WORD_RE = re.compile(r"[a-z0-9]+")
 _DOCWORD = r"(?:guide|guidance|passage|page|document|section|text|notes?|extract|workbook)"
 _SELF_REFERENTIAL_RE = re.compile(
     r"\b("
-    rf"according to (?:the|this)\s+(?:[\w.'\-]+\s+){{0,2}}{_DOCWORD}"
+    # "according to <up to 3 words> <docword>". The determiner used to be
+    # mandatory ("according to (the|this)"), which meant a bare source name
+    # walked straight through: "According to GOV.UK guidance," and "According
+    # to HMRC's guidance on Self Assessment videos," both scored clean. Five of
+    # the 134 drafted candidates opened exactly that way. They still reached
+    # human review, but only because an unrelated check happened to catch them,
+    # and they were reported under the wrong reason.
+    rf"according to\s+(?:[\w.'\-]+\s+){{0,3}}{_DOCWORD}"
+    # ...or a bare document identifier: "According to HS320,". Restricted to
+    # things shaped like a form or helpsheet code so that ordinary phrases
+    # ("according to your circumstances") are not swept up.
+    r"|according to\s+(?:hs|sa|p|ch|bscc|ir)\d{1,4}[a-z]?\b"
     rf"|in (?:this|the (?:above|following))\s+{_DOCWORD}"
     rf"|(?:the|this)\s+{_DOCWORD}\s+"
     r"(?:says|states|mentions|explains|describes|notes|sets out)"

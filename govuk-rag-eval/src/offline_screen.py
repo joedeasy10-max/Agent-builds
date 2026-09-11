@@ -103,12 +103,44 @@ _FIGURE_RE = re.compile(
     re.IGNORECASE,
 )
 
-_INTERROGATIVE = re.compile(
+# Words that can open a question. Note what is NOT here any more: `if in under
+# for by on at to after before during`. Those prepositions were in the list only
+# to let adverbial openers past a check anchored at `^`, which is the tell that
+# the anchoring was the bug — the fix is `reads_as_question` below, not a longer
+# list of first words.
+_OPENS_A_QUESTION = re.compile(
     r"^\s*(what|when|where|which|who|whom|whose|why|how|do|does|did|is|are|was|were"
-    r"|can|could|should|must|will|would|may|might|if|in|under|for|by|on|at|to|after"
-    r"|before|during)\b",
+    r"|can|could|should|must|will|would|may|might)\b",
     re.IGNORECASE,
 )
+
+
+def reads_as_question(text: str) -> bool:
+    """Is this phrased as a question?
+
+    The previous check was `^(what|when|...)` alone — anchored at the first
+    word. Any question opening with an adverbial clause failed it, and seven of
+    the 134 drafted candidates went to human review on that basis and nothing
+    else:
+
+        "While studying, what is the interest rate on a Plan 2 loan?"
+        "From which tax year does cash basis become the default method?"
+        "As the intermediary, what do you need to do?"
+
+    Nothing is wrong with any of those. A trailing "?" is the strongest signal
+    available and is now checked first; the anchored word list stays as the
+    fallback for a question written without the punctuation.
+
+    Deliberately NOT done: searching for a question word anywhere near the
+    front. The auxiliaries in that list (is/are/was/were/do/does/did) occur in
+    ordinary statements, so "The rules are set out in the guidance below" would
+    have scored as a question. Trailing "?" plus first-word inversion covers the
+    real cases without that false pass.
+    """
+    stripped = (text or "").strip()
+    if not stripped:
+        return False
+    return stripped.endswith("?") or bool(_OPENS_A_QUESTION.match(stripped))
 
 MIN_QUESTION_CHARS = 20
 MAX_QUESTION_CHARS = 300
@@ -245,7 +277,7 @@ class OfflineScreener:
             quality_problem = f"question is only {len(question)} characters"
         elif len(question) > MAX_QUESTION_CHARS:
             quality_problem = f"question is {len(question)} characters, too long to be natural"
-        elif not _INTERROGATIVE.match(question):
+        elif not reads_as_question(question):
             quality_problem = "does not read as a question"
         criteria["question_quality"] = "fail" if quality_problem else "pass"
         if quality_problem:
