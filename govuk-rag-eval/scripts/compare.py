@@ -40,6 +40,42 @@ def arrow(delta: float, tolerance: float) -> str:
     return "up" if delta > 0 else "DOWN"
 
 
+# Every key this module reads out of a baseline document. baseline_from_results
+# below is checked against it by tests/test_compare.py, so a new lookup here can
+# never quietly produce baselines that omit the field it needs.
+BASELINE_KEYS_READ = (
+    "dataset_version",
+    "judge_backend",
+)
+
+
+def baseline_from_results(results: dict) -> dict:
+    """Project a full results payload down to a committable baseline document.
+
+    This lives next to the reader on purpose. It used to be a heredoc inside
+    the workflow, and it drifted: it emitted judge metrics without
+    ``judge_backend``, so a baseline promoted from the CI log looked complete
+    but made compare.py report ("baseline predates grader tracking") instead of
+    gating — permanently and silently. One function, one test, no second copy.
+    """
+    detail = results.get("retrieval_detail", {})
+    baseline = {
+        "dataset_version": results.get("dataset_version"),
+        "retrieval": results.get("retrieval", {}),
+        "retrieval_detail": {
+            key: detail[key]
+            for key in ("n_questions", "n_answerable", "n_negatives")
+            if key in detail
+        },
+    }
+    if results.get("judge"):
+        baseline["judge"] = results["judge"]
+        baseline["judge_runs"] = results.get("judge_runs")
+        baseline["judge_spread"] = results.get("judge_detail", {}).get("spread") or {}
+        baseline["judge_backend"] = results.get("judge_backend")
+    return baseline
+
+
 def evaluate_metric(name: str, current: float, baseline: float | None, rules: dict):
     """Return (passed, reason) for one metric."""
     floor = rules.get("absolute_floor")

@@ -225,7 +225,7 @@ jobs:
         if: env.HAS_KEY == 'true' && always()
         run: |
           python - <<'PY'
-          import json, pathlib
+          import json, pathlib, sys
           f = pathlib.Path("results/current.json")
           if not f.exists():
               print("no results/current.json — nothing ran")
@@ -255,26 +255,34 @@ jobs:
                   ((s.get("max") or 0) - (s.get("min") or 0), m)
                   for m, s in spread.items()
               )
-              print(
-                  f"\nwidest observed spread: {widest[1]} at {widest[0]:.4f} — a "
-                  f"max_relative_drop tolerance below this would fail on noise alone."
-              )
+              print(f"\nwidest spread across grading passes: {widest[1]} at {widest[0]:.4f}")
+              if widest[0] == 0:
+                  # Do not let this be read as "any tolerance is safe". --runs N
+                  # repeats the GRADER over answers generated once, so a
+                  # deterministic grader gives zero here by construction. The
+                  # noise the tolerances have to clear is generation noise, and
+                  # it is invisible from inside a single run.
+                  print(
+                      "  ...which is zero because the grader is deterministic, NOT because\n"
+                      "  the suite is noise-free. Generation happens once, before grading, and\n"
+                      "  varies between runs; this number cannot see that. Calibrate\n"
+                      "  max_relative_drop from repeated WHOLE runs on one commit — see\n"
+                      "  _provenance.cross_run_spread in results/baseline.json."
+                  )
+              else:
+                  print(
+                      "  a max_relative_drop tolerance below this would fail on grader noise alone."
+                  )
           else:
               print("no judge spread in results (judge suite did not run)\n")
 
-          detail = d.get("retrieval_detail", {})
-          baseline = {
-              "dataset_version": d.get("dataset_version"),
-              "retrieval": d.get("retrieval", {}),
-              "retrieval_detail": {
-                  k: detail[k] for k in ("n_questions", "n_answerable", "n_negatives")
-                  if k in detail
-              },
-          }
-          if d.get("judge"):
-              baseline["judge"] = d["judge"]
-              baseline["judge_runs"] = d.get("judge_runs")
-              baseline["judge_spread"] = spread
+          # Built by the same module that reads baselines back, so the emitted
+          # document can never omit a field the gate needs (it previously
+          # dropped judge_backend, which silently disabled judge gating).
+          sys.path.insert(0, "scripts")
+          from compare import baseline_from_results
+
+          baseline = baseline_from_results(d)
           print("\n=== BASELINE-READY JSON (copy into results/baseline.json) ===")
           print(json.dumps(baseline, indent=2, sort_keys=True))
           print("=== END BASELINE-READY JSON ===")

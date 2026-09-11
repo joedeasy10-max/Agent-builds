@@ -1,38 +1,36 @@
 {
   "_provenance": {
-    "measured_on": "ab4bfeb2cde8417c872e6a4fb43f1ff2411f27c6",
-    "note": "Full baseline: deterministic retrieval plus the LLM-judge suite, both measured on the same run. Golden set v2 as it stands after PR #16: 65 records, 41 answerable, 24 negatives. Judge = RAGAS graded by anthropic/claude-sonnet-5, median of 3 runs; judge_spread records the individual run values, which is what calibrates max_relative_drop in eval_config.yaml. Judge numbers are only comparable against the same grader - switching generation.provider invalidates this half of the baseline.",
-    "source_run": "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34505214155"
+    "measured_on": "ae7dfa241dae24078fd0ceaef969607f6d5a8618",
+    "source_run": "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34619048854",
+    "note": "Deterministic retrieval plus the judge suite. Golden set v2: 65 records, 41 answerable, 24 negatives. Judge = the LOCAL NLI grader (cross-encoder/nli-deberta-v3-small), not RAGAS. This replaces a baseline whose judge half was graded by anthropic/claude-sonnet-5; those numbers are on a different scale (RAGAS faithfulness 0.950 vs NLI 0.689 on the same system) and are NOT comparable, which is why judge_backend is recorded here and compare.py refuses to gate across graders. Retrieval numbers are unchanged and were always comparable.",
+    "judge_backend_replaced": "ragas",
+    "cross_run_spread": {
+      "note": "judge_spread below is grader variance WITHIN one run, and is structurally zero for a deterministic grader. It is not the noise floor the tolerances need. The generator is not deterministic (generation.temperature is ignored by the Anthropic models in use), so answers differ between runs and the judge metrics move with them. This block is that measurement: two full runs on this same commit, plus the run on PR #33 (which differed only in cost reporting, so the generator and grader were identical).",
+      "runs": [
+        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34618486278",
+        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34619048854",
+        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34616914158 (PR #33; values read to 3 d.p. from its report table)"
+      ],
+      "faithfulness": {"values": [0.6877, 0.6889, 0.704], "relative": 0.0232},
+      "answer_relevancy": {"values": [0.8484, 0.8391, 0.839], "relative": 0.0111},
+      "context_precision": {"values": [0.8093, 0.8093, 0.809], "relative": 0.0003},
+      "answer_correctness": {"values": [0.7802, 0.7873, 0.802], "relative": 0.0271}
+    }
   },
   "dataset_version": "v2",
   "judge": {
-    "answer_correctness": 0.8305077963877151,
-    "answer_relevancy": 0.8991775317487554,
-    "context_precision": 0.8197154470890295,
-    "faithfulness": 0.9502032520325204
+    "answer_correctness": 0.7872682939211049,
+    "answer_relevancy": 0.8391041217780695,
+    "context_precision": 0.8092601864346833,
+    "faithfulness": 0.688885663224316
   },
-  "judge_runs": 3,
+  "judge_backend": "nli",
+  "judge_runs": 1,
   "judge_spread": {
-    "answer_correctness": {
-      "max": 0.8337196252093001,
-      "min": 0.8218550670032785,
-      "runs": [0.8218550670032785, 0.8305077963877151, 0.8337196252093001]
-    },
-    "answer_relevancy": {
-      "max": 0.8996201075089674,
-      "min": 0.8984041992196273,
-      "runs": [0.8984041992196273, 0.8991775317487554, 0.8996201075089674]
-    },
-    "context_precision": {
-      "max": 0.8273373983083103,
-      "min": 0.808638211316969,
-      "runs": [0.808638211316969, 0.8197154470890295, 0.8273373983083103]
-    },
-    "faithfulness": {
-      "max": 0.975609756097561,
-      "min": 0.9437669376693767,
-      "runs": [0.9437669376693767, 0.9502032520325204, 0.975609756097561]
-    }
+    "answer_correctness": {"max": 0.7872682939211049, "min": 0.7872682939211049, "runs": [0.7872682939211049]},
+    "answer_relevancy": {"max": 0.8391041217780695, "min": 0.8391041217780695, "runs": [0.8391041217780695]},
+    "context_precision": {"max": 0.8092601864346833, "min": 0.8092601864346833, "runs": [0.8092601864346833]},
+    "faithfulness": {"max": 0.688885663224316, "min": 0.688885663224316, "runs": [0.688885663224316]}
   },
   "retrieval": {
     "context_recall_at_10": 0.926829268292683,
