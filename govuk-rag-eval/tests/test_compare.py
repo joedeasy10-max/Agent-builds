@@ -177,3 +177,90 @@ def test_retrieval_still_gates_when_the_grader_changed(tmp_path):
     baseline = _judge_payload("ragas")
     proc, report = _run_compare(tmp_path, current, baseline)
     assert proc.returncode == 1, "retrieval must still block"
+
+
+# --- promoting a baseline -----------------------------------------------
+# baseline_from_results used to live as a heredoc in the workflow, where it
+# drifted out of step with the reader below it and emitted judge metrics with
+# no judge_backend. That baseline looked complete and gated nothing. These
+# tests hold the producer and the consumer together.
+
+
+def _full_results():
+    """A results payload shaped like the one src.evaluate writes."""
+    return {
+        "dataset_version": CONFIG_VERSION,
+        "retrieval": {
+            "hit_at_5": 0.90,
+            "mrr": 0.70,
+            "context_recall_at_10": 0.91,
+            "served_context_recall": 0.90,
+        },
+        "retrieval_detail": {
+            "n_questions": 65,
+            "n_answerable": 41,
+            "n_negatives": 24,
+            "per_question": [{"id": "q1"}],  # detail must NOT reach the baseline
+        },
+        # Roughly what the local NLI grader returns. Deliberately real-ish:
+        # a RAGAS-scale fixture (faithfulness 0.95) would pass these tests while
+        # hiding that the floors no longer match the grader in use.
+        "judge": {
+            "faithfulness": 0.6889,
+            "answer_relevancy": 0.8391,
+            "context_precision": 0.8093,
+            "answer_correctness": 0.7873,
+        },
+        "judge_runs": 1,
+        "judge_backend": "nli",
+        "judge_detail": {"spread": {"faithfulness": {"min": 0.70, "max": 0.70}}},
+        "estimated_cost_usd": 0.12,
+    }
+
+
+def test_promoted_baseline_carries_every_key_the_gate_reads():
+    baseline = compare.baseline_from_results(_full_results())
+    missing = [k for k in compare.BASELINE_KEYS_READ if k not in baseline]
+    assert not missing, f"baseline_from_results omits {missing}, so the gate cannot use it"
+
+
+def test_promoted_baseline_gates_rather_than_reporting(tmp_path):
+    """The real regression: promote a baseline, then gate the same run against it."""
+    results = _full_results()
+    baseline = compare.baseline_from_results(results)
+    code, report = _run(tmp_path, results, baseline)
+    assert code == 0
+    assert "reporting only" not in report
+    assert "predates grader tracking" not in report
+    assert "Gate passed" in report
+
+
+def test_promoted_baseline_drops_per_question_detail():
+    baseline = compare.baseline_from_results(_full_results())
+    assert "per_question" not in baseline["retrieval_detail"]
+    assert baseline["retrieval_detail"]["n_questions"] == 65
+
+
+def test_promoting_a_retrieval_only_run_omits_the_judge_block():
+    results = _full_results()
+    del results["judge"]
+    baseline = compare.baseline_from_results(results)
+    assert "judge" not in baseline
+    assert "judge_backend" not in baseline
+    assert baseline["retrieval"]["hit_at_5"] == 0.90
+
+
+def test_the_committed_baseline_passes_its_own_gate(tmp_path):
+    """The committed baseline, gated against itself, must pass.
+
+    This is the check that was missing when the grader changed. The judge
+    floors were RAGAS-scale (faithfulness >= 0.85) and the NLI grader scores
+    0.689 on the same unregressed system, so the first green run on main would
+    have gone red on the floor alone. Anything that moves the baseline or the
+    floors out of step with each other fails here instead of in CI.
+    """
+    baseline = json.loads((ROOT / "results" / "baseline.json").read_text())
+    assert baseline.get("judge_backend"), "baseline must record its grader or the judge suite never gates"
+    code, report = _run(tmp_path, baseline, baseline)
+    assert "reporting only" not in report, report
+    assert code == 0, report

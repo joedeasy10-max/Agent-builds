@@ -18,7 +18,7 @@ Steps are defined in `BUILD.md` → "Build order". There are **8**.
 | 1 | **Ingest + retrieve** — crawl, chunk, index, `retrieve(question)` | ✅ done |
 | 2 | **Retrieval metrics** (hit@5, MRR, recall@10, served recall) + `src/evaluate.py` | ✅ done |
 | 3 | Golden set to full size (150–300, hand-reviewed) | 🟡 **65 reviewed records** (41 answerable, 24 negatives) — real and gating, but short of the 150–300 target, and only 4 multi-hop |
-| 4 | **Generation + RAGAS judge metrics** (median-of-N, measure variance) | ✅ done — spread measured, tolerances derived from it (table below) |
+| 4 | **Generation + judge metrics** (local NLI by default; RAGAS behind a label) | ✅ done — grader swapped to a free deterministic one, cross-run spread measured, floors and tolerances re-derived for it (table below) |
 | 5 | **CI gate** — wire `rag-eval.yml` + `compare.py`, commit a baseline | ✅ done — active, with a committed v2 baseline; blocks PRs (see step 6) |
 | 6 | Regression demos — 3 blocked PRs | ✅ done — PRs #18, #19, #20 are open and red; each fails on real numbers |
 | 7 | Experiment benchmark — `run_experiments.py` + table | ✅ done — table below |
@@ -53,40 +53,93 @@ Deterministic retrieval, measured on
 
 ### Judge metrics and their measured noise
 
-RAGAS, graded by `anthropic/claude-sonnet-5`, 41 questions × 3 runs, ~$3.69 per
-run, from
-[run 34505214155](https://github.com/joedeasy10-max/Agent-builds/actions/runs/34505214155).
-The gate uses the **median**; the spread is what calibrates the tolerances.
+The default grader is **local NLI entailment** (`cross-encoder/nli-deberta-v3-small`),
+not an LLM. It needs no API key, costs nothing to grade, and returns the same
+number every time for the same answers. RAGAS is still wired and still runs,
+behind a `ragas-judge` label on the PR.
 
-| Metric | Median | Run values | Spread | Relative | Floor | Tolerance |
-| --- | ---: | --- | ---: | ---: | ---: | ---: |
-| `faithfulness` | 0.950 | 0.944 / 0.950 / 0.976 | 0.032 | 3.35% | 0.85 | 8% |
-| `answer_relevancy` | 0.899 | 0.898 / 0.899 / 0.900 | 0.001 | 0.14% | 0.80 | 2% |
-| `context_precision` | 0.820 | 0.809 / 0.820 / 0.827 | 0.019 | 2.28% | 0.70 | 5% |
-| `answer_correctness` | 0.831 | 0.822 / 0.831 / 0.834 | 0.012 | 1.43% | — | ungated |
+Baseline from
+[run 34619048854](https://github.com/joedeasy10-max/Agent-builds/actions/runs/34619048854)
+on commit `ae7dfa2`, golden set v2, 41 answerable questions.
 
-**The tolerances were guesses (0.05 / 0.05 / 0.06) and are now derived from
-this.** Two of the three moved, in opposite directions:
+| Metric | NLI | Floor | Tolerance | Cross-run spread |
+| --- | ---: | ---: | ---: | ---: |
+| `faithfulness` | 0.689 | 0.60 | 7% | 3.41% |
+| `answer_relevancy` | 0.839 | 0.78 | 3% | 1.11% |
+| `context_precision` | 0.809 | 0.70 | 2% | 0.04% |
+| `answer_correctness` | 0.787 | — | ungated | 2.72% |
 
-- **`answer_relevancy` was far too loose.** At 0.14% spread it is the most
-  stable metric here by a factor of ten, and a 5% band could not have caught
-  any realistic regression. Tightened to 2% — still ~14× the observed noise,
-  deliberately conservative because three samples is a thin basis for cutting
-  close to the measurement.
-- **`faithfulness` was thin, though not breached.** Worth being exact: nothing
-  observed would have failed at 5%. The worst plausible median-to-median drop
-  is (0.9756 − 0.9438) / 0.9756 = **3.26%**, which passes 5% while consuming
-  65% of the budget. Its median also moved 2.5% between two independent 3-run
-  measurements (0.975 → 0.950), so a genuine regression had only about a third
-  of the band left to show up in. Widened to 8%, taking budget usage to 41%.
-  The better fix is more runs — median-of-3 is thin for this metric — but at
-  ~$1.20 per extra run, widening is a deliberate cost trade.
-- **`answer_correctness` stays ungated, for a corrected reason.** It was
-  described as "too noisy to be a build signal"; the measurement doesn't
-  support that — at 1.43% it is *less* noisy than two metrics that do gate. The
-  real reason is that it scores answers against one hand-written
-  `ground_truth` string, so it measures agreement with a phrasing rather than
-  correctness.
+**These numbers are not comparable to the RAGAS ones they replace.** The same
+unregressed system scores `faithfulness` 0.950 under RAGAS and 0.689 under NLI —
+entailment and an LLM's judgement measure similar ideas on different scales.
+Results therefore record `judge_backend`, and `compare.py` refuses to gate the
+judge suite when the baseline used a different grader, reporting instead. That
+guard is what stopped the switch from being reported as a 26-point regression.
+Retrieval gates either way, being grader-independent.
+
+The previous RAGAS numbers, for the record: faithfulness 0.950, answer_relevancy
+0.899, context_precision 0.820, answer_correctness 0.831, median of 3 runs at
+~$3.69 a run
+([run 34505214155](https://github.com/joedeasy10-max/Agent-builds/actions/runs/34505214155)).
+
+#### Why the grader changed
+
+Cost was the smaller reason. The real one is that **a gate wants
+reproducibility more than it wants absolute accuracy.** RAGAS `faithfulness`
+moved 2.5% between two identical 3-run measurements (0.975 → 0.950), which is
+why its band had to be 8% wide — and an 8% band cannot see a 3% regression.
+The local grader removes the *grader* half of that noise entirely. Generation
+noise remains (3.41% on faithfulness), so the band is 7% rather than 8% — a
+smaller win than "deterministic grader" suggests, and worth stating plainly.
+What it does buy is that the grader contributes nothing, so a move is either a
+real change or the generator, never the scorer disagreeing with itself. Grading also went from $3.69 a run to
+$0, which is why judge metrics now run on **every** PR instead of nightly.
+
+#### How the tolerances were calibrated, and what nearly went wrong
+
+Two traps here, both worth stating because both are easy to fall into.
+
+**The grader is deterministic; the generator is not.** `generation.temperature: 0.0`
+is honoured by OpenAI and ignored by the Anthropic models in use, so answers
+differ between runs and the judge metrics move with them. Setting a ~1% band on
+"deterministic grader ⇒ zero variance" would have produced a gate that fails
+constantly. So the bands come from repeated **whole runs** on one commit
+(34618486278 and 34619048854 on `ae7dfa2`, plus 34616914158 and 34620099721,
+which differ only in cost reporting and in config/docs — neither touches the
+generator or the grader). Band = 2–3× the widest observed spread, never below 2%.
+
+**Three samples was not enough, and this is worth keeping visible.**
+`faithfulness`'s band was set to 5% on the first three runs, which spread 2.32%.
+The fourth run returned 0.712 — above the entire prior range — taking the spread
+to 3.41% and 5%'s headroom to 1.47×, under the rule just stated. It was widened
+to 7% before merging rather than after the first spurious red build. This metric
+is the noisiest of the four and its band should be revisited as runs accumulate.
+
+**The in-run `judge_spread` cannot see this noise.** `--runs N` repeats the
+*grader* over answers generated once, so under a deterministic grader it reports
+0.0000 by construction — which reads like "no noise, tighten freely" and is
+wrong. `runs` is now 1 (raising it buys nothing but grading time) and the CI log
+says explicitly what that zero does and does not mean.
+
+One tolerance moved the *wrong* way as a result: **`answer_relevancy` loosened
+from 2% to 3%.** Its 2% band was calibrated against RAGAS's 0.14% noise; under
+this grader the generation-driven spread is 1.11%, eight times larger, leaving
+2% with only 1.8× headroom. `context_precision` tightened hard, 5% → 2%, on a
+spread of 0.04%. `faithfulness` barely moved at all, 8% → 7%.
+
+The floors moved too, and had to: `faithfulness`'s floor of 0.85 was a
+RAGAS-scale number that the NLI grader cannot reach on a healthy system, so
+carrying it across would have failed the first green run on `main`.
+`answer_relevancy`'s floor of 0.80 sat only 4.6% under the observed 0.839 —
+closer than the band above it, so the floor would have fired first, inverting
+the intended band-then-backstop order. A test now promotes the committed
+baseline, gates it against itself and requires a pass, so floors and baseline
+can no longer drift apart silently.
+
+`answer_correctness` stays ungated, for the same corrected reason as before: not
+noise (2.71% is ordinary here) but that it scores answers against one
+hand-written `ground_truth` string, measuring agreement with a phrasing rather
+than correctness.
 
 ### Where retrieval still misses
 
