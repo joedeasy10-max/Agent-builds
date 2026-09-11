@@ -139,11 +139,15 @@ def run_retrieval_suite(
 # Rough per-question cost of one judge run, by backend. The heuristic grader is
 # free (no LLM); the ragas figure is a deliberately conservative guess used only
 # for the pre-flight cap check, not for billing.
-#: Per-question judge cost by backend. `nli` runs a local model, so it is
-#: free in the sense that matters here — no per-call billing — and the cost
-#: cap simply never binds. `.get(..., 0.0)` would have covered it silently;
-#: naming it keeps the free backends visible rather than implied.
-_JUDGE_COST_PER_QUESTION_USD = {"heuristic": 0.0, "nli": 0.0, "ragas": 0.03}
+#: Per-question GRADING cost by backend. `nli` and `heuristic` run locally, so
+#: they are free in the sense that matters here — no per-call billing.
+_GRADING_COST_PER_QUESTION_USD = {"heuristic": 0.0, "nli": 0.0, "ragas": 0.03}
+
+#: Per-question GENERATION cost by provider. Separate from grading because it is
+#: a separate spend, and reporting only the grading half printed "est cost $0.00"
+#: on a run that had just paid for 41 generations (PR #33). A cost line that says
+#: zero when money was spent is worse than no cost line.
+_GENERATION_COST_PER_QUESTION_USD = {"echo": 0.0, "openai": 0.002, "anthropic": 0.003}
 
 
 def _load_cost_caps(eval_config_path: Path | None) -> dict:
@@ -181,8 +185,15 @@ def run_judge_suite(
     ceiling = min(x for x in (limit, max_q) if x is not None)
     answerable = answerable[:ceiling]
 
-    per_q_cost = _JUDGE_COST_PER_QUESTION_USD.get(backend, 0.0)
-    estimated_cost = len(answerable) * runs * per_q_cost
+    # Grading scales with runs; generation happens once per question regardless,
+    # because the answers are produced before any grading run.
+    grading_cost = (
+        len(answerable) * runs * _GRADING_COST_PER_QUESTION_USD.get(backend, 0.0)
+    )
+    generation_cost = len(answerable) * _GENERATION_COST_PER_QUESTION_USD.get(
+        config.generation.provider, 0.0
+    )
+    estimated_cost = grading_cost + generation_cost
     if estimated_cost > caps["max_usd_per_run"]:
         raise SystemExit(
             f"Judge run would cost ~${estimated_cost:.2f}, over the "
@@ -241,6 +252,8 @@ def run_judge_suite(
         "metrics": judged["metrics"],
         "spread": judged["spread"],
         "estimated_cost_usd": round(estimated_cost, 4),
+        "estimated_grading_usd": round(grading_cost, 4),
+        "estimated_generation_usd": round(generation_cost, 4),
     }
 
 
