@@ -47,6 +47,7 @@ from pathlib import Path
 # Run as a plain script: put the repo root on the path so `src` imports resolve.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from src.offline_screen import OfflineScreener  # noqa: E402
 from src.candidate_review import (  # noqa: E402
     FatalEvaluatorError,
     apply_decision,
@@ -729,20 +730,28 @@ def _cmd_evaluate(args) -> int:
     if not candidates:
         raise SystemExit(f"No review queue at {args.queue} — run `draft` first.")
 
-    config = load_config(args.config)
-    completer = build_drafter(config, args.provider)
+    completer = None
+    screener = None
+    if args.backend == "offline":
+        # No key, no network, no spend, and no run-to-run variance. See
+        # src/offline_screen.py for the measured argument that this is the right
+        # default for candidates a drafter wrote from their own passages.
+        screener = OfflineScreener()
+    else:
+        config = load_config(args.config)
+        completer = build_drafter(config, args.provider)
 
-    # Same reasoning as the drafter: one cheap call before N paid ones.
-    preflight = getattr(completer, "preflight", None)
-    if preflight is not None:
-        try:
-            preflight()
-        except Exception as exc:  # noqa: BLE001 - provider errors are untyped
-            if is_fatal_provider_error(exc):
-                raise SystemExit(
-                    f"Evaluator pre-flight failed against {completer.drafter_id}: "
-                    f"{exc}\nNothing was evaluated and {args.queue} is unchanged."
-                ) from exc
+        # Same reasoning as the drafter: one cheap call before N paid ones.
+        preflight = getattr(completer, "preflight", None)
+        if preflight is not None:
+            try:
+                preflight()
+            except Exception as exc:  # noqa: BLE001 - provider errors are untyped
+                if is_fatal_provider_error(exc):
+                    raise SystemExit(
+                        f"Evaluator pre-flight failed against {completer.drafter_id}: "
+                        f"{exc}\nNothing was evaluated and {args.queue} is unchanged."
+                    ) from exc
 
     targets = [
         c for c in candidates
@@ -754,17 +763,24 @@ def _cmd_evaluate(args) -> int:
         print("Every candidate already has a verdict. Use --reevaluate to redo them.")
         return 0
 
-    est = len(targets) * _COST_PER_CALL_USD
-    if est > args.max_usd:
-        raise SystemExit(
-            f"Evaluating {len(targets)} candidates would cost ~${est:.2f}, over the "
-            f"${args.max_usd:.2f} cap. Lower --limit or raise --max-usd."
+    if screener is not None:
+        print(
+            f"Screening {len(targets)} of {len(candidates)} candidates offline "
+            "(deterministic, no API key, $0.00)…",
+            file=sys.stderr,
         )
-    print(
-        f"Evaluating {len(targets)} of {len(candidates)} candidates via "
-        f"{completer.drafter_id}, est ${est:.2f}…",
-        file=sys.stderr,
-    )
+    else:
+        est = len(targets) * _COST_PER_CALL_USD
+        if est > args.max_usd:
+            raise SystemExit(
+                f"Evaluating {len(targets)} candidates would cost ~${est:.2f}, over "
+                f"the ${args.max_usd:.2f} cap. Lower --limit or raise --max-usd."
+            )
+        print(
+            f"Evaluating {len(targets)} of {len(candidates)} candidates via "
+            f"{completer.drafter_id}, est ${est:.2f}…",
+            file=sys.stderr,
+        )
 
     by_id = {c.candidate_id: c for c in candidates}
     position = {c.candidate_id: i for i, c in enumerate(candidates)}
@@ -779,7 +795,10 @@ def _cmd_evaluate(args) -> int:
         for c in targets:
             peers = preceding_peers(candidates, position[c.candidate_id], dropped)
             try:
-                ev = evaluate_one(c, completer, others=peers)
+                ev = (
+                    screener.screen(c, others=peers) if screener is not None
+                    else evaluate_one(c, completer, others=peers)
+                )
             except FatalEvaluatorError as exc:
                 # The evaluator cannot work at all. Stop rather than make the
                 # same doomed call once per remaining candidate.
@@ -938,6 +957,14 @@ def main(argv: list[str] | None = None) -> int:
     e = sub.add_parser(
         "evaluate",
         help="automated pre-screen of a review queue (approve / reject / review)",
+    )
+    e.add_argument(
+        "--backend", choices=["offline", "llm"], default="offline",
+        help=(
+            "offline (default): deterministic checks, no API key, no spend. "
+            "llm: ask a model as well — slower, costs money, and varies between "
+            "runs. See src/offline_screen.py for when each is worth it."
+        ),
     )
     e.add_argument("--queue", type=Path, default=Path("data/golden/review_queue.jsonl"))
     e.add_argument("--config", type=Path, default=Path("configs/retrieval.yaml"))
