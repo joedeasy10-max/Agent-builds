@@ -121,3 +121,53 @@ def test_question_cap_limits_judged(tmp_path, fixture_pages, test_config):
     caps = {"max_judge_questions_per_run": 1, "max_usd_per_run": 4.0}
     suite = run_judge_suite(records, cfg, idx, runs=1, backend="heuristic", caps=caps)
     assert suite["n_judged"] == 1
+
+
+# --- cost reporting must not print $0.00 on a run that spent money ----------
+
+
+def test_grading_and_generation_costs_are_reported_separately():
+    """PR #33 printed "est cost $0.00" on a run that had just paid for 41
+    generations, because only the grading half was modelled."""
+    from src.evaluate import (
+        _GENERATION_COST_PER_QUESTION_USD,
+        _GRADING_COST_PER_QUESTION_USD,
+    )
+
+    assert _GRADING_COST_PER_QUESTION_USD["nli"] == 0.0
+    assert _GRADING_COST_PER_QUESTION_USD["heuristic"] == 0.0
+    assert _GRADING_COST_PER_QUESTION_USD["ragas"] > 0
+    # A real generation provider is never free; the offline stub is.
+    assert _GENERATION_COST_PER_QUESTION_USD["echo"] == 0.0
+    assert _GENERATION_COST_PER_QUESTION_USD["anthropic"] > 0
+    assert _GENERATION_COST_PER_QUESTION_USD["openai"] > 0
+
+
+def test_a_free_grader_with_a_paid_generator_still_reports_a_cost():
+    from src.evaluate import (
+        _GENERATION_COST_PER_QUESTION_USD,
+        _GRADING_COST_PER_QUESTION_USD,
+    )
+
+    n, runs = 41, 1
+    grading = n * runs * _GRADING_COST_PER_QUESTION_USD["nli"]
+    generation = n * _GENERATION_COST_PER_QUESTION_USD["anthropic"]
+    assert grading == 0.0
+    assert generation > 0.0, "the generation half must not vanish"
+    assert grading + generation > 0.0
+
+
+def test_grading_scales_with_runs_but_generation_does_not():
+    """Answers are produced once, then graded N times."""
+    from src.evaluate import (
+        _GENERATION_COST_PER_QUESTION_USD,
+        _GRADING_COST_PER_QUESTION_USD,
+    )
+
+    n = 41
+    gen = _GENERATION_COST_PER_QUESTION_USD["anthropic"]
+    one = n * 1 * _GRADING_COST_PER_QUESTION_USD["ragas"] + n * gen
+    three = n * 3 * _GRADING_COST_PER_QUESTION_USD["ragas"] + n * gen
+    assert three - one == pytest.approx(
+        n * 2 * _GRADING_COST_PER_QUESTION_USD["ragas"]
+    )
