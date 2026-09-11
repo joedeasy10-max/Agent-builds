@@ -2,47 +2,65 @@
   "_provenance": {
     "cross_run_spread": {
       "answer_correctness": {
-        "relative": 0.0272,
+        "mean": 0.7869,
+        "sd": 0.0082,
+        "sd_over_mean": 0.0104,
         "values": [
           0.7802,
+          0.781,
+          0.782,
           0.7873,
-          0.802,
-          0.789
+          0.789,
+          0.802
         ]
       },
       "answer_relevancy": {
-        "relative": 0.0111,
+        "mean": 0.8427,
+        "sd": 0.0036,
+        "sd_over_mean": 0.0043,
         "values": [
-          0.8484,
-          0.8391,
           0.839,
-          0.843
+          0.8391,
+          0.842,
+          0.843,
+          0.845,
+          0.8484
         ]
       },
       "context_precision": {
-        "relative": 0.0004,
+        "mean": 0.8091,
+        "sd": 0.0002,
+        "sd_over_mean": 0.0002,
         "values": [
-          0.8093,
-          0.8093,
           0.809,
-          0.809
+          0.809,
+          0.809,
+          0.809,
+          0.8093,
+          0.8093
         ]
       },
       "faithfulness": {
-        "relative": 0.0341,
+        "mean": 0.6923,
+        "sd": 0.0132,
+        "sd_over_mean": 0.0191,
         "values": [
+          0.676,
+          0.685,
           0.6877,
           0.6889,
           0.704,
           0.712
         ]
       },
-      "note": "judge_spread below is grader variance WITHIN one run, and is structurally zero for a deterministic grader. It is not the noise floor the tolerances need. The generator is not deterministic (generation.temperature is ignored by the Anthropic models in use), so answers differ between runs and the judge metrics move with them. This block is that measurement: two full runs on this same commit, plus the run on PR #33 (which differed only in cost reporting, so the generator and grader were identical). The fourth run was added after the first three had already set faithfulness' band at 5%: it returned 0.712, above the entire prior range, taking the spread from 2.32% to 3.41% and that band's headroom to 1.47x. The band was widened to 7% rather than left to fail on noise. Treat three samples as thin for this metric.",
+      "note": "judge_spread below is grader variance WITHIN one run, and is structurally zero for a deterministic grader. It is not the noise floor the tolerances need. The generator is not deterministic (generation.temperature is ignored by the Anthropic models in use), so answers differ between runs and the judge metrics move with them. This block is that measurement: six whole runs of the same system (no commit among them touched the generator or the grader). Bands are set at >= 3 sd of the run-to-run mean. They were previously set at 2-3x the sample RANGE, which is a biased estimator - max minus min can only grow as runs accumulate, so the band looks too tight forever and invites reflexive widening. faithfulness' band was moved twice on that basis before the estimator was corrected; sd settled near 1.9% and 7% (3.7 sd) was right all along. Recheck sd as runs accumulate; do not reflexively widen.",
       "runs": [
-        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34618486278",
-        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34619048854",
-        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34616914158 (PR #33; values read to 3 d.p. from its report table)",
-        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34620099721 (PR #35; config/docs only, generator and grader unchanged)"
+        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34618486278 (ae7dfa2)",
+        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34619048854 (ae7dfa2)",
+        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34616914158 (PR #33)",
+        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34620099721 (PR #35)",
+        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34620721195 (PR #35, merged head)",
+        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34621223251 (PR #36)"
       ]
     },
     "judge_backend_replaced": "ragas",

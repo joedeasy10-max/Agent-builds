@@ -264,3 +264,75 @@ def test_the_committed_baseline_passes_its_own_gate(tmp_path):
     code, report = _run(tmp_path, baseline, baseline)
     assert "reporting only" not in report, report
     assert code == 0, report
+
+
+# --- tolerance calibration ----------------------------------------------
+# The bands in eval_config.yaml are a claim about noise, and the baseline's
+# _provenance.cross_run_spread is the measurement behind that claim. Nothing
+# stopped the two drifting apart, and they did: faithfulness' band was moved
+# twice against a sample RANGE, which is a biased estimator (max minus min can
+# only grow with n), before the rule was corrected to 3 sd.
+
+
+def _judge_config():
+    return yaml.safe_load(THRESHOLDS.read_text())["suites"]["judge"]["metrics"]
+
+
+def _measured():
+    baseline = json.loads((ROOT / "results" / "baseline.json").read_text())
+    return baseline["_provenance"]["cross_run_spread"]
+
+
+def test_every_gated_judge_band_clears_three_sigma():
+    """A band below 3 sd of the run-to-run mean will fire on noise alone."""
+    measured = _measured()
+    for metric, rules in _judge_config().items():
+        if rules.get("gating") is False:
+            continue
+        band = rules.get("max_relative_drop")
+        stats = measured.get(metric)
+        assert isinstance(stats, dict), f"{metric} is gated but has no measurement"
+        noise = stats["sd_over_mean"]
+        if band is None or not noise:
+            continue
+        assert band >= 3 * noise, (
+            f"{metric}: band {band:.1%} is {band / noise:.1f} sd of measured "
+            f"run-to-run noise ({noise:.2%}); needs >= 3 sd or it fails on variance"
+        )
+
+
+def test_no_band_is_tighter_than_the_two_percent_floor():
+    """Below 2% the band is inside the measurement error of a handful of runs."""
+    for metric, rules in _judge_config().items():
+        if rules.get("gating") is False:
+            continue
+        band = rules.get("max_relative_drop")
+        if band is not None:
+            assert band >= 0.02, f"{metric}: band {band:.1%} is below the 2% floor"
+
+
+def test_the_measurement_covers_every_gated_judge_metric():
+    """A band with no measurement behind it is a guess wearing a number."""
+    measured = _measured()
+    for metric, rules in _judge_config().items():
+        if rules.get("gating") is False or rules.get("max_relative_drop") is None:
+            continue
+        assert metric in measured, f"{metric} is gated but has no cross_run_spread entry"
+        assert measured[metric].get("sd") is not None, f"{metric} has no measured sd"
+
+
+def test_the_floor_sits_below_the_band_not_inside_it():
+    """The floor is a catastrophe backstop; if it fires first the band is dead code."""
+    baseline = json.loads((ROOT / "results" / "baseline.json").read_text())
+    for metric, rules in _judge_config().items():
+        if rules.get("gating") is False:
+            continue
+        floor, band = rules.get("absolute_floor"), rules.get("max_relative_drop")
+        value = baseline.get("judge", {}).get(metric)
+        if None in (floor, band, value):
+            continue
+        drop_to_floor = (value - floor) / value
+        assert drop_to_floor > band, (
+            f"{metric}: floor {floor} is only {drop_to_floor:.1%} under the baseline "
+            f"{value:.3f}, inside the {band:.0%} band — the floor would fire first"
+        )
