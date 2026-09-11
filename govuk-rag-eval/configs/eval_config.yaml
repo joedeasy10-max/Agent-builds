@@ -94,7 +94,7 @@ suites:
         # grader finding most answers unentailed by their contexts), not a
         # quality target. Day-to-day regressions are caught by the band.
         absolute_floor: 0.60
-        max_relative_drop: 0.05
+        max_relative_drop: 0.07
       answer_relevancy:
         # Was 0.80. Observed 0.839 left only 4.6% of headroom, less than the
         # band above it, so the floor would have fired before the band ever

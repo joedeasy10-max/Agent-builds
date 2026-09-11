@@ -64,10 +64,10 @@ on commit `ae7dfa2`, golden set v2, 41 answerable questions.
 
 | Metric | NLI | Floor | Tolerance | Cross-run spread |
 | --- | ---: | ---: | ---: | ---: |
-| `faithfulness` | 0.689 | 0.60 | 5% | 2.32% |
+| `faithfulness` | 0.689 | 0.60 | 7% | 3.41% |
 | `answer_relevancy` | 0.839 | 0.78 | 3% | 1.11% |
-| `context_precision` | 0.809 | 0.70 | 2% | 0.03% |
-| `answer_correctness` | 0.787 | — | ungated | 2.71% |
+| `context_precision` | 0.809 | 0.70 | 2% | 0.04% |
+| `answer_correctness` | 0.787 | — | ungated | 2.72% |
 
 **These numbers are not comparable to the RAGAS ones they replace.** The same
 unregressed system scores `faithfulness` 0.950 under RAGAS and 0.689 under NLI —
@@ -88,8 +88,11 @@ Cost was the smaller reason. The real one is that **a gate wants
 reproducibility more than it wants absolute accuracy.** RAGAS `faithfulness`
 moved 2.5% between two identical 3-run measurements (0.975 → 0.950), which is
 why its band had to be 8% wide — and an 8% band cannot see a 3% regression.
-The local grader removes that noise source entirely, so the band can be 5% and
-a move actually means the system changed. Grading also went from $3.69 a run to
+The local grader removes the *grader* half of that noise entirely. Generation
+noise remains (3.41% on faithfulness), so the band is 7% rather than 8% — a
+smaller win than "deterministic grader" suggests, and worth stating plainly.
+What it does buy is that the grader contributes nothing, so a move is either a
+real change or the generator, never the scorer disagreeing with itself. Grading also went from $3.69 a run to
 $0, which is why judge metrics now run on **every** PR instead of nightly.
 
 #### How the tolerances were calibrated, and what nearly went wrong
@@ -101,8 +104,16 @@ is honoured by OpenAI and ignored by the Anthropic models in use, so answers
 differ between runs and the judge metrics move with them. Setting a ~1% band on
 "deterministic grader ⇒ zero variance" would have produced a gate that fails
 constantly. So the bands come from repeated **whole runs** on one commit
-(34618486278 and 34619048854 on `ae7dfa2`, plus 34616914158), not from anything
-inside a single run. Band = 2–3× the widest observed spread, never below 2%.
+(34618486278 and 34619048854 on `ae7dfa2`, plus 34616914158 and 34620099721,
+which differ only in cost reporting and in config/docs — neither touches the
+generator or the grader). Band = 2–3× the widest observed spread, never below 2%.
+
+**Three samples was not enough, and this is worth keeping visible.**
+`faithfulness`'s band was set to 5% on the first three runs, which spread 2.32%.
+The fourth run returned 0.712 — above the entire prior range — taking the spread
+to 3.41% and 5%'s headroom to 1.47×, under the rule just stated. It was widened
+to 7% before merging rather than after the first spurious red build. This metric
+is the noisiest of the four and its band should be revisited as runs accumulate.
 
 **The in-run `judge_spread` cannot see this noise.** `--runs N` repeats the
 *grader* over answers generated once, so under a deterministic grader it reports
@@ -113,8 +124,8 @@ says explicitly what that zero does and does not mean.
 One tolerance moved the *wrong* way as a result: **`answer_relevancy` loosened
 from 2% to 3%.** Its 2% band was calibrated against RAGAS's 0.14% noise; under
 this grader the generation-driven spread is 1.11%, eight times larger, leaving
-2% with only 1.8× headroom. `faithfulness` tightened 8% → 5% and
-`context_precision` 5% → 2%.
+2% with only 1.8× headroom. `context_precision` tightened hard, 5% → 2%, on a
+spread of 0.04%. `faithfulness` barely moved at all, 8% → 7%.
 
 The floors moved too, and had to: `faithfulness`'s floor of 0.85 was a
 RAGAS-scale number that the NLI grader cannot reach on a healthy system, so

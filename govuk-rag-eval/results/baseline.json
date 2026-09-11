@@ -1,21 +1,54 @@
 {
   "_provenance": {
-    "measured_on": "ae7dfa241dae24078fd0ceaef969607f6d5a8618",
-    "source_run": "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34619048854",
-    "note": "Deterministic retrieval plus the judge suite. Golden set v2: 65 records, 41 answerable, 24 negatives. Judge = the LOCAL NLI grader (cross-encoder/nli-deberta-v3-small), not RAGAS. This replaces a baseline whose judge half was graded by anthropic/claude-sonnet-5; those numbers are on a different scale (RAGAS faithfulness 0.950 vs NLI 0.689 on the same system) and are NOT comparable, which is why judge_backend is recorded here and compare.py refuses to gate across graders. Retrieval numbers are unchanged and were always comparable.",
-    "judge_backend_replaced": "ragas",
     "cross_run_spread": {
-      "note": "judge_spread below is grader variance WITHIN one run, and is structurally zero for a deterministic grader. It is not the noise floor the tolerances need. The generator is not deterministic (generation.temperature is ignored by the Anthropic models in use), so answers differ between runs and the judge metrics move with them. This block is that measurement: two full runs on this same commit, plus the run on PR #33 (which differed only in cost reporting, so the generator and grader were identical).",
+      "answer_correctness": {
+        "relative": 0.0272,
+        "values": [
+          0.7802,
+          0.7873,
+          0.802,
+          0.789
+        ]
+      },
+      "answer_relevancy": {
+        "relative": 0.0111,
+        "values": [
+          0.8484,
+          0.8391,
+          0.839,
+          0.843
+        ]
+      },
+      "context_precision": {
+        "relative": 0.0004,
+        "values": [
+          0.8093,
+          0.8093,
+          0.809,
+          0.809
+        ]
+      },
+      "faithfulness": {
+        "relative": 0.0341,
+        "values": [
+          0.6877,
+          0.6889,
+          0.704,
+          0.712
+        ]
+      },
+      "note": "judge_spread below is grader variance WITHIN one run, and is structurally zero for a deterministic grader. It is not the noise floor the tolerances need. The generator is not deterministic (generation.temperature is ignored by the Anthropic models in use), so answers differ between runs and the judge metrics move with them. This block is that measurement: two full runs on this same commit, plus the run on PR #33 (which differed only in cost reporting, so the generator and grader were identical). The fourth run was added after the first three had already set faithfulness' band at 5%: it returned 0.712, above the entire prior range, taking the spread from 2.32% to 3.41% and that band's headroom to 1.47x. The band was widened to 7% rather than left to fail on noise. Treat three samples as thin for this metric.",
       "runs": [
         "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34618486278",
         "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34619048854",
-        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34616914158 (PR #33; values read to 3 d.p. from its report table)"
-      ],
-      "faithfulness": {"values": [0.6877, 0.6889, 0.704], "relative": 0.0232},
-      "answer_relevancy": {"values": [0.8484, 0.8391, 0.839], "relative": 0.0111},
-      "context_precision": {"values": [0.8093, 0.8093, 0.809], "relative": 0.0003},
-      "answer_correctness": {"values": [0.7802, 0.7873, 0.802], "relative": 0.0271}
-    }
+        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34616914158 (PR #33; values read to 3 d.p. from its report table)",
+        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34620099721 (PR #35; config/docs only, generator and grader unchanged)"
+      ]
+    },
+    "judge_backend_replaced": "ragas",
+    "measured_on": "ae7dfa241dae24078fd0ceaef969607f6d5a8618",
+    "note": "Deterministic retrieval plus the judge suite. Golden set v2: 65 records, 41 answerable, 24 negatives. Judge = the LOCAL NLI grader (cross-encoder/nli-deberta-v3-small), not RAGAS. This replaces a baseline whose judge half was graded by anthropic/claude-sonnet-5; those numbers are on a different scale (RAGAS faithfulness 0.950 vs NLI 0.689 on the same system) and are NOT comparable, which is why judge_backend is recorded here and compare.py refuses to gate across graders. Retrieval numbers are unchanged and were always comparable.",
+    "source_run": "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34619048854"
   },
   "dataset_version": "v2",
   "judge": {
@@ -27,10 +60,34 @@
   "judge_backend": "nli",
   "judge_runs": 1,
   "judge_spread": {
-    "answer_correctness": {"max": 0.7872682939211049, "min": 0.7872682939211049, "runs": [0.7872682939211049]},
-    "answer_relevancy": {"max": 0.8391041217780695, "min": 0.8391041217780695, "runs": [0.8391041217780695]},
-    "context_precision": {"max": 0.8092601864346833, "min": 0.8092601864346833, "runs": [0.8092601864346833]},
-    "faithfulness": {"max": 0.688885663224316, "min": 0.688885663224316, "runs": [0.688885663224316]}
+    "answer_correctness": {
+      "max": 0.7872682939211049,
+      "min": 0.7872682939211049,
+      "runs": [
+        0.7872682939211049
+      ]
+    },
+    "answer_relevancy": {
+      "max": 0.8391041217780695,
+      "min": 0.8391041217780695,
+      "runs": [
+        0.8391041217780695
+      ]
+    },
+    "context_precision": {
+      "max": 0.8092601864346833,
+      "min": 0.8092601864346833,
+      "runs": [
+        0.8092601864346833
+      ]
+    },
+    "faithfulness": {
+      "max": 0.688885663224316,
+      "min": 0.688885663224316,
+      "runs": [
+        0.688885663224316
+      ]
+    }
   },
   "retrieval": {
     "context_recall_at_10": 0.926829268292683,
