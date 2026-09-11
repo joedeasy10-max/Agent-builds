@@ -47,6 +47,11 @@ from pathlib import Path
 # Run as a plain script: put the repo root on the path so `src` imports resolve.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from src.candidate_review import (  # noqa: E402
+    apply_decision,
+    evaluate_one,
+    preceding_peers,
+)
 from src.chunk import Chunk  # noqa: E402
 from src.config import Config, load_config  # noqa: E402
 from src.golden import load_golden  # noqa: E402
@@ -74,6 +79,11 @@ class Candidate:
     difficulty: str
     source_excerpt: str
     notes: str = ""
+    #: Automated pre-screen verdict (src/candidate_review.py), or None if this
+    #: candidate has not been evaluated. Advisory metadata: `status` above stays
+    #: the field that decides promotion, so an evaluation can never promote by
+    #: itself.
+    evaluation: dict | None = None
 
 
 # --- pure helpers (unit-tested; no LLM, no network) -------------------------
@@ -186,6 +196,7 @@ def load_queue(path: str | Path) -> list[Candidate]:
                 difficulty=str(row.get("difficulty", "single_hop")),
                 source_excerpt=str(row.get("source_excerpt", "")),
                 notes=str(row.get("notes", "")),
+                evaluation=row.get("evaluation") or None,
             )
         )
     return out
@@ -248,12 +259,22 @@ def promote(
 
 
 def summarise(candidates: list[Candidate]) -> dict:
+    """Counts by human status, by difficulty, and by automated decision."""
     by_status = {s: 0 for s in sorted(STATUSES)}
-    by_difficulty = {d: 0 for d in sorted(DIFFICULTIES)}
+    by_difficulty: dict[str, int] = {}
+    by_auto: dict[str, int] = {"unevaluated": 0}
     for c in candidates:
         by_status[c.status] = by_status.get(c.status, 0) + 1
         by_difficulty[c.difficulty] = by_difficulty.get(c.difficulty, 0) + 1
-    return {"total": len(candidates), "by_status": by_status, "by_difficulty": by_difficulty}
+        decision = (c.evaluation or {}).get("decision")
+        key = decision if decision else "unevaluated"
+        by_auto[key] = by_auto.get(key, 0) + 1
+    return {
+        "total": len(candidates),
+        "by_status": by_status,
+        "by_difficulty": by_difficulty,
+        "by_auto": by_auto,
+    }
 
 
 # --- LLM drafters (lazy; never exercised by tests) --------------------------
@@ -322,6 +343,14 @@ class AnthropicDrafter:
         )
         return "".join(b.text for b in resp.content if b.type == "text")
 
+    def complete(self, system: str, user: str) -> str:
+        """Public one-shot completion — the seam the candidate evaluator uses.
+
+        Exists so evaluation reuses this class's provider selection, model
+        config and pre-flight instead of opening a second route to an LLM.
+        """
+        return self._call(system, user)
+
     def preflight(self) -> None:
         """One tiny call, so a dead key costs 2 seconds instead of a traceback.
 
@@ -365,6 +394,10 @@ class OpenAIDrafter:
             ],
         )
         return resp.choices[0].message.content or ""
+
+    def complete(self, system: str, user: str) -> str:
+        """See AnthropicDrafter.complete — same seam, other provider."""
+        return self._call(system, user)
 
     def preflight(self) -> None:
         """See AnthropicDrafter.preflight — same contract, other provider."""
@@ -679,6 +712,94 @@ def _cmd_draft(args) -> int:
     return 0
 
 
+def _cmd_evaluate(args) -> int:
+    """Screen a review queue with the automated evaluator (build step 3).
+
+    Annotates every candidate with a verdict and, unless --annotate-only, sets
+    the status the verdict implies. `review` maps to `pending`, which promote()
+    already refuses — so nothing uncertain can reach the golden set this way.
+    """
+    candidates = load_queue(args.queue)
+    if not candidates:
+        raise SystemExit(f"No review queue at {args.queue} — run `draft` first.")
+
+    config = load_config(args.config)
+    completer = build_drafter(config, args.provider)
+
+    # Same reasoning as the drafter: one cheap call before N paid ones.
+    preflight = getattr(completer, "preflight", None)
+    if preflight is not None:
+        try:
+            preflight()
+        except Exception as exc:  # noqa: BLE001 - provider errors are untyped
+            if is_fatal_provider_error(exc):
+                raise SystemExit(
+                    f"Evaluator pre-flight failed against {completer.drafter_id}: "
+                    f"{exc}\nNothing was evaluated and {args.queue} is unchanged."
+                ) from exc
+
+    targets = [
+        c for c in candidates
+        if args.reevaluate or not c.evaluation
+    ]
+    if args.limit:
+        targets = targets[: args.limit]
+    if not targets:
+        print("Every candidate already has a verdict. Use --reevaluate to redo them.")
+        return 0
+
+    est = len(targets) * _COST_PER_CALL_USD
+    if est > args.max_usd:
+        raise SystemExit(
+            f"Evaluating {len(targets)} candidates would cost ~${est:.2f}, over the "
+            f"${args.max_usd:.2f} cap. Lower --limit or raise --max-usd."
+        )
+    print(
+        f"Evaluating {len(targets)} of {len(candidates)} candidates via "
+        f"{completer.drafter_id}, est ${est:.2f}…",
+        file=sys.stderr,
+    )
+
+    by_id = {c.candidate_id: c for c in candidates}
+    position = {c.candidate_id: i for i, c in enumerate(candidates)}
+    # Duplicate rejection has to look BACKWARDS only. Comparing each candidate
+    # against the whole batch makes two copies of a question reject each other
+    # and lose it entirely — found by an end-to-end run, not by unit tests.
+    dropped: set[str] = set()
+    done = 0
+    try:
+        for c in targets:
+            peers = preceding_peers(candidates, position[c.candidate_id], dropped)
+            ev = evaluate_one(c, completer, others=peers)
+            if ev.decision == "reject":
+                dropped.add(c.candidate_id)
+            status = (
+                c.status if args.annotate_only
+                else apply_decision(c.status, ev.decision,
+                                    respect_human=not args.override_human)
+            )
+            by_id[c.candidate_id] = replace(
+                c, evaluation=ev.to_dict(), status=status
+            )
+            done += 1
+    finally:
+        # Write whatever was evaluated, even on interruption: these are paid
+        # calls and losing them is the mistake PR #27 was about.
+        write_queue(args.out or args.queue, [by_id[c.candidate_id] for c in candidates])
+
+    final = load_queue(args.out or args.queue)
+    s = summarise(final)
+    print(
+        f"Evaluated {done} candidate(s) -> {args.out or args.queue}\n"
+        f"  automated: {s['by_auto']}\n"
+        f"  status:    {s['by_status']}\n\n"
+        "Nothing uncertain was promoted: `review` leaves status=pending, and "
+        "promote only takes approved.\n"
+        "NEXT: open the review page (or `status`) and work the review pile."
+    )
+    return 0
+
+
 def _cmd_status(args) -> int:
     candidates = load_queue(args.queue)
     if not candidates:
@@ -769,6 +890,39 @@ def main(argv: list[str] | None = None) -> int:
     )
     d.add_argument("--max-usd", type=float, default=5.0)
     d.set_defaults(func=_cmd_draft)
+
+    e = sub.add_parser(
+        "evaluate",
+        help="automated pre-screen of a review queue (approve / reject / review)",
+    )
+    e.add_argument("--queue", type=Path, default=Path("data/golden/review_queue.jsonl"))
+    e.add_argument("--config", type=Path, default=Path("configs/retrieval.yaml"))
+    e.add_argument(
+        "--out", type=Path, default=None,
+        help="write here instead of in place (the queue is rewritten by default)",
+    )
+    e.add_argument(
+        "--provider", default=None,
+        help="override generation.provider from the config (openai | anthropic)",
+    )
+    e.add_argument("--limit", type=int, default=0, help="evaluate at most N candidates")
+    e.add_argument("--max-usd", type=float, default=4.00)
+    e.add_argument(
+        "--reevaluate", action="store_true",
+        help="re-score candidates that already carry a verdict",
+    )
+    e.add_argument(
+        "--annotate-only", action="store_true",
+        help="record verdicts without changing any candidate's status",
+    )
+    e.add_argument(
+        "--override-human", action="store_true",
+        help=(
+            "let a verdict overwrite a status a person already set. Off by "
+            "default so re-running never discards human review."
+        ),
+    )
+    e.set_defaults(func=_cmd_evaluate)
 
     s = sub.add_parser("status", help="summarise the review queue")
     s.add_argument("--queue", type=Path, default=DEFAULT_QUEUE)
