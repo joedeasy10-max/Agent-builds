@@ -20,6 +20,7 @@ that quietly gates nothing:
 | --- | --- |
 | `dataset_version` | judge *and* retrieval report only — no comparison at all |
 | `judge_backend` | judge metrics report only ("baseline predates grader tracking") |
+| `judge_n_judged` | no guard against comparing aggregates over different numbers of questions |
 
 `compare.BASELINE_KEYS_READ` is the authoritative list, and
 `compare.baseline_from_results()` is the only thing that should build a baseline
@@ -62,6 +63,33 @@ python -c "import sys,json; sys.path.insert(0,'scripts'); from compare import ba
 Grading is free; **generation is not** — the judge scores answers, so it has to
 produce them first, and that uses `generation.provider`. Budget ~$0.12 a run at
 41 answerable questions.
+
+## Promoting candidates into a new dataset version
+
+Use the **Promote golden set** workflow (`.github/workflows/promote-golden-set.yml`),
+dispatched with the run id of the `Evaluate candidates` run whose screened queue
+you want. It runs in Actions rather than locally because the screened queue only
+exists as an artefact of that run, and artefact downloads redirect to
+`blob.core.windows.net`, which some networks block with a 403.
+
+It leaves `dry_run` on by default: the first dispatch prints what it would
+promote and changes nothing. Turn it off to have it push a branch and open a PR.
+
+Three things it does that are easy to get wrong by hand:
+
+- **Refuses a version that already exists** in the golden set or in the config.
+- **Bumps `dataset.version` in the same commit as the data.** `promote` only
+  prints a reminder to do this, and a printed reminder is not a mechanism.
+  `tests/test_golden.py` fails in both directions — records stamped `added_in:
+  v3` while the config says `v2`, or a config on `v3` with nothing promoted into
+  it — so the bump cannot be forgotten or arrive early.
+- **Warns if the new set exceeds `cost.max_judge_questions_per_run`**, which
+  would otherwise truncate every future judge run.
+
+It deliberately does **not** update `results/baseline.json`. A baseline is only
+valid within one dataset version, so the PR it opens is expected to show the
+judge metrics reporting rather than gating until a fresh baseline is measured on
+that branch and committed to it. The PR body spells out those steps.
 
 ## Changing the grader
 

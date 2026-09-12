@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 from .config import Config, load_config
@@ -180,10 +181,31 @@ def run_judge_suite(
     retriever = Retriever(config, index_dir)
     generator = build_generator(config)
 
-    answerable = [r for r in records if r.is_answerable]
+    all_answerable = [r for r in records if r.is_answerable]
     max_q = caps["max_judge_questions_per_run"]
     ceiling = min(x for x in (limit, max_q) if x is not None)
-    answerable = answerable[:ceiling]
+    answerable = all_answerable[:ceiling]
+
+    # A dropped question is a silent change to what the metrics MEAN, so it is
+    # never silent. The cost cap below raises SystemExit and is impossible to
+    # miss; this one used to slice the list and say nothing, so a judge run over
+    # a 200-question set would score 120, report an aggregate over those 120,
+    # and write it into a baseline as if it covered the dataset. The numbers
+    # would be real and the coverage a fiction.
+    dropped = len(all_answerable) - len(answerable)
+    if dropped:
+        cause = (
+            "--limit"
+            if limit is not None and limit <= max_q
+            else f"cost.max_judge_questions_per_run={max_q}"
+        )
+        print(
+            f"WARNING: judging {len(answerable)} of {len(all_answerable)} answerable "
+            f"questions — {dropped} dropped by {cause}. The judge metrics below "
+            f"describe that subset, NOT the whole dataset. Raise the cap (or the "
+            f"limit) before promoting these numbers to a baseline.",
+            file=sys.stderr,
+        )
 
     # Grading scales with runs; generation happens once per question regardless,
     # because the answers are produced before any grading run.
@@ -246,6 +268,8 @@ def run_judge_suite(
     judged = J.run_judge(samples, grader, runs=runs)
     return {
         "n_judged": len(samples),
+        "n_answerable_total": len(all_answerable),
+        "truncated": bool(dropped),
         "runs": runs,
         "backend": grader.grader_id,
         "generator": generator.generator_id,
@@ -328,10 +352,16 @@ def main(argv: list[str] | None = None) -> int:
         payload["estimated_cost_usd"] = suite["estimated_cost_usd"]
         payload["judge_detail"] = {
             "n_judged": suite["n_judged"],
+            "n_answerable_total": suite["n_answerable_total"],
+            "truncated": suite["truncated"],
             "backend": suite["backend"],
             "generator": suite["generator"],
             "spread": suite["spread"],
         }
+        # Top level, next to judge_backend, because compare.py gates on it: a
+        # baseline that scored a different number of questions is not a like-for
+        # -like comparison, whatever the metric values say.
+        payload["judge_n_judged"] = suite["n_judged"]
         summary = (
             f"[judge] dataset {version} · {suite['n_judged']} judged × "
             f"{suite['runs']} runs ({suite['backend']}) · "

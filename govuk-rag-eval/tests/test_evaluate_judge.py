@@ -123,6 +123,86 @@ def test_question_cap_limits_judged(tmp_path, fixture_pages, test_config):
     assert suite["n_judged"] == 1
 
 
+def test_a_truncated_run_says_so_loudly(tmp_path, fixture_pages, test_config, capsys):
+    """The cap must never silently change what the metrics cover.
+
+    This is the half the test above missed. It asserted the slice happened and
+    stopped there, which encoded the silent behaviour as correct: a 200-question
+    set scored on 120 produced a real-looking aggregate over an unstated subset,
+    and baseline_from_results would then write it as the dataset's number.
+    """
+    from dataclasses import replace
+
+    from src.config import GenerationConfig
+    from src.evaluate import run_judge_suite
+    from src.golden import load_golden
+
+    cfg = replace(test_config, generation=GenerationConfig(provider="echo"))
+    idx = tmp_path / "idx"
+    build_index(fixture_pages, cfg, idx)
+    records = load_golden(_golden(tmp_path))
+    total = len([r for r in records if r.is_answerable])
+    assert total > 1, "fixture needs >1 answerable question to exercise truncation"
+
+    caps = {"max_judge_questions_per_run": 1, "max_usd_per_run": 4.0}
+    suite = run_judge_suite(records, cfg, idx, runs=1, backend="heuristic", caps=caps)
+
+    warning = capsys.readouterr().err
+    assert "WARNING" in warning, "truncation must be announced, not silent"
+    assert f"1 of {total}" in warning, warning
+    assert "max_judge_questions_per_run" in warning, warning
+
+    assert suite["truncated"] is True
+    assert suite["n_answerable_total"] == total
+    assert suite["n_judged"] == 1
+
+
+def test_an_untruncated_run_is_quiet_and_says_it_is_complete(
+    tmp_path, fixture_pages, test_config, capsys
+):
+    from dataclasses import replace
+
+    from src.config import GenerationConfig
+    from src.evaluate import run_judge_suite
+    from src.golden import load_golden
+
+    cfg = replace(test_config, generation=GenerationConfig(provider="echo"))
+    idx = tmp_path / "idx"
+    build_index(fixture_pages, cfg, idx)
+    records = load_golden(_golden(tmp_path))
+    total = len([r for r in records if r.is_answerable])
+
+    caps = {"max_judge_questions_per_run": 500, "max_usd_per_run": 4.0}
+    suite = run_judge_suite(records, cfg, idx, runs=1, backend="heuristic", caps=caps)
+
+    assert "WARNING" not in capsys.readouterr().err
+    assert suite["truncated"] is False
+    assert suite["n_judged"] == suite["n_answerable_total"] == total
+
+
+def test_an_explicit_limit_names_the_limit_not_the_cap(
+    tmp_path, fixture_pages, test_config, capsys
+):
+    """--limit is the caller's own choice; the message should not blame the cap."""
+    from dataclasses import replace
+
+    from src.config import GenerationConfig
+    from src.evaluate import run_judge_suite
+    from src.golden import load_golden
+
+    cfg = replace(test_config, generation=GenerationConfig(provider="echo"))
+    idx = tmp_path / "idx"
+    build_index(fixture_pages, cfg, idx)
+    records = load_golden(_golden(tmp_path))
+
+    caps = {"max_judge_questions_per_run": 500, "max_usd_per_run": 4.0}
+    run_judge_suite(records, cfg, idx, runs=1, backend="heuristic", caps=caps, limit=1)
+
+    warning = capsys.readouterr().err
+    assert "--limit" in warning, warning
+    assert "max_judge_questions_per_run" not in warning, warning
+
+
 # --- cost reporting must not print $0.00 on a run that spent money ----------
 
 

@@ -46,6 +46,7 @@ def arrow(delta: float, tolerance: float) -> str:
 BASELINE_KEYS_READ = (
     "dataset_version",
     "judge_backend",
+    "judge_n_judged",
 )
 
 
@@ -73,6 +74,14 @@ def baseline_from_results(results: dict) -> dict:
         baseline["judge_runs"] = results.get("judge_runs")
         baseline["judge_spread"] = results.get("judge_detail", {}).get("spread") or {}
         baseline["judge_backend"] = results.get("judge_backend")
+        # How many questions the aggregate actually covers. A judge run can be
+        # truncated by cost.max_judge_questions_per_run or --limit, and an
+        # aggregate over 120 questions is not comparable with one over 200 even
+        # when both say dataset v3.
+        baseline["judge_n_judged"] = results.get("judge_n_judged")
+        detail = results.get("judge_detail", {})
+        if detail.get("truncated"):
+            baseline["judge_truncated_from"] = detail.get("n_answerable_total")
     return baseline
 
 
@@ -171,6 +180,19 @@ def main() -> int:
                 lines.append(
                     f"| _judge grader_ | unrecorded | `{here}` | — | "
                     "baseline predates grader tracking — reporting only |"
+                )
+                suite_comparable = False
+
+            # Same grader, same dataset, but a different number of questions
+            # scored: the aggregates cover different sets and the delta between
+            # them is not a regression signal. Happens when a judge run is
+            # truncated by the cost cap on one side and not the other.
+            n_here = current.get("judge_n_judged")
+            n_there = baseline.get("judge_n_judged")
+            if suite_comparable and n_here and n_there and n_here != n_there:
+                lines.append(
+                    f"| _questions judged_ | {n_there} | {n_here} | "
+                    f"{n_here - n_there:+d} | coverage changed — reporting only |"
                 )
                 suite_comparable = False
 
