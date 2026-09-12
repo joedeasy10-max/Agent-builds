@@ -336,3 +336,56 @@ def test_the_floor_sits_below_the_band_not_inside_it():
             f"{metric}: floor {floor} is only {drop_to_floor:.1%} under the baseline "
             f"{value:.3f}, inside the {band:.0%} band — the floor would fire first"
         )
+
+
+# --- judge coverage -----------------------------------------------------
+# cost.max_judge_questions_per_run used to slice the answerable list silently,
+# so a 200-question dataset could be scored on 120 and the aggregate written to
+# a baseline as if it covered everything. The slice is loud now; these hold the
+# comparison side, where a coverage change must stop the gate.
+
+
+def _judged(n, faithfulness=0.6889):
+    r = _full_results()
+    r["judge"]["faithfulness"] = faithfulness
+    r["judge_n_judged"] = n
+    r["judge_detail"]["n_answerable_total"] = n
+    return r
+
+
+def test_a_coverage_change_reports_instead_of_gating(tmp_path):
+    code, report = _run(tmp_path, _judged(120), _judged(41))
+    assert "coverage changed" in report, report
+    assert code == 0, report
+
+
+def test_the_same_coverage_still_gates(tmp_path):
+    """The guard must not disable judge gating for everyone else."""
+    code, report = _run(tmp_path, _judged(41), _judged(41))
+    assert "coverage changed" not in report
+    assert "reporting only" not in report
+    assert code == 0, report
+
+
+def test_a_coverage_change_does_not_hide_a_real_retrieval_regression(tmp_path):
+    """Retrieval is unaffected by how many questions the JUDGE scored."""
+    current, baseline = _judged(120), _judged(41)
+    current["retrieval"]["hit_at_5"] = 0.50
+    code, report = _run(tmp_path, current, baseline)
+    assert "below absolute floor" in report
+    assert code == 1, report
+
+
+def test_a_truncated_run_records_what_it_dropped():
+    results = _full_results()
+    results["judge_n_judged"] = 120
+    results["judge_detail"]["truncated"] = True
+    results["judge_detail"]["n_answerable_total"] = 200
+    baseline = compare.baseline_from_results(results)
+    assert baseline["judge_n_judged"] == 120
+    assert baseline["judge_truncated_from"] == 200
+
+
+def test_an_untruncated_run_carries_no_truncation_marker():
+    baseline = compare.baseline_from_results(_full_results())
+    assert "judge_truncated_from" not in baseline

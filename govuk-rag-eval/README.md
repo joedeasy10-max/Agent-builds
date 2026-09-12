@@ -17,7 +17,7 @@ Steps are defined in `BUILD.md` → "Build order". There are **8**.
 |---|------|-------|
 | 1 | **Ingest + retrieve** — crawl, chunk, index, `retrieve(question)` | ✅ done |
 | 2 | **Retrieval metrics** (hit@5, MRR, recall@10, served recall) + `src/evaluate.py` | ✅ done |
-| 3 | Golden set to full size (150–300, hand-reviewed) | 🟡 **65 reviewed records** (41 answerable, 24 negatives) — real and gating, but short of the 150–300 target, and only 4 multi-hop |
+| 3 | Golden set to full size (150–300, hand-reviewed) | 🟡 **65 reviewed records** (41 answerable, 24 negatives). 134 further candidates are drafted and screened — 112 auto-approved, 22 awaiting a human — which would take the set to ~199, inside the target. Promotion is wired: dispatch `Promote golden set`. |
 | 4 | **Generation + judge metrics** (local NLI by default; RAGAS behind a label) | ✅ done — grader swapped to a free deterministic one, cross-run spread measured, floors and tolerances re-derived for it (table below) |
 | 5 | **CI gate** — wire `rag-eval.yml` + `compare.py`, commit a baseline | ✅ done — active, with a committed v2 baseline; blocks PRs (see step 6) |
 | 6 | Regression demos — 3 blocked PRs | ✅ done — PRs #18, #19, #20 are open and red; each fails on real numbers |

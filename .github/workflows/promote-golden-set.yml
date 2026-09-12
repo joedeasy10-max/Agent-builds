@@ -1,0 +1,200 @@
+name: Promote golden set
+
+# Build step 3, final move: turn screened candidates into golden records and
+# open a PR with the result.
+#
+# This runs in Actions rather than locally for one practical reason: the
+# screened queue exists only as an artefact of an `Evaluate candidates` run, and
+# artefact downloads redirect to blob.core.windows.net, which some networks
+# block outright (403). Inside Actions the download just works.
+#
+# It never commits to main. It pushes a branch and opens a PR, so the enlarged
+# golden set is reviewed like any other change — and so the rag-eval gate runs
+# against it before it becomes the dataset everything is measured on.
+
+on:
+  workflow_dispatch:
+    inputs:
+      screened_run_id:
+        description: "Run id of the `Evaluate candidates` run whose screened queue to promote"
+        required: true
+      version:
+        description: "New dataset version (e.g. v3). Must not already exist in the golden set."
+        required: true
+        default: "v3"
+      dry_run:
+        description: "Show what would be promoted and change nothing"
+        required: true
+        type: boolean
+        default: true
+
+concurrency:
+  group: promote-golden-set
+  cancel-in-progress: false
+
+permissions:
+  contents: write        # push the branch
+  pull-requests: write   # open the PR
+  actions: read          # download the screened-queue artefact
+
+defaults:
+  run:
+    working-directory: govuk-rag-eval
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.lock
+
+      - name: Fetch the screened queue
+        uses: actions/download-artifact@v4
+        with:
+          name: screened-queue-${{ inputs.screened_run_id }}
+          path: govuk-rag-eval/data/golden/
+          run-id: ${{ inputs.screened_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # What is about to be promoted, before anything is written. Printed rather
+      # than left in an artefact for the same reason this job exists at all.
+      - name: Queue summary
+        run: python scripts/build_golden_set.py status --queue data/golden/review_queue.jsonl
+
+      # inputs.* is interpolated by Actions BEFORE the shell sees it, so putting
+      # it straight into a script body is the script-injection pattern: a
+      # crafted input becomes code. Every use below goes through env instead.
+      - name: Refuse to promote a version that already exists
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          python - <<'PY'
+          import json, os, pathlib, sys, yaml
+          version = os.environ["VERSION"]
+          if not __import__("re").fullmatch(r"v\d+", version):
+              sys.exit(f"version must look like v3, got {version!r}")
+          cfg = yaml.safe_load(pathlib.Path("configs/eval_config.yaml").read_text())
+          rows = [json.loads(l) for l in
+                  pathlib.Path(cfg["dataset"]["path"]).read_text().splitlines() if l.strip()]
+          stamps = {r.get("added_in") for r in rows}
+          if version in stamps:
+              sys.exit(f"{version} already exists in the golden set — pick the next version.")
+          if version == cfg["dataset"]["version"]:
+              sys.exit(f"configs/eval_config.yaml is already on {version}.")
+          print(f"{version} is new. Existing versions: {sorted(stamps)}; "
+                f"config is on {cfg['dataset']['version']}.")
+          PY
+
+      - name: Promote (dry run)
+        if: inputs.dry_run
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          python scripts/build_golden_set.py promote \
+            --queue data/golden/review_queue.jsonl \
+            --version "$VERSION" \
+            --dry-run
+
+      - name: Promote
+        if: ${{ !inputs.dry_run }}
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          python scripts/build_golden_set.py promote \
+            --queue data/golden/review_queue.jsonl \
+            --version "$VERSION"
+
+      # The version bump is part of the same change, not a follow-up. promote
+      # only PRINTS a reminder to do it, and a printed reminder is not a
+      # mechanism — tests/test_golden.py fails if the two ever disagree, so
+      # doing it here is what keeps this PR green.
+      - name: Bump dataset.version
+        if: ${{ !inputs.dry_run }}
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          python - <<'PY'
+          import os, pathlib, re
+          version = os.environ["VERSION"]
+          p = pathlib.Path("configs/eval_config.yaml")
+          s = p.read_text()
+          new, n = re.subn(r"(?m)^(  version: )v\d+", rf"\g<1>{version}", s, count=1)
+          assert n == 1, "could not find `  version: vN` under dataset: in eval_config.yaml"
+          p.write_text(new)
+          print(f"dataset.version -> {version}")
+          PY
+
+      # The golden set is what every metric is measured against, so it must load
+      # cleanly and agree with the config before this becomes a PR.
+      - name: Validate
+        if: ${{ !inputs.dry_run }}
+        run: |
+          python -m pytest tests/test_golden.py tests/test_compare.py -q
+          python - <<'PY'
+          import collections, json, pathlib, yaml
+          cfg = yaml.safe_load(pathlib.Path("configs/eval_config.yaml").read_text())
+          rows = [json.loads(l) for l in
+                  pathlib.Path(cfg["dataset"]["path"]).read_text().splitlines() if l.strip()]
+          by = collections.Counter(r["difficulty"] for r in rows)
+          answerable = sum(v for k, v in by.items() if k != "negative")
+          cap = cfg["cost"]["max_judge_questions_per_run"]
+          print(f"golden set: {len(rows)} records — {dict(by)}")
+          print(f"answerable: {answerable}  (judge cap {cap})")
+          if answerable > cap:
+              print(
+                  f"::warning::{answerable} answerable questions exceeds "
+                  f"cost.max_judge_questions_per_run={cap}; judge runs will score "
+                  f"only {cap} of them and say so. Raise the cap in the same PR."
+              )
+          PY
+
+      - name: Open the PR
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+          SCREENED_RUN: ${{ inputs.screened_run_id }}
+        working-directory: .
+        run: |
+          set -euo pipefail
+          BRANCH="golden-set/${VERSION}"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add govuk-rag-eval/data/golden/questions.jsonl govuk-rag-eval/configs/eval_config.yaml
+          git commit -m "Promote screened candidates to golden set ${VERSION}
+
+          Promoted from the screened queue of run ${SCREENED_RUN}.
+          dataset.version bumped to ${VERSION} in the same commit: records
+          stamped added_in=${VERSION} with the config still on the old version
+          fail tests/test_golden.py, because compare.py would otherwise gate the
+          enlarged set against a baseline measured on fewer questions.
+
+          results/baseline.json is deliberately NOT updated here. A baseline is
+          only valid within one dataset version, so it must be re-measured on
+          this branch and committed before the gate means anything."
+          git push -u origin "$BRANCH"
+          gh pr create --base main --head "$BRANCH" \
+            --title "Promote screened candidates to golden set ${VERSION}" \
+            --body "$(cat <<EOF
+          Promoted from the screened queue of [run ${SCREENED_RUN}](https://github.com/${GITHUB_REPOSITORY}/actions/runs/${SCREENED_RUN}).
+
+          ### Before merging
+
+          The gate on this PR will report rather than gate the judge metrics, because a baseline is only valid within one dataset version and this PR changes it. That is expected and correct.
+
+          1. Let this PR's \`RAG Evaluation\` run finish.
+          2. Take the \`=== BASELINE-READY JSON ===\` block from its log and commit it as \`results/baseline.json\` **on this branch**, with a \`_provenance\` block naming the commit and run URL.
+          3. Re-run. The judge metrics should then gate against the new baseline.
+
+          See \`govuk-rag-eval/results/README.md\` for the full promotion recipe.
+          EOF
+          )"

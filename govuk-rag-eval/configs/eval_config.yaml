@@ -148,5 +148,19 @@ reporting:
 
 cost:
   # Guardrails so a runaway loop can't drain the key.
-  max_judge_questions_per_run: 120
+  #
+  # max_usd_per_run is the REAL guard: it aborts the run before a provider is
+  # ever constructed. max_judge_questions_per_run is a second, blunter one that
+  # truncates instead of aborting — which is why it now warns loudly and records
+  # judge_n_judged, and why compare.py stops gating when coverage changes.
+  #
+  # Raised 120 -> 200 for the v3 golden set. v2 has 41 answerable questions, and
+  # promoting the drafted candidates takes the set to roughly 199 records with
+  # ~135 answerable — which 120 would have truncated on the very first v3 run,
+  # scoring 120 of 135 and reporting it as the dataset's number.
+  #
+  # 200 is not a licence to spend: at generation.provider anthropic ($0.003 per
+  # question) a full 200-question judge run is $0.60, well inside the $4 cap
+  # that actually stops things. Note the nightly schedule pays that every night.
+  max_judge_questions_per_run: 200
   max_usd_per_run: 4.00

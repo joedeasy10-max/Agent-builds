@@ -65,7 +65,7 @@
     },
     "judge_backend_replaced": "ragas",
     "measured_on": "ae7dfa241dae24078fd0ceaef969607f6d5a8618",
-    "note": "Deterministic retrieval plus the judge suite. Golden set v2: 65 records, 41 answerable, 24 negatives. Judge = the LOCAL NLI grader (cross-encoder/nli-deberta-v3-small), not RAGAS. This replaces a baseline whose judge half was graded by anthropic/claude-sonnet-5; those numbers are on a different scale (RAGAS faithfulness 0.950 vs NLI 0.689 on the same system) and are NOT comparable, which is why judge_backend is recorded here and compare.py refuses to gate across graders. Retrieval numbers are unchanged and were always comparable.",
+    "note": "Deterministic retrieval plus the judge suite. Golden set v2: 65 records, 41 answerable, 24 negatives. Judge = the LOCAL NLI grader (cross-encoder/nli-deberta-v3-small), not RAGAS. This replaces a baseline whose judge half was graded by anthropic/claude-sonnet-5; those numbers are on a different scale (RAGAS faithfulness 0.950 vs NLI 0.689 on the same system) and are NOT comparable, which is why judge_backend is recorded here and compare.py refuses to gate across graders. Retrieval numbers are unchanged and were always comparable. judge_n_judged records how many questions the judge aggregate covers: a run truncated by cost.max_judge_questions_per_run covers fewer, and compare.py reports rather than gates when that number changes.",
     "source_run": "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34619048854"
   },
   "dataset_version": "v2",
@@ -76,6 +76,7 @@
     "faithfulness": 0.688885663224316
   },
   "judge_backend": "nli",
+  "judge_n_judged": 41,
   "judge_runs": 1,
   "judge_spread": {
     "answer_correctness": {

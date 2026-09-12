@@ -1,8 +1,13 @@
 """Golden-set loading + validation + version derivation."""
 
+import json
+from pathlib import Path
+
 import pytest
 
 from src.golden import dataset_version, load_golden
+
+ROOT = Path(__file__).resolve().parent.parent
 
 VALID = (
     '{"id":"q1","question":"a?","ground_truth":"x","source_ids":["gov-uk/p#chunk-0"],'
@@ -84,3 +89,62 @@ def test_committed_golden_set_is_valid():
     assert all(r.source_ids for r in recs if r.is_answerable)
     assert not any(r.source_ids for r in recs if r.is_negative)
     assert len({r.id for r in recs}) == len(recs), "duplicate ids"
+
+
+# --- dataset version and the golden set must agree ----------------------
+# `promote` appends records stamped `added_in: v3` and then PRINTS a reminder to
+# bump dataset.version in eval_config.yaml by hand. A printed reminder is not a
+# mechanism — it is the same "value restated in a second place" that has now
+# produced six bugs here. This turns the reminder into a failing test.
+
+
+def _config_dataset_version():
+    import yaml
+
+    cfg = yaml.safe_load((ROOT / "configs" / "eval_config.yaml").read_text())
+    return cfg["dataset"]["version"]
+
+
+def _golden_rows():
+    path = ROOT / "configs" / "eval_config.yaml"
+    import yaml
+
+    rel = yaml.safe_load(path.read_text())["dataset"]["path"]
+    return [
+        json.loads(line)
+        for line in (ROOT / rel).read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+
+
+def _version_number(v):
+    return int(str(v).lstrip("v") or 0)
+
+
+def test_no_golden_record_is_newer_than_the_configured_dataset_version():
+    """A record stamped v3 while the config still says v2 means the bump was missed.
+
+    That combination is silently wrong rather than loudly broken: compare.py
+    would gate the enlarged set against a v2 baseline measured on fewer
+    questions, and call the difference a regression.
+    """
+    configured = _config_dataset_version()
+    newest = max(
+        (r.get("added_in", "v0") for r in _golden_rows()), key=_version_number
+    )
+    assert _version_number(newest) <= _version_number(configured), (
+        f"golden set contains records added_in {newest!r} but "
+        f"configs/eval_config.yaml says dataset.version is {configured!r} — "
+        "promote appended records without the version being bumped"
+    )
+
+
+def test_the_configured_version_actually_exists_in_the_golden_set():
+    """The mirror failure: version bumped, data never promoted."""
+    configured = _config_dataset_version()
+    stamps = {r.get("added_in", "v0") for r in _golden_rows()}
+    assert configured in stamps, (
+        f"dataset.version is {configured!r} but no golden record is stamped "
+        f"added_in={configured!r} (found {sorted(stamps)}) — the version was "
+        "bumped without promoting anything into it"
+    )
