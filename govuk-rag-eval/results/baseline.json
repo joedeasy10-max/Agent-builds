@@ -54,7 +54,7 @@
         ]
       },
       "measured_on_dataset": "v2",
-      "note": "CARRIED FORWARD FROM v2 AND NOT YET RE-MEASURED ON v3. The sd values below come from six whole runs on the v2 set (see git history of this file); they are what the bands in eval_config.yaml are calibrated against. Generation noise is more a property of the generator than of the question set, so they are the best available estimate \u2014 but that is a prior, not a measurement, and it is the reason this block says so rather than presenting v2 numbers as v3 ones. Re-measure as v3 runs accumulate; the bands are unchanged in the meantime.",
+      "note": "CARRIED FORWARD FROM v2 AND NOT YET RE-MEASURED ON v3. The sd values below come from six whole runs on the v2 set (see git history of this file); they are what the bands in eval_config.yaml are calibrated against. Generation noise is more a property of the generator than of the question set, so they are the best available estimate \u2014 but that is a prior, not a measurement, and it is the reason this block says so rather than presenting v2 numbers as v3 ones. v3_observations below now carries four v3 runs and confirms it: 1.89% against 1.91%. The bands stay as they are, and that is now a measured conclusion rather than a pending one.",
       "runs": [
         "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34618486278",
         "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34619048854",
@@ -64,26 +64,56 @@
         "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34621223251"
       ],
       "v3_observations": {
-        "answer_correctness": [
-          0.7987,
-          0.791
-        ],
-        "answer_relevancy": [
-          0.8296,
-          0.837
-        ],
-        "context_precision": [
-          0.811,
-          0.811
-        ],
-        "faithfulness": [
-          0.6301,
-          0.625
-        ],
-        "note": "Two whole runs on v3 so far, both on this branch's content. Not yet enough to re-derive sd (the v2 block above is still what the bands are calibrated against), but recorded so the v3 series starts accumulating rather than being re-discovered. Consistent with the carried-forward v2 noise: faithfulness moved 0.8% between these two, against a 7% band.",
+        "answer_correctness": {
+          "mean": 0.7964,
+          "sd": 0.004,
+          "sd_over_mean": 0.005,
+          "values": [
+            0.791,
+            0.796,
+            0.7987,
+            0.8
+          ]
+        },
+        "answer_relevancy": {
+          "mean": 0.8339,
+          "sd": 0.0042,
+          "sd_over_mean": 0.0051,
+          "values": [
+            0.8296,
+            0.831,
+            0.837,
+            0.838
+          ]
+        },
+        "context_precision": {
+          "mean": 0.811,
+          "sd": 0.0,
+          "sd_over_mean": 0.0,
+          "values": [
+            0.811,
+            0.811,
+            0.811,
+            0.811
+          ]
+        },
+        "faithfulness": {
+          "mean": 0.6258,
+          "sd": 0.0118,
+          "sd_over_mean": 0.0189,
+          "values": [
+            0.61,
+            0.625,
+            0.6301,
+            0.638
+          ]
+        },
+        "note": "Four whole runs on v3. This CONFIRMS the prior the block above was carried forward on: faithfulness sd/mean is 1.89% on v3 against 1.91% on v2, so generation noise really is a property of the generator rather than of the question set, and the bands calibrated on v2 hold on v3 without change (7% is 3.7 sigma here, the same as it was there). Recorded as a measurement now, not an assumption.",
         "runs": [
           "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34785573211",
-          "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34786110019"
+          "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34786110019",
+          "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34786603137",
+          "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34787293755"
         ]
       }
     },
