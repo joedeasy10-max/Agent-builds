@@ -74,10 +74,10 @@ def _eval(tmp_path, cfg, name, fixture_pages, out):
     ])
 
 
-def _gate(tmp_path, current, baseline):
+def _gate(tmp_path, current, baseline, thresholds):
     md = tmp_path / "report.md"
     argv = ["compare.py", "--current", str(current), "--baseline", str(baseline),
-            "--thresholds", str(EVAL_CONFIG), "--markdown", str(md)]
+            "--thresholds", str(thresholds), "--markdown", str(md)]
     old = sys.argv
     sys.argv = argv
     try:
@@ -86,23 +86,23 @@ def _gate(tmp_path, current, baseline):
         sys.argv = old
 
 
-def test_chunk_size_regression_is_blocked(tmp_path, fixture_pages):
+def test_chunk_size_regression_is_blocked(tmp_path, fixture_pages, fixture_thresholds):
     baseline = tmp_path / "baseline.json"
     current = tmp_path / "current.json"
     _eval(tmp_path, _cfg(200), "baseline", fixture_pages, baseline)   # healthy
     _eval(tmp_path, _cfg(2000), "regressed", fixture_pages, current)  # chunk-size regression
 
-    code, report = _gate(tmp_path, current, baseline)
+    code, report = _gate(tmp_path, current, baseline, fixture_thresholds)
     assert code == 1, report                       # gate blocks the PR
     assert "Gate failed" in report
 
 
-def test_no_regression_passes(tmp_path, fixture_pages):
+def test_no_regression_passes(tmp_path, fixture_pages, fixture_thresholds):
     baseline = tmp_path / "baseline.json"
     current = tmp_path / "current.json"
     _eval(tmp_path, _cfg(200), "baseline", fixture_pages, baseline)
     _eval(tmp_path, _cfg(200), "same", fixture_pages, current)
 
-    code, report = _gate(tmp_path, current, baseline)
+    code, report = _gate(tmp_path, current, baseline, fixture_thresholds)
     assert code == 0, report
     assert "Gate passed" in report

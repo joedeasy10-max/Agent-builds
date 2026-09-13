@@ -1,122 +1,50 @@
 {
   "_provenance": {
+    "measured_on": "06c1b87a249cf177e6b45a3dc638e91023d15303",
+    "source_run": "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34785573211",
+    "note": "First baseline on golden set v3: 198 records, 174 answerable across 62 GOV.UK pages, 24 negatives. Judge = the local NLI grader. NOT comparable with the v2 baseline it replaces — a different and much broader question set, not a changed system. Retrieval held up on it (hit@5 0.902 -> 0.897 while the answerable count went 41 -> 174, and mrr rose 0.715 -> 0.752); faithfulness fell 0.689 -> 0.630, which is what a wider, less cherry-picked set costs, not a regression.",
     "cross_run_spread": {
-      "answer_correctness": {
-        "mean": 0.7869,
-        "sd": 0.0082,
-        "sd_over_mean": 0.0104,
-        "values": [
-          0.7802,
-          0.781,
-          0.782,
-          0.7873,
-          0.789,
-          0.802
-        ]
-      },
-      "answer_relevancy": {
-        "mean": 0.8427,
-        "sd": 0.0036,
-        "sd_over_mean": 0.0043,
-        "values": [
-          0.839,
-          0.8391,
-          0.842,
-          0.843,
-          0.845,
-          0.8484
-        ]
-      },
-      "context_precision": {
-        "mean": 0.8091,
-        "sd": 0.0002,
-        "sd_over_mean": 0.0002,
-        "values": [
-          0.809,
-          0.809,
-          0.809,
-          0.809,
-          0.8093,
-          0.8093
-        ]
-      },
-      "faithfulness": {
-        "mean": 0.6923,
-        "sd": 0.0132,
-        "sd_over_mean": 0.0191,
-        "values": [
-          0.676,
-          0.685,
-          0.6877,
-          0.6889,
-          0.704,
-          0.712
-        ]
-      },
-      "note": "judge_spread below is grader variance WITHIN one run, and is structurally zero for a deterministic grader. It is not the noise floor the tolerances need. The generator is not deterministic (generation.temperature is ignored by the Anthropic models in use), so answers differ between runs and the judge metrics move with them. This block is that measurement: six whole runs of the same system (no commit among them touched the generator or the grader). Bands are set at >= 3 sd of the run-to-run mean. They were previously set at 2-3x the sample RANGE, which is a biased estimator - max minus min can only grow as runs accumulate, so the band looks too tight forever and invites reflexive widening. faithfulness' band was moved twice on that basis before the estimator was corrected; sd settled near 1.9% and 7% (3.7 sd) was right all along. Recheck sd as runs accumulate; do not reflexively widen.",
+      "note": "CARRIED FORWARD FROM v2 AND NOT YET RE-MEASURED ON v3. The sd values below come from six whole runs on the v2 set (see git history of this file); they are what the bands in eval_config.yaml are calibrated against. Generation noise is more a property of the generator than of the question set, so they are the best available estimate — but that is a prior, not a measurement, and it is the reason this block says so rather than presenting v2 numbers as v3 ones. Re-measure as v3 runs accumulate; the bands are unchanged in the meantime.",
+      "measured_on_dataset": "v2",
       "runs": [
-        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34618486278 (ae7dfa2)",
-        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34619048854 (ae7dfa2)",
-        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34616914158 (PR #33)",
-        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34620099721 (PR #35)",
-        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34620721195 (PR #35, merged head)",
-        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34621223251 (PR #36)"
-      ]
-    },
-    "judge_backend_replaced": "ragas",
-    "measured_on": "ae7dfa241dae24078fd0ceaef969607f6d5a8618",
-    "note": "Deterministic retrieval plus the judge suite. Golden set v2: 65 records, 41 answerable, 24 negatives. Judge = the LOCAL NLI grader (cross-encoder/nli-deberta-v3-small), not RAGAS. This replaces a baseline whose judge half was graded by anthropic/claude-sonnet-5; those numbers are on a different scale (RAGAS faithfulness 0.950 vs NLI 0.689 on the same system) and are NOT comparable, which is why judge_backend is recorded here and compare.py refuses to gate across graders. Retrieval numbers are unchanged and were always comparable. judge_n_judged records how many questions the judge aggregate covers: a run truncated by cost.max_judge_questions_per_run covers fewer, and compare.py reports rather than gates when that number changes.",
-    "source_run": "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34619048854"
-  },
-  "dataset_version": "v2",
-  "judge": {
-    "answer_correctness": 0.7872682939211049,
-    "answer_relevancy": 0.8391041217780695,
-    "context_precision": 0.8092601864346833,
-    "faithfulness": 0.688885663224316
-  },
-  "judge_backend": "nli",
-  "judge_n_judged": 41,
-  "judge_runs": 1,
-  "judge_spread": {
-    "answer_correctness": {
-      "max": 0.7872682939211049,
-      "min": 0.7872682939211049,
-      "runs": [
-        0.7872682939211049
-      ]
-    },
-    "answer_relevancy": {
-      "max": 0.8391041217780695,
-      "min": 0.8391041217780695,
-      "runs": [
-        0.8391041217780695
-      ]
-    },
-    "context_precision": {
-      "max": 0.8092601864346833,
-      "min": 0.8092601864346833,
-      "runs": [
-        0.8092601864346833
-      ]
-    },
-    "faithfulness": {
-      "max": 0.688885663224316,
-      "min": 0.688885663224316,
-      "runs": [
-        0.688885663224316
-      ]
+        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34618486278",
+        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34619048854",
+        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34616914158",
+        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34620099721",
+        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34620721195",
+        "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34621223251"
+      ],
+      "faithfulness": {"values": [0.676, 0.685, 0.6877, 0.6889, 0.704, 0.712], "mean": 0.6923, "sd": 0.0132, "sd_over_mean": 0.0191},
+      "answer_relevancy": {"values": [0.839, 0.8391, 0.842, 0.843, 0.8484, 0.845], "mean": 0.8427, "sd": 0.0036, "sd_over_mean": 0.0043},
+      "context_precision": {"values": [0.809, 0.809, 0.809, 0.8093, 0.8093, 0.809], "mean": 0.8091, "sd": 0.0002, "sd_over_mean": 0.0002},
+      "answer_correctness": {"values": [0.7802, 0.781, 0.782, 0.7873, 0.789, 0.802], "mean": 0.7869, "sd": 0.0082, "sd_over_mean": 0.0104}
     }
   },
+  "dataset_version": "v3",
+  "judge": {
+    "answer_correctness": 0.798728898199682,
+    "answer_relevancy": 0.8296274422914133,
+    "context_precision": 0.811028038448251,
+    "faithfulness": 0.6300685248043525
+  },
+  "judge_backend": "nli",
+  "judge_n_judged": 174,
+  "judge_runs": 1,
+  "judge_spread": {
+    "answer_correctness": {"max": 0.798728898199682, "min": 0.798728898199682, "runs": [0.798728898199682]},
+    "answer_relevancy": {"max": 0.8296274422914133, "min": 0.8296274422914133, "runs": [0.8296274422914133]},
+    "context_precision": {"max": 0.811028038448251, "min": 0.811028038448251, "runs": [0.811028038448251]},
+    "faithfulness": {"max": 0.6300685248043525, "min": 0.6300685248043525, "runs": [0.6300685248043525]}
+  },
   "retrieval": {
-    "context_recall_at_10": 0.926829268292683,
-    "hit_at_5": 0.9024390243902439,
-    "mrr": 0.7154471544715447,
-    "served_context_recall": 0.9024390243902439
+    "context_recall_at_10": 0.9137931034482759,
+    "hit_at_5": 0.896551724137931,
+    "mrr": 0.7519157088122606,
+    "served_context_recall": 0.896551724137931
   },
   "retrieval_detail": {
-    "n_answerable": 41,
+    "n_answerable": 174,
     "n_negatives": 24,
-    "n_questions": 65
+    "n_questions": 198
   }
 }

@@ -199,9 +199,13 @@ jobs:
 
           The gate on this PR will report rather than gate the judge metrics, because a baseline is only valid within one dataset version and this PR changes it. That is expected and correct.
 
-          1. Let this PR's \`RAG Evaluation\` run finish.
+          **This PR gets no CI of its own.** GitHub does not trigger workflows for a PR opened with \`GITHUB_TOKEN\`, which is what created this one — it is how Actions avoids recursive runs. Waiting for a check here will wait forever. Dispatch \`RAG Evaluation\` manually against this branch instead.
+
+          1. Run \`RAG Evaluation\` (workflow_dispatch) with ref \`${BRANCH}\`.
           2. Take the \`=== BASELINE-READY JSON ===\` block from its log and commit it as \`results/baseline.json\` **on this branch**, with a \`_provenance\` block naming the commit and run URL.
-          3. Re-run. The judge metrics should then gate against the new baseline.
+          3. Dispatch it again. The judge metrics should then gate against the new baseline rather than report.
+
+          If you are also correcting existing questions, do it **before** step 1: the golden set is only measured once here, and a later edit needs its own version bump and its own baseline.
 
           See \`govuk-rag-eval/results/README.md\` for the full promotion recipe.
           EOF

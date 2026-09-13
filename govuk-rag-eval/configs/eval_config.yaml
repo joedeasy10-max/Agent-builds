@@ -8,7 +8,7 @@
 
 dataset:
   path: data/golden/questions.jsonl
-  version: v2           # bump on every change to the golden set
+  version: v3           # bump on every change to the golden set
   # v2 is the first reviewed golden set (build step 3): 65 records — 41
   # answerable across 21 GOV.UK pages, 24 negatives. Drafted by Claude from the
   # pinned corpus, then accepted or rejected by a human; nothing reaches this
@@ -115,11 +115,21 @@ suites:
     # option that actually removes the noise rather than accommodating it.
     metrics:
       faithfulness:
-        # Was 0.85, which is a RAGAS-scale number and unreachable here. 0.60
-        # sits ~13% below the observed 0.688: a catastrophe backstop (the
-        # grader finding most answers unentailed by their contexts), not a
-        # quality target. Day-to-day regressions are caught by the band.
-        absolute_floor: 0.60
+        # 0.85 was a RAGAS-scale number, unreachable under the NLI grader; 0.60
+        # replaced it for v2, ~13% below the observed 0.688. v3 moved it again.
+        #
+        # v3 scores 0.630 on this metric — a broader, less cherry-picked set of
+        # 174 questions across 62 pages rather than 41 across 21, not a system
+        # that got worse. At 0.630 a floor of 0.60 leaves 4.8% of headroom,
+        # which is LESS than the 7% band above it: the floor would fire first
+        # and the band would be dead code. tests/test_compare.py asserts that
+        # ordering, and it would have failed on this baseline.
+        #
+        # 0.55 restores it — 12.7% headroom, comfortably outside the band. This
+        # is recalibration to a new dataset, the same move as the RAGAS -> NLI
+        # change, not a threshold lowered to make a build pass: the number comes
+        # from the measurement in results/baseline.json, not from a red run.
+        absolute_floor: 0.55
         max_relative_drop: 0.07
       answer_relevancy:
         # Was 0.80. Observed 0.839 left only 4.6% of headroom, less than the
