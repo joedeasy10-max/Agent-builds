@@ -725,3 +725,117 @@ def test_fatal_error_stops_the_batch_and_keeps_what_was_screened(tmp_path):
     assert "2 of 5" in str(exc.value), "must say how much was salvaged"
     screened = [c for c in bgs.load_queue(q) if c.evaluation]
     assert len(screened) == 2, "the two paid-for verdicts survive"
+
+
+# --- applying a human's review decisions --------------------------------
+# The screener's verdict is advisory. This is where a person overrules it, and
+# the decisions arrive as a version-controlled file because the queue itself is
+# a CI artefact that nobody can review in a diff.
+
+
+def _dcand(cid, status="pending", q=None, gt="An answer."):
+    return bgs.Candidate(
+        candidate_id=cid, status=status,
+        question=q or f"What does {cid} ask?",
+        ground_truth=gt, source_ids=("gov-uk/p#chunk-0",),
+        difficulty="single_hop", source_excerpt="excerpt",
+    )
+
+
+def test_a_decision_sets_status_and_can_rewrite_the_question():
+    cands = [_dcand("cand_0001"), _dcand("cand_0002")]
+    updated, report = bgs.apply_decisions(cands, [
+        {"candidate_id": "cand_0001", "decision": "approve", "question": "A cleaner question?"},
+        {"candidate_id": "cand_0002", "decision": "reject"},
+    ])
+    assert updated[0].status == "approved"
+    assert updated[0].question == "A cleaner question?"
+    assert updated[1].status == "rejected"
+    assert any("rewrote question" in line for line in report)
+
+
+def test_a_decision_can_rewrite_the_ground_truth():
+    updated, _ = bgs.apply_decisions([_dcand("cand_0001")], [
+        {"candidate_id": "cand_0001", "decision": "approve", "ground_truth": "The real answer."},
+    ])
+    assert updated[0].ground_truth == "The real answer."
+    assert updated[0].question == "What does cand_0001 ask?"
+
+
+def test_a_candidate_with_no_decision_is_left_exactly_as_it_was():
+    """The 112 the screener auto-approved must pass through untouched."""
+    cands = [_dcand("cand_0001", status="approved"), _dcand("cand_0002")]
+    updated, report = bgs.apply_decisions(cands, [])
+    assert updated == cands
+    assert report == []
+
+
+def test_an_id_that_matches_nothing_is_an_error_not_a_no_op():
+    """The dangerous failure: a typo silently promotes the screener's verdict
+    while the log claims the human's was applied."""
+    with pytest.raises(bgs.DecisionError) as e:
+        bgs.apply_decisions([_dcand("cand_0001")], [
+            {"candidate_id": "cand_9999", "decision": "reject"},
+        ])
+    assert "cand_9999" in str(e.value)
+
+
+def test_an_unknown_verdict_is_rejected():
+    with pytest.raises(bgs.DecisionError) as e:
+        bgs.apply_decisions([_dcand("cand_0001")], [
+            {"candidate_id": "cand_0001", "decision": "maybe"},
+        ])
+    assert "maybe" in str(e.value)
+
+
+def test_a_blank_rewrite_is_rejected():
+    with pytest.raises(bgs.DecisionError):
+        bgs.apply_decisions([_dcand("cand_0001")], [
+            {"candidate_id": "cand_0001", "decision": "approve", "question": "   "},
+        ])
+
+
+def test_deciding_the_same_candidate_twice_is_rejected():
+    with pytest.raises(bgs.DecisionError):
+        bgs.apply_decisions([_dcand("cand_0001")], [
+            {"candidate_id": "cand_0001", "decision": "approve"},
+            {"candidate_id": "cand_0001", "decision": "reject"},
+        ])
+
+
+def test_a_rejected_candidate_does_not_reach_the_golden_set():
+    """End to end: decide, then promote, and check the reject really stayed out."""
+    cands = [_dcand("cand_0001"), _dcand("cand_0002")]
+    updated, _ = bgs.apply_decisions(cands, [
+        {"candidate_id": "cand_0001", "decision": "approve", "question": "Kept question?"},
+        {"candidate_id": "cand_0002", "decision": "reject"},
+    ])
+    new, _skipped = bgs.promote(updated, [], "v3")
+    assert [r["question"] for r in new] == ["Kept question?"]
+    assert all(r["added_in"] == "v3" for r in new)
+
+
+def test_load_decisions_rejects_a_row_with_no_candidate_id(tmp_path):
+    f = tmp_path / "d.jsonl"
+    f.write_text('{"decision": "approve"}\n')
+    with pytest.raises(bgs.DecisionError):
+        bgs.load_decisions(f)
+
+
+def test_load_decisions_skips_blank_lines(tmp_path):
+    f = tmp_path / "d.jsonl"
+    f.write_text('{"candidate_id":"c1","decision":"approve"}\n\n\n')
+    assert len(bgs.load_decisions(f)) == 1
+
+
+def test_the_committed_v3_decisions_apply_cleanly_to_their_own_ids():
+    """The real file. Guards against it drifting out of shape."""
+    path = ROOT / "data" / "golden" / "review_decisions.v3.jsonl"
+    decisions = bgs.load_decisions(path)
+    assert len(decisions) == 22
+    assert sum(1 for d in decisions if d["decision"] == "approve") == 21
+    assert sum(1 for d in decisions if d["decision"] == "reject") == 1
+    cands = [_dcand(d["candidate_id"]) for d in decisions]
+    updated, report = bgs.apply_decisions(cands, decisions)
+    assert len(report) == 22
+    assert sum(1 for c in updated if c.status == "approved") == 21

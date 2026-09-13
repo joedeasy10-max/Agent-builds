@@ -22,6 +22,10 @@ on:
         description: "New dataset version (e.g. v3). Must not already exist in the golden set."
         required: true
         default: "v3"
+      decisions:
+        description: "Human review decisions to apply first (repo path). Blank = promote the screener's verdicts as they stand."
+        required: false
+        default: "data/golden/review_decisions.v3.jsonl"
       dry_run:
         description: "Show what would be promoted and change nothing"
         required: true
@@ -97,20 +101,24 @@ jobs:
         if: inputs.dry_run
         env:
           VERSION: ${{ inputs.version }}
+          DECISIONS: ${{ inputs.decisions }}
         run: |
           python scripts/build_golden_set.py promote \
             --queue data/golden/review_queue.jsonl \
             --version "$VERSION" \
+            ${DECISIONS:+--decisions "$DECISIONS"} \
             --dry-run
 
       - name: Promote
         if: ${{ !inputs.dry_run }}
         env:
           VERSION: ${{ inputs.version }}
+          DECISIONS: ${{ inputs.decisions }}
         run: |
           python scripts/build_golden_set.py promote \
             --queue data/golden/review_queue.jsonl \
-            --version "$VERSION"
+            --version "$VERSION" \
+            ${DECISIONS:+--decisions "$DECISIONS"}
 
       # The version bump is part of the same change, not a follow-up. promote
       # only PRINTS a reminder to do it, and a printed reminder is not a

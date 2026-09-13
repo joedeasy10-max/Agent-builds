@@ -40,6 +40,7 @@ import json
 import math
 import re
 import sys
+from collections import Counter
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
@@ -49,6 +50,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.offline_screen import OfflineScreener  # noqa: E402
 from src.candidate_review import (  # noqa: E402
+    STATUS_FOR_DECISION,
     FatalEvaluatorError,
     apply_decision,
     evaluate_one,
@@ -211,6 +213,91 @@ def _next_id_number(existing_ids: list[str]) -> int:
         if m:
             highest = max(highest, int(m.group(1)))
     return highest + 1
+
+
+class DecisionError(Exception):
+    """A decisions file that cannot be applied as written."""
+
+
+def load_decisions(path: str | Path) -> list[dict]:
+    """Read a human-review decisions file (JSONL)."""
+    rows: list[dict] = []
+    for n, line in enumerate(Path(path).read_text(encoding="utf-8").splitlines(), start=1):
+        if not line.strip():
+            continue
+        try:
+            rec = json.loads(line)
+        except json.JSONDecodeError as exc:
+            raise DecisionError(f"{path}:{n}: not valid JSON — {exc}") from exc
+        if not isinstance(rec, dict) or not rec.get("candidate_id"):
+            raise DecisionError(f"{path}:{n}: every row needs a candidate_id")
+        rows.append(rec)
+    return rows
+
+
+def apply_decisions(
+    candidates: list[Candidate], decisions: list[dict]
+) -> tuple[list[Candidate], list[str]]:
+    """Apply a human's review decisions to a screened queue.
+
+    The screener's verdict is advisory; this is where a person overrules it, so
+    it is deliberately strict. An id that matches nothing is an ERROR, not a
+    no-op: a typo that silently changes nothing would promote the screener's
+    verdict while the log said the human's was applied, and nobody would see it
+    until the wrong question was already in the dataset.
+
+    Returns the updated candidates and a line-per-change report.
+    """
+    by_id = {c.candidate_id: c for c in candidates}
+    unknown = [d["candidate_id"] for d in decisions if d["candidate_id"] not in by_id]
+    if unknown:
+        raise DecisionError(
+            f"{len(unknown)} decision(s) name candidates that are not in this queue: "
+            + ", ".join(sorted(unknown)[:8])
+            + " — wrong queue, or the ids have drifted."
+        )
+
+    # Up front: iterating candidates below visits each id once, so a second row
+    # for the same candidate would simply never be looked at — silently ignored
+    # rather than rejected, which is the wrong answer for a file two people
+    # might have edited.
+    counts = Counter(d["candidate_id"] for d in decisions)
+    repeated = sorted(cid for cid, n in counts.items() if n > 1)
+    if repeated:
+        raise DecisionError(
+            "decided more than once in the same file: " + ", ".join(repeated[:8])
+        )
+
+    report: list[str] = []
+    updated: list[Candidate] = []
+    for cand in candidates:
+        decision = next((d for d in decisions if d["candidate_id"] == cand.candidate_id), None)
+        if decision is None:
+            updated.append(cand)
+            continue
+        verdict = decision.get("decision")
+        if verdict not in STATUS_FOR_DECISION:
+            raise DecisionError(
+                f"{cand.candidate_id}: decision must be one of "
+                f"{sorted(STATUS_FOR_DECISION)}, got {verdict!r}"
+            )
+        changes = {"status": STATUS_FOR_DECISION[verdict]}
+        for field in ("question", "ground_truth"):
+            if field not in decision:
+                continue
+            value = str(decision[field]).strip()
+            if not value:
+                raise DecisionError(f"{cand.candidate_id}: {field} cannot be blank")
+            changes[field] = value
+
+        new_cand = replace(cand, **changes)
+        updated.append(new_cand)
+        edits = [f for f in ("question", "ground_truth") if f in changes]
+        report.append(
+            f"  {cand.candidate_id}: {cand.status} -> {new_cand.status}"
+            + (f" (rewrote {', '.join(edits)})" if edits else "")
+        )
+    return updated, report
 
 
 def promote(
@@ -883,6 +970,22 @@ def _cmd_promote(args) -> int:
     if not candidates:
         raise SystemExit(f"No review queue at {args.queue} — nothing to promote.")
 
+    # A human's review overrules the screener, and it arrives as a file rather
+    # than as edits to the queue: the queue is a CI artefact, so the decisions
+    # are the only part of this that is version-controlled and reviewable.
+    if args.decisions:
+        try:
+            decisions = load_decisions(args.decisions)
+            candidates, report = apply_decisions(candidates, decisions)
+        except DecisionError as exc:
+            raise SystemExit(f"Cannot apply {args.decisions}: {exc}") from exc
+        print(f"Applied {len(decisions)} human decision(s) from {args.decisions}:")
+        for line in report:
+            print(line)
+        print()
+        if not args.dry_run:
+            write_queue(args.queue, candidates)
+
     golden_path = Path(args.golden)
     existing_rows: list[dict] = []
     if golden_path.exists():
@@ -1003,6 +1106,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--queue", type=Path, default=DEFAULT_QUEUE)
     p.add_argument("--golden", type=Path, default=DEFAULT_GOLDEN)
     p.add_argument("--version", type=str, required=True, help="e.g. v2")
+    p.add_argument(
+        "--decisions",
+        type=Path,
+        default=None,
+        help="JSONL of human review decisions to apply before promoting "
+        "({candidate_id, decision: approve|reject|review, question?, ground_truth?})",
+    )
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=_cmd_promote)
 

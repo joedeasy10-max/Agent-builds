@@ -13,6 +13,7 @@ from src.offline_screen import (
     content_tokens,
     overlap,
     reads_as_question,
+    restates_question,
     unsupported_figures,
 )
 
@@ -228,3 +229,73 @@ def test_an_auxiliary_mid_sentence_is_not_enough():
 
 def test_a_question_without_its_punctuation_still_counts():
     assert reads_as_question("Is the child and family ASYE programme mandatory")
+
+
+# --- "the ground truth restates the question" ---------------------------
+# The rule was one direction of a directional measure:
+# overlap(ground_truth, question) > 0.95 — the share of the ANSWER's words that
+# appear in the question. It fires on any short correct answer phrased in the
+# question's own vocabulary, and it did, on two real candidates a human then
+# confirmed were right. Both strings below are those candidates.
+
+
+REAL_ANSWERS_THAT_REUSE_THE_QUESTIONS_WORDS = [
+    (
+        "If an employer has already paid some of an employee's job expenses, "
+        "on what amount can the employee claim tax relief?",
+        "You can only claim tax relief on the amount your employer has not paid.",
+    ),
+    (
+        "What is the name of the fund in Scotland aimed at newly self-employed "
+        "people facing hardship due to COVID-19?",
+        "Newly Self-Employed Hardship Fund",
+    ),
+]
+
+
+@pytest.mark.parametrize("question,ground_truth", REAL_ANSWERS_THAT_REUSE_THE_QUESTIONS_WORDS)
+def test_a_concise_answer_in_the_questions_own_words_is_not_a_restatement(question, ground_truth):
+    assert overlap(ground_truth, question) > 0.95, "precondition: the old rule fired here"
+    assert not restates_question(ground_truth, question)
+
+
+@pytest.mark.parametrize(
+    "question,ground_truth",
+    [
+        (
+            "What are the three types of support you can apply for through Access to Work?",
+            "The three types of support you can apply for through Access to Work.",
+        ),
+        (
+            "By what date must a share fisher register for Self Assessment?",
+            "The date a share fisher must register for Self Assessment.",
+        ),
+    ],
+)
+def test_a_real_restatement_is_still_caught(question, ground_truth):
+    assert restates_question(ground_truth, question)
+
+
+def test_an_ordinary_answer_sharing_no_words_is_not_a_restatement():
+    assert not restates_question(
+        "By 5 October in the business's second tax year.",
+        "By what date must a share fisher register for Self Assessment?",
+    )
+
+
+def test_both_directions_are_required():
+    """The whole fix. Either direction alone cannot separate the two cases.
+
+    Uses the real candidate verbatim: an abbreviated paraphrase drops "hardship"
+    from the question, which changes the forward overlap and quietly stops the
+    test exercising the case it is named for.
+    """
+    q, gt = REAL_ANSWERS_THAT_REUSE_THE_QUESTIONS_WORDS[1]
+    assert overlap(gt, q) > 0.95          # the answer adds no new words
+    assert overlap(q, gt) < 0.80          # but it covers only part of the question
+    assert not restates_question(gt, q)
+
+
+def test_empty_text_is_not_a_restatement():
+    assert not restates_question("", "What is the rate?")
+    assert not restates_question("An answer.", "")
