@@ -1,11 +1,60 @@
 {
   "_provenance": {
-    "measured_on": "06c1b87a249cf177e6b45a3dc638e91023d15303",
-    "source_run": "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34785573211",
-    "note": "First baseline on golden set v3: 198 records, 174 answerable across 62 GOV.UK pages, 24 negatives. Judge = the local NLI grader. NOT comparable with the v2 baseline it replaces — a different and much broader question set, not a changed system. Retrieval held up on it (hit@5 0.902 -> 0.897 while the answerable count went 41 -> 174, and mrr rose 0.715 -> 0.752); faithfulness fell 0.689 -> 0.630, which is what a wider, less cherry-picked set costs, not a regression.",
     "cross_run_spread": {
-      "note": "CARRIED FORWARD FROM v2 AND NOT YET RE-MEASURED ON v3. The sd values below come from six whole runs on the v2 set (see git history of this file); they are what the bands in eval_config.yaml are calibrated against. Generation noise is more a property of the generator than of the question set, so they are the best available estimate — but that is a prior, not a measurement, and it is the reason this block says so rather than presenting v2 numbers as v3 ones. Re-measure as v3 runs accumulate; the bands are unchanged in the meantime.",
+      "answer_correctness": {
+        "mean": 0.7869,
+        "sd": 0.0082,
+        "sd_over_mean": 0.0104,
+        "values": [
+          0.7802,
+          0.781,
+          0.782,
+          0.7873,
+          0.789,
+          0.802
+        ]
+      },
+      "answer_relevancy": {
+        "mean": 0.8427,
+        "sd": 0.0036,
+        "sd_over_mean": 0.0043,
+        "values": [
+          0.839,
+          0.8391,
+          0.842,
+          0.843,
+          0.8484,
+          0.845
+        ]
+      },
+      "context_precision": {
+        "mean": 0.8091,
+        "sd": 0.0002,
+        "sd_over_mean": 0.0002,
+        "values": [
+          0.809,
+          0.809,
+          0.809,
+          0.8093,
+          0.8093,
+          0.809
+        ]
+      },
+      "faithfulness": {
+        "mean": 0.6923,
+        "sd": 0.0132,
+        "sd_over_mean": 0.0191,
+        "values": [
+          0.676,
+          0.685,
+          0.6877,
+          0.6889,
+          0.704,
+          0.712
+        ]
+      },
       "measured_on_dataset": "v2",
+      "note": "CARRIED FORWARD FROM v2 AND NOT YET RE-MEASURED ON v3. The sd values below come from six whole runs on the v2 set (see git history of this file); they are what the bands in eval_config.yaml are calibrated against. Generation noise is more a property of the generator than of the question set, so they are the best available estimate \u2014 but that is a prior, not a measurement, and it is the reason this block says so rather than presenting v2 numbers as v3 ones. Re-measure as v3 runs accumulate; the bands are unchanged in the meantime.",
       "runs": [
         "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34618486278",
         "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34619048854",
@@ -14,11 +63,33 @@
         "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34620721195",
         "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34621223251"
       ],
-      "faithfulness": {"values": [0.676, 0.685, 0.6877, 0.6889, 0.704, 0.712], "mean": 0.6923, "sd": 0.0132, "sd_over_mean": 0.0191},
-      "answer_relevancy": {"values": [0.839, 0.8391, 0.842, 0.843, 0.8484, 0.845], "mean": 0.8427, "sd": 0.0036, "sd_over_mean": 0.0043},
-      "context_precision": {"values": [0.809, 0.809, 0.809, 0.8093, 0.8093, 0.809], "mean": 0.8091, "sd": 0.0002, "sd_over_mean": 0.0002},
-      "answer_correctness": {"values": [0.7802, 0.781, 0.782, 0.7873, 0.789, 0.802], "mean": 0.7869, "sd": 0.0082, "sd_over_mean": 0.0104}
-    }
+      "v3_observations": {
+        "answer_correctness": [
+          0.7987,
+          0.791
+        ],
+        "answer_relevancy": [
+          0.8296,
+          0.837
+        ],
+        "context_precision": [
+          0.811,
+          0.811
+        ],
+        "faithfulness": [
+          0.6301,
+          0.625
+        ],
+        "note": "Two whole runs on v3 so far, both on this branch's content. Not yet enough to re-derive sd (the v2 block above is still what the bands are calibrated against), but recorded so the v3 series starts accumulating rather than being re-discovered. Consistent with the carried-forward v2 noise: faithfulness moved 0.8% between these two, against a 7% band.",
+        "runs": [
+          "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34785573211",
+          "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34786110019"
+        ]
+      }
+    },
+    "measured_on": "06c1b87a249cf177e6b45a3dc638e91023d15303",
+    "note": "First baseline on golden set v3: 198 records, 174 answerable across 62 GOV.UK pages, 24 negatives. Judge = the local NLI grader. NOT comparable with the v2 baseline it replaces \u2014 a different and much broader question set, not a changed system. Retrieval held up on it (hit@5 0.902 -> 0.897 while the answerable count went 41 -> 174, and mrr rose 0.715 -> 0.752); faithfulness fell 0.689 -> 0.630, which is what a wider, less cherry-picked set costs, not a regression.",
+    "source_run": "https://github.com/joedeasy10-max/Agent-builds/actions/runs/34785573211"
   },
   "dataset_version": "v3",
   "judge": {
@@ -31,10 +102,34 @@
   "judge_n_judged": 174,
   "judge_runs": 1,
   "judge_spread": {
-    "answer_correctness": {"max": 0.798728898199682, "min": 0.798728898199682, "runs": [0.798728898199682]},
-    "answer_relevancy": {"max": 0.8296274422914133, "min": 0.8296274422914133, "runs": [0.8296274422914133]},
-    "context_precision": {"max": 0.811028038448251, "min": 0.811028038448251, "runs": [0.811028038448251]},
-    "faithfulness": {"max": 0.6300685248043525, "min": 0.6300685248043525, "runs": [0.6300685248043525]}
+    "answer_correctness": {
+      "max": 0.798728898199682,
+      "min": 0.798728898199682,
+      "runs": [
+        0.798728898199682
+      ]
+    },
+    "answer_relevancy": {
+      "max": 0.8296274422914133,
+      "min": 0.8296274422914133,
+      "runs": [
+        0.8296274422914133
+      ]
+    },
+    "context_precision": {
+      "max": 0.811028038448251,
+      "min": 0.811028038448251,
+      "runs": [
+        0.811028038448251
+      ]
+    },
+    "faithfulness": {
+      "max": 0.6300685248043525,
+      "min": 0.6300685248043525,
+      "runs": [
+        0.6300685248043525
+      ]
+    }
   },
   "retrieval": {
     "context_recall_at_10": 0.9137931034482759,

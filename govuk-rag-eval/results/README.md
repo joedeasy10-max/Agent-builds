@@ -87,9 +87,29 @@ Three things it does that are easy to get wrong by hand:
   would otherwise truncate every future judge run.
 
 It deliberately does **not** update `results/baseline.json`. A baseline is only
-valid within one dataset version, so the PR it opens is expected to show the
-judge metrics reporting rather than gating until a fresh baseline is measured on
-that branch and committed to it. The PR body spells out those steps.
+valid within one dataset version, so a fresh one has to be measured on that
+branch and committed to it. The PR body spells out the steps.
+
+**The promotion PR can never show the judge metrics gating**, however many times
+it is re-run, and this is worth knowing before you spend a run trying. The gate
+fetches its baseline from the BASE branch:
+
+```
+git show origin/${{ github.base_ref || 'main' }}:govuk-rag-eval/results/baseline.json
+```
+
+so while the PR is open it is always compared against main's OLD baseline and
+always reports. Committing the new baseline on the branch does not change that.
+Gating begins on the first run after merge, when main carries the new dataset
+and the new baseline together — so the sequence is measure, commit, merge, then
+dispatch on `main`.
+
+**Check the floors when the dataset changes.** A broader question set scores
+lower, and `absolute_floor` is an absolute number: v3 took faithfulness from
+0.689 to 0.630, which left the 0.60 floor only 4.8% under the baseline — inside
+its own 7% band, so the floor would have fired first and the band would have
+been dead code. `tests/test_compare.py` asserts that ordering, so pytest catches
+it, but expect to move a floor whenever the set grows.
 
 ## Changing the grader
 

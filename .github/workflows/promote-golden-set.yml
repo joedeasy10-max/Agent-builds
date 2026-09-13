@@ -203,7 +203,10 @@ jobs:
 
           1. Run \`RAG Evaluation\` (workflow_dispatch) with ref \`${BRANCH}\`.
           2. Take the \`=== BASELINE-READY JSON ===\` block from its log and commit it as \`results/baseline.json\` **on this branch**, with a \`_provenance\` block naming the commit and run URL.
-          3. Dispatch it again. The judge metrics should then gate against the new baseline rather than report.
+          3. Check the floors in \`configs/eval_config.yaml\` still sit OUTSIDE their bands at the new numbers. A broader dataset scores lower, and a floor that ends up nearer the baseline than its own \`max_relative_drop\` fires first and makes the band dead code. \`tests/test_compare.py\` asserts this, so pytest tells you.
+          4. Merge. **Then** dispatch \`RAG Evaluation\` on \`main\` — that is the first run that can gate.
+
+          Step 4 is not optional ceremony. This PR can never show the judge metrics gating, however many times it is re-run: the gate fetches its baseline from the BASE branch (\`git show origin/main:.../baseline.json\`), so while this is open it is always compared against main's old baseline and will always say "reporting only". Gating starts once main carries the new dataset and the new baseline together.
 
           If you are also correcting existing questions, do it **before** step 1: the golden set is only measured once here, and a later edit needs its own version bump and its own baseline.
 
