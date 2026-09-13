@@ -129,6 +129,10 @@ suites:
         # is recalibration to a new dataset, the same move as the RAGAS -> NLI
         # change, not a threshold lowered to make a build pass: the number comes
         # from the measurement in results/baseline.json, not from a red run.
+        #
+        # It earned itself within the hour. The fourth v3 run came in at 0.610
+        # on an unregressed system — 1.6% above the old 0.60 floor. Keeping 0.60
+        # would have put a routine run within a whisker of a spurious red.
         absolute_floor: 0.55
         max_relative_drop: 0.07
       answer_relevancy:
