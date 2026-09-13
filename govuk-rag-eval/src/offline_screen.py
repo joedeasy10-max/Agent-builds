@@ -159,6 +159,48 @@ def overlap(a: str, b: str) -> float:
     return len(ta & tb) / len(ta)
 
 
+#: How much of the ANSWER may already appear in the question before it looks
+#: like an echo, and how much of the QUESTION the answer must cover before that
+#: echo is a restatement rather than a concise answer. Both must be met — see
+#: restates_question.
+ECHO_MIN = 0.95
+COVERAGE_MIN = 0.80
+
+
+def restates_question(ground_truth: str, question: str) -> bool:
+    """Is this "answer" just the question said back?
+
+    `overlap` is DIRECTIONAL, and the original rule used one direction only:
+    `overlap(ground_truth, question) > 0.95`, the share of the answer's words
+    that also appear in the question. That fires on any short, correct answer
+    phrased in the question's own vocabulary, and it did — twice, on real
+    candidates a human then confirmed were right:
+
+        Q  What is the name of the fund in Scotland aimed at newly
+           self-employed people facing hardship due to COVID-19?
+        GT Newly Self-Employed Hardship Fund              <- correct; scored 1.00
+
+    Every word of that answer appears in the question, because the question
+    names the thing it is asking about. Nothing is wrong with it.
+
+    What actually separates the two is the OTHER direction. A real restatement
+    covers the whole question — it is the question with the interrogative filed
+    off, adding nothing. A concise answer covers only the part of the question
+    it names, and leaves the rest behind:
+
+        restatement  overlap(gt, q) ~1.0   overlap(q, gt) ~1.0
+        real answer  overlap(gt, q) ~1.0   overlap(q, gt)  0.42
+
+    So both directions have to be high. One of them never could tell these apart.
+    """
+    if not content_tokens(ground_truth) or not content_tokens(question):
+        return False
+    return (
+        overlap(ground_truth, question) > ECHO_MIN
+        and overlap(question, ground_truth) > COVERAGE_MIN
+    )
+
+
 def _normalise_figure(fig: str) -> str:
     """Compare figures by value, not formatting: '£1,000' == '£1000' == '1000'."""
     return re.sub(r"[£,\s]", "", fig).lower().rstrip(".")
@@ -258,7 +300,7 @@ class OfflineScreener:
             criteria["ground_truth_accuracy"] = "fail"
             notes.append("the ground truth is empty or too short to be an answer")
             margins.append(0.0)
-        elif overlap(ground_truth, question) > 0.95 and len(content_tokens(ground_truth)) > 2:
+        elif restates_question(ground_truth, question) and len(content_tokens(ground_truth)) > 2:
             criteria["ground_truth_accuracy"] = "fail"
             notes.append("the ground truth restates the question instead of answering it")
             margins.append(0.0)
