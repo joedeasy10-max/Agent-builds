@@ -48,3 +48,40 @@ def test_config():
             "retrieval": {"retriever": "dense", "top_k": 3, "normalize": True},
         }
     )
+
+
+@pytest.fixture
+def fixture_thresholds(tmp_path):
+    """The real floors and tolerances, re-stamped with the FIXTURE golden set's
+    dataset version.
+
+    Several gate tests deliberately use `tests/fixtures/golden_fixture.jsonl`
+    rather than the committed golden set, so they exercise the gate rather than
+    the dataset. They were still handing compare.py the real
+    `configs/eval_config.yaml`, version field included — and compare.py refuses
+    to compare across dataset versions. The moment the real set was promoted to
+    v3, the fixture's v2 results stopped comparing: exit 2, no report written,
+    and four tests failing for a reason unrelated to what they test.
+
+    This keeps the part those tests care about (the real floors and tolerances)
+    and overrides the one field they do not (the version). Third time a test has
+    broken on a dataset bump for this reason, hence one shared fixture rather
+    than a third private copy.
+    """
+    import json
+
+    import yaml
+
+    root = Path(__file__).resolve().parent.parent
+    config = yaml.safe_load((root / "configs" / "eval_config.yaml").read_text())
+    golden = root / "tests" / "fixtures" / "golden_fixture.jsonl"
+    versions = {
+        json.loads(line)["added_in"]
+        for line in golden.read_text().splitlines()
+        if line.strip()
+    }
+    assert len(versions) == 1, f"fixture golden set spans versions {versions}"
+    config["dataset"]["version"] = versions.pop()
+    path = tmp_path / "fixture_thresholds.yaml"
+    path.write_text(yaml.safe_dump(config))
+    return path

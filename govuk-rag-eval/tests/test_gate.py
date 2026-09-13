@@ -7,8 +7,12 @@ embedder, no network, no LLM), over the committed starter golden set. It proves:
   * a regressed run below an absolute floor fails the gate (exit 1);
   * with no baseline, the gate reports only (exit 0).
 
-It uses the REAL committed configs/eval_config.yaml as the thresholds, so the
-gate's wiring — not just the metric math — is what's under test.
+It uses the REAL committed configs/eval_config.yaml for floors and tolerances,
+so the gate's wiring — not just the metric math — is what's under test. The one
+field it overrides is dataset.version, re-stamped to the fixture golden set's
+(see the `fixture_thresholds` fixture): compare.py refuses to compare across
+dataset versions, so without that these tests break on every dataset bump for a
+reason unrelated to the gate.
 """
 
 import importlib.util
@@ -59,11 +63,11 @@ def _evaluate_to(tmp_path, cfg_path, index_dir, out):
     ])
 
 
-def _compare(tmp_path, current, baseline):
+def _compare(tmp_path, current, baseline, thresholds):
     md = tmp_path / "report.md"
     argv = [
         "compare.py", "--current", str(current), "--baseline", str(baseline),
-        "--thresholds", str(EVAL_CONFIG), "--markdown", str(md),
+        "--thresholds", str(thresholds), "--markdown", str(md),
     ]
     old = sys.argv
     sys.argv = argv
@@ -82,19 +86,19 @@ def _setup(tmp_path, fixture_pages, test_config):
     return idx, cfg_path
 
 
-def test_gate_passes_when_run_matches_baseline(tmp_path, fixture_pages, test_config):
+def test_gate_passes_when_run_matches_baseline(tmp_path, fixture_pages, test_config, fixture_thresholds):
     idx, cfg_path = _setup(tmp_path, fixture_pages, test_config)
     baseline = tmp_path / "baseline.json"
     current = tmp_path / "current.json"
     _evaluate_to(tmp_path, cfg_path, idx, baseline)
     _evaluate_to(tmp_path, cfg_path, idx, current)  # deterministic -> identical
 
-    code, report = _compare(tmp_path, current, baseline)
+    code, report = _compare(tmp_path, current, baseline, fixture_thresholds)
     assert code == 0, report
     assert "Gate passed" in report
 
 
-def test_gate_fails_on_regression_below_floor(tmp_path, fixture_pages, test_config):
+def test_gate_fails_on_regression_below_floor(tmp_path, fixture_pages, test_config, fixture_thresholds):
     idx, cfg_path = _setup(tmp_path, fixture_pages, test_config)
     baseline = tmp_path / "baseline.json"
     current = tmp_path / "current.json"
@@ -106,20 +110,20 @@ def test_gate_fails_on_regression_below_floor(tmp_path, fixture_pages, test_conf
     data["retrieval"]["hit_at_5"] = 0.10
     current.write_text(json.dumps(data))
 
-    code, report = _compare(tmp_path, current, baseline)
+    code, report = _compare(tmp_path, current, baseline, fixture_thresholds)
     assert code == 1, report
     assert "below absolute floor" in report
     assert "Gate failed" in report
 
 
-def test_gate_reports_only_without_baseline(tmp_path, fixture_pages, test_config):
+def test_gate_reports_only_without_baseline(tmp_path, fixture_pages, test_config, fixture_thresholds):
     idx, cfg_path = _setup(tmp_path, fixture_pages, test_config)
     current = tmp_path / "current.json"
     empty = tmp_path / "baseline.json"
     empty.write_text("{}")
     _evaluate_to(tmp_path, cfg_path, idx, current)
 
-    code, report = _compare(tmp_path, current, empty)
+    code, report = _compare(tmp_path, current, empty, fixture_thresholds)
     assert code == 0, report
     assert "No baseline" in report
 
