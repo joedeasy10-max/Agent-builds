@@ -19,7 +19,7 @@ corpus:
 
 chunking:
   splitter: recursive        # recursive (langchain-text-splitters) | simple
-  chunk_size: 512            # <-- regression demo target: 512 -> 2000
+  chunk_size: 2000           # <-- REGRESSION DEMO: 512 -> 2000
   chunk_overlap: 64
   # Only used by the recursive splitter. Ordered coarse -> fine.
   separators: ["\n\n", "\n", ". ", " ", ""]
