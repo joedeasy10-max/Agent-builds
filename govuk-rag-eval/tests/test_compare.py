@@ -33,7 +33,7 @@ def _load_compare():
 compare = _load_compare()
 
 
-def _run(tmp_path, current: dict | None, baseline: dict | None) -> tuple[int, str]:
+def _run(tmp_path, current: dict | None, baseline: dict | None, thresholds=None) -> tuple[int, str]:
     cur = tmp_path / "current.json"
     base = tmp_path / "baseline.json"
     md = tmp_path / "report.md"
@@ -43,7 +43,7 @@ def _run(tmp_path, current: dict | None, baseline: dict | None) -> tuple[int, st
         "compare.py",
         "--current", str(cur),
         "--baseline", str(base),
-        "--thresholds", str(THRESHOLDS),
+        "--thresholds", str(thresholds or THRESHOLDS),
         "--markdown", str(md),
     ]
     old = sys.argv
@@ -258,10 +258,25 @@ def test_the_committed_baseline_passes_its_own_gate(tmp_path):
     0.689 on the same unregressed system, so the first green run on main would
     have gone red on the floor alone. Anything that moves the baseline or the
     floors out of step with each other fails here instead of in CI.
+
+    It gates the baseline at ITS OWN dataset version, not the config's. Those
+    two legitimately differ for the length of a promotion: `promote` appends
+    records and bumps dataset.version in one commit, and the new baseline can
+    only be measured afterwards, on that branch. An earlier version of this test
+    used the config's version and so failed the moment v3 was promoted —
+    blocking the promotion over a state the promotion is documented to produce.
+    Version sync is not this test's job; test_golden.py polices that in both
+    directions.
     """
     baseline = json.loads((ROOT / "results" / "baseline.json").read_text())
     assert baseline.get("judge_backend"), "baseline must record its grader or the judge suite never gates"
-    code, report = _run(tmp_path, baseline, baseline)
+
+    config = yaml.safe_load(THRESHOLDS.read_text())
+    config["dataset"]["version"] = baseline["dataset_version"]
+    thresholds = tmp_path / "thresholds.yaml"
+    thresholds.write_text(yaml.safe_dump(config))
+
+    code, report = _run(tmp_path, baseline, baseline, thresholds=thresholds)
     assert "reporting only" not in report, report
     assert code == 0, report
 
