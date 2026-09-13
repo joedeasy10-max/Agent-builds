@@ -8,7 +8,7 @@
 
 dataset:
   path: data/golden/questions.jsonl
-  version: v2           # bump on every change to the golden set
+  version: v3           # bump on every change to the golden set
   # v2 is the first reviewed golden set (build step 3): 65 records — 41
   # answerable across 21 GOV.UK pages, 24 negatives. Drafted by Claude from the
   # pinned corpus, then accepted or rejected by a human; nothing reaches this
