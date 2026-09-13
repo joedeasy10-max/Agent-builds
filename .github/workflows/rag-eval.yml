@@ -19,9 +19,22 @@ on:
       - "govuk-rag-eval/data/golden/**"
       - "govuk-rag-eval/requirements*.lock"
       - ".github/workflows/rag-eval.yml"
-  schedule:
-    # Nightly full run, including the expensive LLM-judge metrics
-    - cron: "0 3 * * *"
+  # No schedule. The nightly run existed when judge metrics were expensive and
+  # therefore could not run on a PR: it was the only place they ran at all. The
+  # local NLI grader removed that constraint — judging is free and every PR
+  # touching the paths above now gets the full suite — so a nightly was paying
+  # ~$16/month (174 answerable x $0.003 generation, every night) to re-measure a
+  # commit nothing had changed.
+  #
+  # WHAT THIS GIVES UP, so it is a decision and not an oversight: with no
+  # schedule, a stretch with no PRs against these paths is a stretch where
+  # nothing proves the pipeline still runs. Dependency drift, a provider change
+  # or an expired key would surface at the next PR rather than the next morning.
+  # refresh-corpus.yml (Mondays) covers CORPUS drift but not pipeline health.
+  # If that matters, a weekly run is this block, uncommented, at a seventh of
+  # the cost:
+  #   schedule:
+  #     - cron: "0 3 * * 1"
   workflow_dispatch:
 
 concurrency:

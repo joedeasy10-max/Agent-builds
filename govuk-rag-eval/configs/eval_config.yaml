@@ -171,6 +171,8 @@ cost:
   #
   # 200 is not a licence to spend: at generation.provider anthropic ($0.003 per
   # question) a full 200-question judge run is $0.60, well inside the $4 cap
-  # that actually stops things. Note the nightly schedule pays that every night.
+  # that actually stops things. Nothing pays it on a timer any more: the nightly
+  # schedule was removed once judging became free, so the suite costs money only
+  # when a PR touches it or someone dispatches it.
   max_judge_questions_per_run: 200
   max_usd_per_run: 4.00
