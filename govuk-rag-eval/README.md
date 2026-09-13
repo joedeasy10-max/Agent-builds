@@ -32,9 +32,11 @@ real measured baseline, and three regression PRs are sitting red against it.
 The workflow is **guarded on a provider key** (`OPENAI_API_KEY` *or*
 `ANTHROPIC_API_KEY` — they are interchangeable): without either, every real step
 skips and the job stays green, so it is never a red check on a fork that has not
-opted in. Judge metrics are extra-gated on `RUN_JUDGE`, which is true nightly, on
-manual dispatch, and on a PR labelled `full-eval` — retrieval alone runs on every
-PR, because it is deterministic and free.
+opted in. The LOCAL NLI judge runs on every PR, because it is free and
+deterministic — retrieval does too, for the same reason. `RUN_JUDGE` now gates
+only the paid RAGAS grader, which needs a `ragas-judge` label as well. There is
+no nightly schedule: judging stopped being expensive, so there was nothing left
+for a nightly to buy (see the note in `rag-eval.yml` for what that gives up).
 
 If this subproject is ever split into its own repo, move the root workflow to
 that repo's `.github/workflows/` and drop the `govuk-rag-eval/` path prefixes.
@@ -93,7 +95,8 @@ noise remains (3.41% on faithfulness), so the band is 7% rather than 8% — a
 smaller win than "deterministic grader" suggests, and worth stating plainly.
 What it does buy is that the grader contributes nothing, so a move is either a
 real change or the generator, never the scorer disagreeing with itself. Grading also went from $3.69 a run to
-$0, which is why judge metrics now run on **every** PR instead of nightly.
+$0, which is why judge metrics now run on **every** PR instead of nightly — and
+why the nightly schedule was removed rather than kept alongside them.
 
 #### How the tolerances were calibrated, and what nearly went wrong
 
