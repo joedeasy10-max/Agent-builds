@@ -1,0 +1,79 @@
+name: Show chunks
+
+# Print the full text of corpus chunks by id.
+#
+# Exists because the source text a human reviewer sees is truncated — the review
+# page caps excerpts at ~300 characters — which is fine for checking phrasing and
+# useless for checking whether a ground_truth is actually supported. The full
+# text lives in the built index, and this job has one.
+#
+# It runs here rather than locally because neither route to the corpus is open
+# from every environment: artefact downloads redirect to blob.core.windows.net
+# and www.gov.uk is reachable from Actions but not from every network. Free: no
+# model is called, and the index comes from cache when the corpus has not moved.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ids:
+        description: "Comma-separated chunk ids (gov-uk/page#chunk-0), or a page path for all of its chunks"
+        required: true
+      chars:
+        description: "Truncate each chunk to N characters (0 = full text)"
+        required: false
+        default: "0"
+
+concurrency:
+  group: show-chunks
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: govuk-rag-eval
+
+jobs:
+  show:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.lock
+
+      # Same key as rag-eval.yml, so this usually restores the index that
+      # workflow already built rather than paying to rebuild it.
+      - name: Restore vector index
+        id: index-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: govuk-rag-eval/.index/
+          key: index-${{ hashFiles('govuk-rag-eval/configs/retrieval.yaml', 'govuk-rag-eval/data/corpus/manifest.json') }}
+
+      - name: Build index
+        if: steps.index-cache.outputs.cache-hit != 'true'
+        run: python -m src.ingest --config configs/retrieval.yaml --out .index/
+
+      - name: Save vector index
+        if: steps.index-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: govuk-rag-eval/.index/
+          key: index-${{ hashFiles('govuk-rag-eval/configs/retrieval.yaml', 'govuk-rag-eval/data/corpus/manifest.json') }}
+
+      # Inputs go through env, never interpolated into the command line: an
+      # Actions expression is expanded before the shell parses it, so a crafted
+      # input would otherwise become shell.
+      - name: Show
+        env:
+          IDS: ${{ inputs.ids }}
+          CHARS: ${{ inputs.chars }}
+        run: python scripts/show_chunks.py "$IDS" --index .index/ --chars "${CHARS:-0}"
