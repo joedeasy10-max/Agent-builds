@@ -1,5 +1,5 @@
 {
-  "count": 292,
+  "count": 291,
   "pages": [
     {
       "base_path": "/access-to-work",
@@ -45,8 +45,8 @@
     },
     {
       "base_path": "/capital-gains-tax",
-      "content_hash": "9b47fbbe1a4c8989",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "28fb2f37db8d5adc",
+      "fetched_at": "2026-09-14T11:43:50.660078+00:00",
       "title": "Capital Gains Tax: what you pay it on, rates and allowances",
       "url": "https://www.gov.uk/capital-gains-tax"
     },
@@ -140,6 +140,13 @@
       "fetched_at": "2026-09-09T16:55:51.858512+00:00",
       "title": "Financial help if you're disabled",
       "url": "https://www.gov.uk/financial-help-disabled"
+    },
+    {
+      "base_path": "/find-hmrc-contacts/agent-dedicated-line-self-assessment-or-paye-for-individuals",
+      "content_hash": "c0ae62863927aa41",
+      "fetched_at": "2026-09-14T11:43:50.660078+00:00",
+      "title": "Agent Dedicated Line: Self Assessment or PAYE for individuals",
+      "url": "https://www.gov.uk/find-hmrc-contacts/agent-dedicated-line-self-assessment-or-paye-for-individuals"
     },
     {
       "base_path": "/find-hmrc-contacts/income-tax-enquiries",
@@ -485,13 +492,6 @@
       "url": "https://www.gov.uk/guidance/authorise-an-agent-for-certain-taxes-through-your-business-tax-account"
     },
     {
-      "base_path": "/guidance/authorising-an-agent-to-deal-with-your-tax-affairs",
-      "content_hash": "a20838165f0a77da",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
-      "title": "Authorising an agent to deal with your tax affairs",
-      "url": "https://www.gov.uk/guidance/authorising-an-agent-to-deal-with-your-tax-affairs"
-    },
-    {
       "base_path": "/guidance/biological-principles-for-control-of-mpox-in-the-uk-4-nations-consensus-statement",
       "content_hash": "6a2abefe943fc527",
       "fetched_at": "2026-09-09T16:55:51.858512+00:00",
@@ -528,8 +528,8 @@
     },
     {
       "base_path": "/guidance/check-genuine-hmrc-contact-that-uses-more-than-one-communication-method",
-      "content_hash": "cdc016636a00aa0e",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "43ac215191da2e40",
+      "fetched_at": "2026-09-14T11:43:50.660078+00:00",
       "title": "Check genuine HMRC contact that uses more than one communication method",
       "url": "https://www.gov.uk/guidance/check-genuine-hmrc-contact-that-uses-more-than-one-communication-method"
     },
@@ -598,8 +598,8 @@
     },
     {
       "base_path": "/guidance/check-what-to-do-if-hmrc-has-signed-you-up-for-making-tax-digital-for-income-tax",
-      "content_hash": "b143de2c95c2e780",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "65db56b99dcdc348",
+      "fetched_at": "2026-09-14T11:43:50.660078+00:00",
       "title": "Check what to do if HMRC has signed you up for Making Tax Digital for Income Tax",
       "url": "https://www.gov.uk/guidance/check-what-to-do-if-hmrc-has-signed-you-up-for-making-tax-digital-for-income-tax"
     },
@@ -766,8 +766,8 @@
     },
     {
       "base_path": "/guidance/current-dwp-research-in-the-field-undertaken-by-external-organisations",
-      "content_hash": "2d9ce2763478e426",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "b7fd2c48f769e227",
+      "fetched_at": "2026-09-14T11:43:50.660078+00:00",
       "title": "Current DWP research being undertaken by external organisations",
       "url": "https://www.gov.uk/guidance/current-dwp-research-in-the-field-undertaken-by-external-organisations"
     },
@@ -849,6 +849,13 @@
       "url": "https://www.gov.uk/guidance/employment-related-securities-and-arrangements-480-chapter-23"
     },
     {
+      "base_path": "/guidance/employment-related-securities-bulletin-55-may-2024",
+      "content_hash": "3667dd5b6856129d",
+      "fetched_at": "2026-09-14T11:43:50.660078+00:00",
+      "title": "Employment Related Securities Bulletin 55 (May 2024)",
+      "url": "https://www.gov.uk/guidance/employment-related-securities-bulletin-55-may-2024"
+    },
+    {
       "base_path": "/guidance/employment-related-securities-bulletin-56-july-2024",
       "content_hash": "68051993df56a67b",
       "fetched_at": "2026-09-09T16:55:51.858512+00:00",
@@ -878,8 +885,8 @@
     },
     {
       "base_path": "/guidance/eu-settlement-scheme-uk-tax-and-benefits-records-automated-check",
-      "content_hash": "7e6c09ea33b58a9c",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "48d7949ed5ef265a",
+      "fetched_at": "2026-09-14T11:43:50.660078+00:00",
       "title": "EU Settlement Scheme: UK tax and benefits records automated check",
       "url": "https://www.gov.uk/guidance/eu-settlement-scheme-uk-tax-and-benefits-records-automated-check"
     },
@@ -1171,13 +1178,6 @@
       "url": "https://www.gov.uk/guidance/migrant-worker-evidence-for-student-finance-england"
     },
     {
-      "base_path": "/guidance/ministry-of-justice-witness-intermediary-scheme",
-      "content_hash": "460ec61fe44bad3e",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
-      "title": "Ministry of Justice Witness Intermediary Scheme",
-      "url": "https://www.gov.uk/guidance/ministry-of-justice-witness-intermediary-scheme"
-    },
-    {
       "base_path": "/guidance/monitoring-discharges-to-water-guidance-on-selecting-a-monitoring-approach",
       "content_hash": "caea05101689da3c",
       "fetched_at": "2026-09-09T16:55:51.858512+00:00",
@@ -1291,8 +1291,8 @@
     },
     {
       "base_path": "/guidance/preparing-a-local-plan-vision",
-      "content_hash": "4bd4bedf7ce02d34",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "67e4c131e63e0daf",
+      "fetched_at": "2026-09-14T11:43:50.660078+00:00",
       "title": "Preparing a local plan vision",
       "url": "https://www.gov.uk/guidance/preparing-a-local-plan-vision"
     },
@@ -1309,13 +1309,6 @@
       "fetched_at": "2026-09-09T16:55:51.858512+00:00",
       "title": "Register a trust",
       "url": "https://www.gov.uk/guidance/register-a-trust"
-    },
-    {
-      "base_path": "/guidance/register-for-self-assessment-if-you-are-not-self-employed",
-      "content_hash": "0df150037b23f02b",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
-      "title": "Register for Self Assessment if you are not self-employed",
-      "url": "https://www.gov.uk/guidance/register-for-self-assessment-if-you-are-not-self-employed"
     },
     {
       "base_path": "/guidance/register-for-the-economic-crime-levy",
@@ -1585,8 +1578,8 @@
     },
     {
       "base_path": "/guidance/work-out-your-qualifying-income-for-making-tax-digital-for-income-tax",
-      "content_hash": "83ecd0db670bd275",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "ff884131e9b3fb34",
+      "fetched_at": "2026-09-14T11:43:50.660078+00:00",
       "title": "Work out your qualifying income for Making Tax Digital for Income Tax",
       "url": "https://www.gov.uk/guidance/work-out-your-qualifying-income-for-making-tax-digital-for-income-tax"
     },
