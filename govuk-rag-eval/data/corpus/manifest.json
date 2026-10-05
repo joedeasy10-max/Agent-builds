@@ -1,5 +1,5 @@
 {
-  "count": 292,
+  "count": 291,
   "pages": [
     {
       "base_path": "/access-to-work",
@@ -10,8 +10,8 @@
     },
     {
       "base_path": "/apply-tax-free-interest-on-savings",
-      "content_hash": "c8e72d717fc01f29",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "6b59c182736df8bf",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Tax on savings interest",
       "url": "https://www.gov.uk/apply-tax-free-interest-on-savings"
     },
@@ -45,8 +45,8 @@
     },
     {
       "base_path": "/capital-gains-tax",
-      "content_hash": "9b47fbbe1a4c8989",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "6650eafa3577976e",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Capital Gains Tax: what you pay it on, rates and allowances",
       "url": "https://www.gov.uk/capital-gains-tax"
     },
@@ -73,10 +73,17 @@
     },
     {
       "base_path": "/child-benefit-tax-charge",
-      "content_hash": "d6b6432267deb4ad",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "f229902153c97cd4",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "High Income Child Benefit Charge",
       "url": "https://www.gov.uk/child-benefit-tax-charge"
+    },
+    {
+      "base_path": "/claim-tax-refund",
+      "content_hash": "595832b58620df82",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
+      "title": "Check how to claim a tax refund",
+      "url": "https://www.gov.uk/claim-tax-refund"
     },
     {
       "base_path": "/company-tax-returns",
@@ -129,8 +136,8 @@
     },
     {
       "base_path": "/expenses-if-youre-self-employed",
-      "content_hash": "b8070688ac73927e",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "40676c130c91910f",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Expenses if you're self-employed",
       "url": "https://www.gov.uk/expenses-if-youre-self-employed"
     },
@@ -140,6 +147,13 @@
       "fetched_at": "2026-09-09T16:55:51.858512+00:00",
       "title": "Financial help if you're disabled",
       "url": "https://www.gov.uk/financial-help-disabled"
+    },
+    {
+      "base_path": "/find-hmrc-contacts/agent-dedicated-line-self-assessment-or-paye-for-individuals",
+      "content_hash": "c0ae62863927aa41",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
+      "title": "Agent Dedicated Line: Self Assessment or PAYE for individuals",
+      "url": "https://www.gov.uk/find-hmrc-contacts/agent-dedicated-line-self-assessment-or-paye-for-individuals"
     },
     {
       "base_path": "/find-hmrc-contacts/income-tax-enquiries",
@@ -234,8 +248,8 @@
     },
     {
       "base_path": "/government/collections/migration-research-and-analysis",
-      "content_hash": "57a11b00c53174ac",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "05f07bb201d3b2e5",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Migration research and analysis",
       "url": "https://www.gov.uk/government/collections/migration-research-and-analysis"
     },
@@ -464,13 +478,6 @@
       "url": "https://www.gov.uk/guidance/apply-to-become-a-technical-excellence-college"
     },
     {
-      "base_path": "/guidance/applying-for-client-authorisation-using-hmrc-paper-forms",
-      "content_hash": "83a09f20aa9212af",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
-      "title": "Agent authorisation: apply using HMRC paper forms",
-      "url": "https://www.gov.uk/guidance/applying-for-client-authorisation-using-hmrc-paper-forms"
-    },
-    {
       "base_path": "/guidance/applying-to-register-as-a-companies-house-authorised-agent",
       "content_hash": "d472058d340f19b6",
       "fetched_at": "2026-09-09T16:55:51.858512+00:00",
@@ -528,8 +535,8 @@
     },
     {
       "base_path": "/guidance/check-genuine-hmrc-contact-that-uses-more-than-one-communication-method",
-      "content_hash": "cdc016636a00aa0e",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "0b677810edc98e47",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Check genuine HMRC contact that uses more than one communication method",
       "url": "https://www.gov.uk/guidance/check-genuine-hmrc-contact-that-uses-more-than-one-communication-method"
     },
@@ -542,8 +549,8 @@
     },
     {
       "base_path": "/guidance/check-if-a-letter-youve-received-from-hmrc-is-genuine",
-      "content_hash": "10e149d43716e72f",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "7944099923811f95",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Check if a letter you\u2019ve received from HMRC is genuine",
       "url": "https://www.gov.uk/guidance/check-if-a-letter-youve-received-from-hmrc-is-genuine"
     },
@@ -556,8 +563,8 @@
     },
     {
       "base_path": "/guidance/check-if-a-text-message-youve-received-from-hmrc-is-genuine",
-      "content_hash": "ce018bc9c24c56a3",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "1963953cd5dbb8c4",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Check if a text message you've received from HMRC is genuine",
       "url": "https://www.gov.uk/guidance/check-if-a-text-message-youve-received-from-hmrc-is-genuine"
     },
@@ -598,8 +605,8 @@
     },
     {
       "base_path": "/guidance/check-what-to-do-if-hmrc-has-signed-you-up-for-making-tax-digital-for-income-tax",
-      "content_hash": "b143de2c95c2e780",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "65db56b99dcdc348",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Check what to do if HMRC has signed you up for Making Tax Digital for Income Tax",
       "url": "https://www.gov.uk/guidance/check-what-to-do-if-hmrc-has-signed-you-up-for-making-tax-digital-for-income-tax"
     },
@@ -653,13 +660,6 @@
       "url": "https://www.gov.uk/guidance/claim-a-refund-of-income-tax-deducted-from-savings-and-investments"
     },
     {
-      "base_path": "/guidance/claim-a-tax-refund-if-youve-stopped-work-and-flexibly-accessed-all-of-your-pension-p50z",
-      "content_hash": "335a2fbf890f143d",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
-      "title": "Claim a tax refund if you've stopped work and flexibly accessed all of your pension (P50Z)",
-      "url": "https://www.gov.uk/guidance/claim-a-tax-refund-if-youve-stopped-work-and-flexibly-accessed-all-of-your-pension-p50z"
-    },
-    {
       "base_path": "/guidance/claim-an-income-tax-refund-by-post",
       "content_hash": "51cf051bf99c9690",
       "fetched_at": "2026-09-09T16:55:51.858512+00:00",
@@ -667,39 +667,11 @@
       "url": "https://www.gov.uk/guidance/claim-an-income-tax-refund-by-post"
     },
     {
-      "base_path": "/guidance/claim-back-income-tax-on-a-flexibly-accessed-pension-death-benefit-payment-p55db",
-      "content_hash": "4fa0d95d7188e746",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
-      "title": "Claim back Income Tax on a flexibly accessed pension death benefit payment P55(DB)",
-      "url": "https://www.gov.uk/guidance/claim-back-income-tax-on-a-flexibly-accessed-pension-death-benefit-payment-p55db"
-    },
-    {
-      "base_path": "/guidance/claim-back-income-tax-on-a-pension-death-benefit-lump-sum-p53zdb",
-      "content_hash": "328f446101a16a8d",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
-      "title": "Claim back Income Tax on a pension death benefit lump sum P53Z(DB)",
-      "url": "https://www.gov.uk/guidance/claim-back-income-tax-on-a-pension-death-benefit-lump-sum-p53zdb"
-    },
-    {
-      "base_path": "/guidance/claim-back-income-tax-on-a-pension-death-benefit-lump-sum-payment-if-youve-stopped-working-p50zdb",
-      "content_hash": "bd5a6d5ae3345232",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
-      "title": "Claim back Income Tax on a pension death benefit lump sum payment if you've stopped working P50Z(DB)",
-      "url": "https://www.gov.uk/guidance/claim-back-income-tax-on-a-pension-death-benefit-lump-sum-payment-if-youve-stopped-working-p50zdb"
-    },
-    {
       "base_path": "/guidance/claim-back-income-tax-when-youve-stopped-working",
       "content_hash": "441a808add4fd9f3",
       "fetched_at": "2026-09-09T16:55:51.858512+00:00",
       "title": "Claim back Income Tax when you've stopped working (P50)",
       "url": "https://www.gov.uk/guidance/claim-back-income-tax-when-youve-stopped-working"
-    },
-    {
-      "base_path": "/guidance/claim-back-tax-on-a-flexibly-accessed-pension-overpayment-p55",
-      "content_hash": "4389bc5bb73cf886",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
-      "title": "Claim back tax on a flexibly accessed pension overpayment (P55)",
-      "url": "https://www.gov.uk/guidance/claim-back-tax-on-a-flexibly-accessed-pension-overpayment-p55"
     },
     {
       "base_path": "/guidance/claim-industrial-injuries-disablement-benefit-for-dupuytrens-contracture",
@@ -737,6 +709,13 @@
       "url": "https://www.gov.uk/guidance/confirm-your-tax-responsibilities-when-applying-for-a-taxi-private-hire-or-scrap-metal-licence"
     },
     {
+      "base_path": "/guidance/conformity-assessment-and-accreditation",
+      "content_hash": "bdf8aedeb8862420",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
+      "title": "Accreditation",
+      "url": "https://www.gov.uk/guidance/conformity-assessment-and-accreditation"
+    },
+    {
       "base_path": "/guidance/construction-industry-scheme-businesses-based-outside-uk",
       "content_hash": "f21f795bb7a3150a",
       "fetched_at": "2026-09-09T16:55:51.858512+00:00",
@@ -766,8 +745,8 @@
     },
     {
       "base_path": "/guidance/current-dwp-research-in-the-field-undertaken-by-external-organisations",
-      "content_hash": "2d9ce2763478e426",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "438e65a30a221bbd",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Current DWP research being undertaken by external organisations",
       "url": "https://www.gov.uk/guidance/current-dwp-research-in-the-field-undertaken-by-external-organisations"
     },
@@ -791,6 +770,13 @@
       "fetched_at": "2026-09-09T16:55:51.858512+00:00",
       "title": "De-isolation and discharge of mpox-infected patients",
       "url": "https://www.gov.uk/guidance/de-isolation-and-discharge-of-monkeypox-infected-patients-interim-guidance"
+    },
+    {
+      "base_path": "/guidance/director-information-hub-self-assessment-for-directors--2",
+      "content_hash": "df7951309bc9aac2",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
+      "title": "Director information hub: Self Assessment for directors\u202f",
+      "url": "https://www.gov.uk/guidance/director-information-hub-self-assessment-for-directors--2"
     },
     {
       "base_path": "/guidance/disability-confident-how-to-sign-up-to-the-employer-scheme",
@@ -835,13 +821,6 @@
       "url": "https://www.gov.uk/guidance/early-years-initial-teacher-training-2026-to-2027-funding-guidance"
     },
     {
-      "base_path": "/guidance/early-years-initial-teacher-training-a-guide-for-providers",
-      "content_hash": "d4c6c915311c7782",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
-      "title": "Early years initial teacher training (ITT): a guide for providers",
-      "url": "https://www.gov.uk/guidance/early-years-initial-teacher-training-a-guide-for-providers"
-    },
-    {
       "base_path": "/guidance/employment-related-securities-and-arrangements-480-chapter-23",
       "content_hash": "dcd35f1dce835727",
       "fetched_at": "2026-09-09T16:55:51.858512+00:00",
@@ -878,8 +857,8 @@
     },
     {
       "base_path": "/guidance/eu-settlement-scheme-uk-tax-and-benefits-records-automated-check",
-      "content_hash": "7e6c09ea33b58a9c",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "48d7949ed5ef265a",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "EU Settlement Scheme: UK tax and benefits records automated check",
       "url": "https://www.gov.uk/guidance/eu-settlement-scheme-uk-tax-and-benefits-records-automated-check"
     },
@@ -961,6 +940,13 @@
       "url": "https://www.gov.uk/guidance/group-of-persons-trailblazer-groups"
     },
     {
+      "base_path": "/guidance/health-professionals-pharmaceutical-products-and-vat-notice-70157",
+      "content_hash": "b755fa85eb7436e0",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
+      "title": "Health professionals and pharmaceutical products (VAT Notice 701/57)",
+      "url": "https://www.gov.uk/guidance/health-professionals-pharmaceutical-products-and-vat-notice-70157"
+    },
+    {
       "base_path": "/guidance/help-and-support-for-company-directors",
       "content_hash": "105e7c5a565f75b2",
       "fetched_at": "2026-09-09T16:55:51.858512+00:00",
@@ -968,9 +954,16 @@
       "url": "https://www.gov.uk/guidance/help-and-support-for-company-directors"
     },
     {
+      "base_path": "/guidance/help-and-support-for-employing-people",
+      "content_hash": "443a4ed853dd97bd",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
+      "title": "HMRC email updates, videos and webinars for employing people",
+      "url": "https://www.gov.uk/guidance/help-and-support-for-employing-people"
+    },
+    {
       "base_path": "/guidance/help-and-support-for-self-assessment",
-      "content_hash": "f9b7a086f0c7fa97",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "c5d5b3895dd9591e",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "HMRC email updates, videos and webinars for Self Assessment",
       "url": "https://www.gov.uk/guidance/help-and-support-for-self-assessment"
     },
@@ -1249,8 +1242,8 @@
     },
     {
       "base_path": "/guidance/paying-tax-homes-for-ukraine",
-      "content_hash": "b4e5063ebf21a71a",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "61e1f6856e49ba50",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Paying tax: Homes for Ukraine",
       "url": "https://www.gov.uk/guidance/paying-tax-homes-for-ukraine"
     },
@@ -1277,8 +1270,8 @@
     },
     {
       "base_path": "/guidance/pensions-and-compensation-for-veterans",
-      "content_hash": "a0e8cdffbd363066",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "7ebec298c19b7ef0",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Armed forces pensions",
       "url": "https://www.gov.uk/guidance/pensions-and-compensation-for-veterans"
     },
@@ -1291,8 +1284,8 @@
     },
     {
       "base_path": "/guidance/preparing-a-local-plan-vision",
-      "content_hash": "4bd4bedf7ce02d34",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "67e4c131e63e0daf",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Preparing a local plan vision",
       "url": "https://www.gov.uk/guidance/preparing-a-local-plan-vision"
     },
@@ -1309,13 +1302,6 @@
       "fetched_at": "2026-09-09T16:55:51.858512+00:00",
       "title": "Register a trust",
       "url": "https://www.gov.uk/guidance/register-a-trust"
-    },
-    {
-      "base_path": "/guidance/register-for-self-assessment-if-you-are-not-self-employed",
-      "content_hash": "0df150037b23f02b",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
-      "title": "Register for Self Assessment if you are not self-employed",
-      "url": "https://www.gov.uk/guidance/register-for-self-assessment-if-you-are-not-self-employed"
     },
     {
       "base_path": "/guidance/register-for-the-economic-crime-levy",
@@ -1403,15 +1389,15 @@
     },
     {
       "base_path": "/guidance/sign-up-for-making-tax-digital-for-income-tax",
-      "content_hash": "7340f5091133b12e",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "e883050c84cedcc0",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Sign up for Making Tax Digital for Income Tax",
       "url": "https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-income-tax"
     },
     {
       "base_path": "/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax",
-      "content_hash": "b54303b90ece27df",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "f5ed1d41b69c1d08",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Sign up your client for Making Tax Digital for Income Tax",
       "url": "https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax"
     },
@@ -1570,6 +1556,13 @@
       "url": "https://www.gov.uk/guidance/use-software-to-help-complete-your-self-assessment-tax-return"
     },
     {
+      "base_path": "/guidance/whistleblowing-guidance-for-employers",
+      "content_hash": "40704e949f51a5b6",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
+      "title": "Whistleblowing guidance for employers",
+      "url": "https://www.gov.uk/guidance/whistleblowing-guidance-for-employers"
+    },
+    {
       "base_path": "/guidance/work-and-benefits-homes-for-ukraine",
       "content_hash": "a7c0be559b166599",
       "fetched_at": "2026-09-09T16:55:51.858512+00:00",
@@ -1585,8 +1578,8 @@
     },
     {
       "base_path": "/guidance/work-out-your-qualifying-income-for-making-tax-digital-for-income-tax",
-      "content_hash": "83ecd0db670bd275",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "ff884131e9b3fb34",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Work out your qualifying income for Making Tax Digital for Income Tax",
       "url": "https://www.gov.uk/guidance/work-out-your-qualifying-income-for-making-tax-digital-for-income-tax"
     },
@@ -1606,8 +1599,8 @@
     },
     {
       "base_path": "/income-tax",
-      "content_hash": "da5bb5dee03774d0",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "e4707da5d2ea3056",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Income Tax: introduction",
       "url": "https://www.gov.uk/income-tax"
     },
@@ -1662,8 +1655,8 @@
     },
     {
       "base_path": "/pay-self-assessment-tax-bill",
-      "content_hash": "ad79934daa17be03",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "adc126edb0b0bf88",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Pay your Self Assessment tax bill",
       "url": "https://www.gov.uk/pay-self-assessment-tax-bill"
     },
@@ -1704,8 +1697,8 @@
     },
     {
       "base_path": "/register-for-vat",
-      "content_hash": "0b9ad60e484128ce",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "3bec92d5ded2c106",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Register for VAT",
       "url": "https://www.gov.uk/register-for-vat"
     },
@@ -1753,8 +1746,8 @@
     },
     {
       "base_path": "/self-assessment-tax-returns",
-      "content_hash": "7eda3dc4072523d7",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "092120b265273324",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Self Assessment tax returns",
       "url": "https://www.gov.uk/self-assessment-tax-returns"
     },
@@ -1816,8 +1809,8 @@
     },
     {
       "base_path": "/stop-being-self-employed",
-      "content_hash": "95b7416d358612ff",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "19285377c926f018",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Stop being self-employed",
       "url": "https://www.gov.uk/stop-being-self-employed"
     },
@@ -1844,8 +1837,8 @@
     },
     {
       "base_path": "/support-child-or-partners-student-finance-application",
-      "content_hash": "b953fb8ae5026390",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "42fa3cc4523ad46c",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Support your child or partner's student finance application",
       "url": "https://www.gov.uk/support-child-or-partners-student-finance-application"
     },
@@ -1900,8 +1893,8 @@
     },
     {
       "base_path": "/tax-free-childcare",
-      "content_hash": "8ff7166270595e07",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "c2905de9fa789d9c",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Tax-Free Childcare",
       "url": "https://www.gov.uk/tax-free-childcare"
     },
@@ -1942,8 +1935,8 @@
     },
     {
       "base_path": "/tax-return-uk",
-      "content_hash": "97541fd923aec7d8",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "3649005eca273f27",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Tax if you return to the UK",
       "url": "https://www.gov.uk/tax-return-uk"
     },
@@ -2012,8 +2005,8 @@
     },
     {
       "base_path": "/universal-credit",
-      "content_hash": "7ddf13e1e6c7b747",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "47e1047aa18a2c4c",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Universal Credit",
       "url": "https://www.gov.uk/universal-credit"
     },
@@ -2033,8 +2026,8 @@
     },
     {
       "base_path": "/winter-fuel-payment",
-      "content_hash": "b33f6eafa280206f",
-      "fetched_at": "2026-09-09T16:55:51.858512+00:00",
+      "content_hash": "655c081b555237c7",
+      "fetched_at": "2026-10-05T13:32:49.667788+00:00",
       "title": "Winter Fuel Payment",
       "url": "https://www.gov.uk/winter-fuel-payment"
     },
